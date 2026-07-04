@@ -24,7 +24,7 @@ dioxus-element-plug = { path = "../dioxus-element-plug" }
 ### 2. Build the CSS
 
 ```bash
-cd dioxus-theme-chalk
+cd dioxus-element-plug
 make setup    # Install dependencies
 make build-css # Compile CSS
 ```
@@ -265,6 +265,18 @@ Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## Credits
 
-- [Element UI](https://element.eleme.io/) - Original design system
+- [Element UI](https://element.eleme.io/) - Original design system and theme-chalk CSS
 - [Dioxus](https://dioxuslabs.com/) - React-like framework for Rust
-- Theme-chalk CSS framework - Design foundation
+- [GitHub Contributors](https://github.com/pauljohn21/dioxus-element-plug/graphs/contributors) - Open source community
+
+## License
+
+MIT License - see LICENSE file for details.
+
+## Star History
+
+If you find this project helpful, please consider giving it a ⭐ on [GitHub](https://github.com/pauljohn21/dioxus-element-plug)!
+
+---
+
+**Ready to level up your Dioxus apps with beautiful Element UI styling? Start building today!** 🚀
