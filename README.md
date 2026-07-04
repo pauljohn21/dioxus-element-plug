@@ -33,18 +33,17 @@ This crate provides a set of UI components styled with the popular Element UI th
 
 ## Quick Start
 
+🎉 **最简单的开始方式**：只需 5 分钟就能创建运行的应用！
+
+完整的端到端示例，请看 [SIMPLE_START.md](SIMPLE_START.md)。
+
 ### 1. Add to your Cargo.toml
 
-For local development:
+For production use:
 ```toml
 [dependencies]
-dioxus-element-plug = { path = "../dioxus-element-plug" }
-```
-
-For production use (once published to crates.io):
-```toml
-[dependencies]
-dioxus-element-plug = "0.1.0"
+dioxus = { version = "0.7", features = ["web"] }
+dioxus-element-plug = "0.1.2"
 ```
 
 Or use directly from GitHub:
@@ -52,9 +51,33 @@ Or use directly from GitHub:
 dioxus-element-plug = { git = "https://github.com/pauljohn21/dioxus-element-plug.git" }
 ```
 
-### 2. Use Built-in SCSS Support
+### 2. Add CSS to Your Application
 
-With Dioxus Element Plug, CSS compilation is built-in using manganis. No external tools needed!
+#### Option A: Pre-compiled CSS (Recommended)
+
+
+
+或者使用 Dioxus 组件方式（在 Rust 代码中动态引入）:
+
+```rust
+document::Link {
+    rel: "stylesheet",
+    href: "//unpkg.com/element-plus/dist/index.css"
+}
+```
+
+你也可以指定特定版本以确保稳定性：
+
+```rust
+document::Link {
+    rel: "stylesheet", 
+    href: "//unpkg.com/element-plus@2.4.4/dist/index.css"
+}
+```
+
+#### Option B: Custom SCSS with Manganis
+
+For custom theming with manganis:
 
 ```rust
 use manganis::asset;
@@ -62,16 +85,10 @@ use manganis::asset;
 static STYLES: Asset = asset!("/assets/theme-chalk.scss");
 ```
 
+See [Usage Guide](USAGE_GUIDE.md) for detailed instructions on both approaches.
+
 查看 [`examples/with-scss-asset/`](examples/with-scss-asset/) 示例了解完整用法。
 
-#### 方式二：传统外部编译方式 (推荐用于现有项目)
-使用传统的 Sass 编译器进行构建：
-
-```bash
-cd dioxus-element-plug
-make setup    # Install dependencies (Node.js + Sass compiler)
-make build-css # Compile SCSS to CSS
-```
 
 **关于 Dioxus 0.7 的样式支持说明：**
 - 🎉 **Dioxus 0.7 支持内置 SCSS 编译** (通过 manganis asset 宏)

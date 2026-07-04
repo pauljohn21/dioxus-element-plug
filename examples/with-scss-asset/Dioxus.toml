@@ -1,0 +1,31 @@
+[application]
+name = "dioxus-element-plug-example"
+
+[web.app]
+title = "Dioxus Element Plug Example"
+
+# 在这里配置全局 CSS 文件
+[web.watcher]
+index_on_404 = true
+
+[web.app.asset]
+# 配置外部 CSS 资源
+style = [
+    "//unpkg.com/element-plus@2.4.4/dist/index.css"
+]
+
+# 可选：配置外部 JS 资源
+# script = ["//unpkg.com/element-plus@2.4.4/dist/index.full.js"]
+
+[web.resource.dev]
+# 开发环境额外的 CSS
+style = []
+
+[web.resource.prod]
+# 生产环境额外 CSS 
+style = []
+
+[bundle]
+# 打包配置
+identifier = "com.example.dioxus-element-plug"
+publisher = "Your Name"
