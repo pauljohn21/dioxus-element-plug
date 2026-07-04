@@ -1,8 +1,15 @@
 # Dioxus Element Plug
 
+<a href="https://github.com/pauljohn21/dioxus-element-plug">
+  <img src="https://img.shields.io/github/stars/pauljohn21/dioxus-element-plug?style=social" alt="GitHub stars">
+  <img src="https://img.shields.io/github/forks/pauljohn21/dioxus-element-plug?style=social" alt="GitHub forks">
+  <img src="https://img.shields.io/github/issues/pauljohn21/dioxus-element-plug" alt="GitHub issues">
+  <img src="https://img.shields.io/github/license/pauljohn21/dioxus-element-plug" alt="GitHub license">
+</a>
+
 Element UI theme-chalk components for Dioxus applications.
 
-This crate provides a set of UI components styled with the popular Element UI theme-chalk CSS framework, designed specifically for use with the Dioxus framework.
+This crate provides a set of UI components styled with the popular Element UI theme-chalk CSS framework, designed specifically for use with the Dioxus framework. **Hosted on GitHub: [pauljohn21/dioxus-element-plug](https://github.com/pauljohn21/dioxus-element-plug)**
 
 ## Features
 
@@ -11,14 +18,27 @@ This crate provides a set of UI components styled with the popular Element UI th
 - 📦 **Ready to use** - Components work out of the box with proper styling
 - 🎯 **Consistent API** - Intuitive props and events matching Dioxus patterns
 - 📱 **Responsive design** - Mobile-friendly components with flexible grid system
+- 🔧 **Active Development** - Regular updates and community contributions
 
 ## Quick Start
 
 ### 1. Add to your Cargo.toml
 
+For local development:
 ```toml
 [dependencies]
 dioxus-element-plug = { path = "../dioxus-element-plug" }
+```
+
+For production use (once published to crates.io):
+```toml
+[dependencies]
+dioxus-element-plug = "0.1.0"
+```
+
+Or use directly from GitHub:
+```toml
+dioxus-element-plug = { git = "https://github.com/pauljohn21/dioxus-element-plug.git" }
 ```
 
 ### 2. Build the CSS
@@ -255,13 +275,33 @@ MIT License - see LICENSE file for details.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit issues and pull requests.
+We welcome contributions from the community! Please feel free to submit issues and pull requests on our [GitHub repository](https://github.com/pauljohn21/dioxus-element-plug).
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+### Development Setup
+
+1. **Fork the repository** on [GitHub](https://github.com/pauljohn21/dioxus-element-plug/fork)
+2. **Clone your fork**:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/dioxus-element-plug.git
+   cd dioxus-element-plug
+   ```
+3. **Create a feature branch**:
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+4. **Make your changes** and test locally
+5. **Commit with a clear message**:
+   ```bash
+   git commit -m "feat: add new awesome feature"
+   ```
+6. **Push and create a Pull Request** on GitHub
+
+### GitHub Workflow
+- **Issues**: Report bugs and feature requests [here](https://github.com/pauljohn21/dioxus-element-plug/issues)
+- **Pull Requests**: Submit improvements [here](https://github.com/pauljohn21/dioxus-element-plug/pulls)
+- **Discussions**: Join conversations [here](https://github.com/pauljohn21/dioxus-element-plug/discussions)
+
+We use conventional commit messages and semantic versioning. Please ensure your code follows the existing style and includes appropriate tests.
 
 ## Credits
 
@@ -280,3 +320,22 @@ If you find this project helpful, please consider giving it a ⭐ on [GitHub](ht
 ---
 
 **Ready to level up your Dioxus apps with beautiful Element UI styling? Start building today!** 🚀
+
+---
+
+### Project Status
+
+This project is actively maintained on GitHub. Check out our:
+- 📈 [Project Insights](https://github.com/pauljohn21/dioxus-element-plug/pulse)
+- 🏗️ [Automated Builds](https://github.com/pauljohn21/dioxus-element-plug/actions)
+- 📊 [Code Quality](https://github.com/pauljohn21/dioxus-element-plug/graphs/contributors)
+- 🔄 [Release Notes](https://github.com/pauljohn21/dioxus-element-plug/releases)
+
+### Join the Community
+
+- 💬 [GitHub Discussions](https://github.com/pauljohn21/dioxus-element-plug/discussions)
+- 🐛 [Issue Tracker](https://github.com/pauljohn21/dioxus-element-plug/issues)
+- 🌟 [Star the Repository](https://github.com/pauljohn21/dioxus-element-plug)
+- 🍴 [Fork for Your Projects](https://github.com/pauljohn21/dioxus-element-plug/fork)
+
+**Together, we're building the future of Dioxus UI development!** 🎉
