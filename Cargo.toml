@@ -1,0 +1,32 @@
+[package]
+name = "dioxus-element-plug"
+version = "0.1.0"
+edition = "2021"
+authors = ["Your Name <your.email@example.com>"]
+description = "Dioxus UI components with Element UI theme-chalk styling"
+license = "MIT"
+repository = "https://github.com/yourname/dioxus-element-plug"
+documentation = "https://docs.rs/dioxus-element-plug"
+homepage = "https://github.com/yourname/dioxus-element-plug"
+keywords = ["dioxus", "ui", "components", "element-ui", "theme-chalk"]
+categories = ["web-programming", "gui"]
+
+[features]
+default = []
+server = ["dioxus/server"]
+web = ["dioxus/web"]
+
+[build-dependencies]
+
+[ dependencies]
+dioxus = { version = "0.7", features = ["web"] }
+
+[dev-dependencies]
+dioxus = { version = "0.7", features = ["web"] }
+console_error_panic_hook = "0.1"
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "z"
+panic = "abort"
