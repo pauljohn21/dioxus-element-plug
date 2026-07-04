@@ -3,8 +3,16 @@ use std::fs;
 use std::path::Path;
 
 fn main() {
+    // Skip build script execution during docs.rs documentation generation
+    // to prevent issues with asset processing and file system access
+    if env::var("DOCS_RS").is_ok() {
+        println!("cargo:warning=Skipping build script during docs.rs documentation generation");
+        return;
+    }
+
     println!("cargo:rerun-if-changed=src/");
-    println!("cargo:rerun-if-changed=../src/"); // Watch SCSS files in parent src directory
+    // Only watch parent directory if not building documentation
+    println!("cargo:rerun-if-changed=scss/");
 
     let out_dir = env::var("OUT_DIR").unwrap();
     let dest_path = Path::new(&out_dir).join("theme_chalk_info.rs");
@@ -24,8 +32,16 @@ pub fn get_css_path() -> &'static str {
 pub fn get_version() -> &'static str {
     "1.0.0"
 }
+
 "#;
 
-    fs::write(&dest_path, theme_info).unwrap();
-    println!("cargo:rustc-env=TARGET={}", env::var("TARGET").unwrap());
+    if let Err(e) = fs::write(&dest_path, theme_info) {
+        // Gracefully handle write errors during documentation builds
+        println!("cargo:warning=Failed to write theme info file: {}", e);
+        return;
+    }
+    
+    if let Ok(target) = env::var("TARGET") {
+        println!("cargo:rustc-env=TARGET={}", target);
+    }
 }

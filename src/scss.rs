@@ -102,8 +102,12 @@ pub mod spacing {
 /// Pre-defined SCSS assets for common use cases
 /// These can be used directly in your Dioxus applications
 pub mod prebuilt {
-    /// Complete theme-chalk SCSS (if the file exists at this path)
+    /// Complete theme-chalk SCSS
     /// Usage: `static THEME: Asset = theme_chalk_scss!();`
+    /// 
+    /// Note: This macro will only work when the SCSS files are available.
+    /// For docs.rs builds, this macro is disabled to prevent build failures.
+    #[cfg(not(docsrs))]
     #[macro_export]
     macro_rules! theme_chalk_scss {
         () => {
@@ -112,6 +116,10 @@ pub mod prebuilt {
     }
     
     /// Button component SCSS
+    /// 
+    /// Note: This macro will only work when the SCSS files are available.
+    /// For docs.rs builds, this macro is disabled to prevent build failures.
+    #[cfg(not(docsrs))]
     #[macro_export]
     macro_rules! button_scss {
         () => {
@@ -120,6 +128,10 @@ pub mod prebuilt {
     }
     
     /// Input component SCSS
+    /// 
+    /// Note: This macro will only work when the SCSS files are available.
+    /// For docs.rs builds, this macro is disabled to prevent build failures.
+    #[cfg(not(docsrs))]
     #[macro_export]
     macro_rules! input_scss {
         () => {
@@ -128,10 +140,47 @@ pub mod prebuilt {
     }
     
     /// Layout component SCSS
+    /// 
+    /// Note: This macro will only work when the SCSS files are available.
+    /// For docs.rs builds, this macro is disabled to prevent build failures.
+    #[cfg(not(docsrs))]
     #[macro_export]
     macro_rules! layout_scss {
         () => {
             manganis::asset!("/scss/layout/*.scss")
+        };
+    }
+
+    // Provide stub implementations for docs.rs builds
+    #[cfg(docsrs)]
+    #[macro_export]
+    macro_rules! theme_chalk_scss {
+        () => {
+            compile_error!("SCSS asset macros are disabled during documentation generation to prevent build failures. Use the asset! macro directly with your SCSS file paths in your application code.")
+        };
+    }
+
+    #[cfg(docsrs)]
+    #[macro_export]
+    macro_rules! button_scss {
+        () => {
+            compile_error!("SCSS asset macros are disabled during documentation generation to prevent build failures. Use the asset! macro directly with your SCSS file paths in your application code.")
+        };
+    }
+
+    #[cfg(docsrs)]
+    #[macro_export]
+    macro_rules! input_scss {
+        () => {
+            compile_error!("SCSS asset macros are disabled during documentation generation to prevent build failures. Use the asset! macro directly with your SCSS file paths in your application code.")
+        };
+    }
+
+    #[cfg(docsrs)]
+    #[macro_export]
+    macro_rules! layout_scss {
+        () => {
+            compile_error!("SCSS asset macros are disabled during documentation generation to prevent build failures. Use the asset! macro directly with your SCSS file paths in your application code.")
         };
     }
 }

@@ -36,11 +36,40 @@ pub mod components;
 pub mod theme;
 
 /// SCSS asset utilities for Dioxus 0.7+ built-in SCSS support
-/// Now always available as manganis is required
+/// Conditional compilation for docs.rs compatibility
+#[cfg(not(docsrs))]
 pub mod scss;
 
+#[cfg(docsrs)]
+pub mod scss {
+    /// Minimal stub implementations for documentation generation
+    pub mod prebuilt {}
+    
+    /// Re-export minimal manganis types for documentation
+    pub use manganis;
+    
+    /// Asset macro stub for documentation
+    pub use manganis::asset;
+    
+    /// Empty modules for documentation compatibility
+    pub mod theme_variables {}
+    pub mod typography {}
+    pub mod spacing {}
+    pub mod class_names {
+        pub mod button {}
+        pub mod input {}
+        pub mod layout {}
+    }
+    pub mod helpers {}
+}
+
 /// Re-export manganis tools for convenient access
+#[cfg(not(docsrs))]
 pub use scss::{asset, class_names, helpers, prebuilt};
+
+/// Re-export manganis for docs builds
+#[cfg(docsrs)]
+pub use manganis;
 
 pub use components::*;
 pub use theme::*;
@@ -52,7 +81,11 @@ pub mod prelude {
     pub use crate::components::layout::*;
     pub use crate::theme::*;
     
+    #[cfg(not(docsrs))]
     pub use crate::scss::{asset, manganis};
+    
+    #[cfg(docsrs)]
+    pub use manganis;
 }
 
 // Simple test module to verify the library compiles
