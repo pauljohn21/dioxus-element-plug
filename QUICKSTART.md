@@ -32,8 +32,22 @@ make setup
 
 ### 3. Build the CSS
 
+**选择你的 CSS 处理方式：**
+
+#### 🚀 方式一：Dioxus 0.7 内置 SCSS 支持 (推荐)
+使用 manganis asset 宏，无需单独的构建步骤：
+
+```rust
+// 在你的组件文件中
+use manganis::*;
+static STYLES: Asset = asset!("/assets/theme-chalk.scss");
+```
+
+查看 `examples/with-scss-asset/` 目录获取完整示例。
+
+#### 🔧 方式二：传统外部编译方式
 ```bash
-# Compile SCSS to CSS
+# Compile SCSS to CSS using external Sass compiler
 make build-css
 
 # Or watch for changes during development

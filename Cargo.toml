@@ -2,14 +2,35 @@
 name = "dioxus-element-plug"
 version = "0.1.0"
 edition = "2021"
-authors = ["Your Name <your.email@example.com>"]
-description = "Dioxus UI components with Element UI theme-chalk styling"
+authors = ["Paul Johnson"]
+description = "Element UI theme-chalk components for Dioxus applications with built-in SCSS support"
 license = "MIT"
-repository = "https://github.com/yourname/dioxus-element-plug"
+repository = "https://github.com/pauljohn21/dioxus-element-plug"
 documentation = "https://docs.rs/dioxus-element-plug"
-homepage = "https://github.com/yourname/dioxus-element-plug"
-keywords = ["dioxus", "ui", "components", "element-ui", "theme-chalk"]
+homepage = "https://github.com/pauljohn21/dioxus-element-plug"
+keywords = ["dioxus", "ui", "components", "element-ui", "scss"]
 categories = ["web-programming", "gui"]
+readme = "README.md"
+
+# Files to exclude from the published package
+exclude = [
+  "examples/*",
+  "dist/*", 
+  ".github/*",
+  "*.txt",
+  "Makefile",
+  "DIOXUS_*.md",
+  "GITHUB_*.md",
+  "PUSH_*.md",
+  "SCSS_*.md",
+  "PROJECT_*.md",
+  "OPTIMIZATION_*.md",
+  "CHANGELOG.md",
+]
+
+[package.metadata.docs.rs]
+features = ["manganis"]
+all-features = false
 
 [features]
 default = []
@@ -18,8 +39,9 @@ web = ["dioxus/web"]
 
 [build-dependencies]
 
-[ dependencies]
+[dependencies]
 dioxus = { version = "0.7", features = ["web"] }
+manganis = { version = "0.7.9", features = ["dioxus"] }
 
 [dev-dependencies]
 dioxus = { version = "0.7", features = ["web"] }

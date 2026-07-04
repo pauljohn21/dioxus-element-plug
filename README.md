@@ -7,7 +7,17 @@
   <img src="https://img.shields.io/github/license/pauljohn21/dioxus-element-plug" alt="GitHub license">
 </a>
 
-Element UI theme-chalk components for Dioxus applications.
+Element UI theme-chalk components for Dioxus applications with built-in SCSS support.
+
+<a href="https://crates.io/crates/dioxus-element-plug">
+  <img src="https://img.shields.io/crates/v/dioxus-element-plug.svg" alt="Crates.io version">
+  <img src="https://img.shields.io/crates/d/dioxus-element-plug.svg" alt="Crates.io downloads">
+  <img src="https://img.shields.io/crates/l/dioxus-element-plug.svg" alt="Crates.io license">
+</a>
+
+<a href="https://docs.rs/dioxus-element-plug">
+  <img src="https://docs.rs/dioxus-element-plug/badge.svg" alt="Documentation">
+</a>
 
 This crate provides a set of UI components styled with the popular Element UI theme-chalk CSS framework, designed specifically for use with the Dioxus framework. **Hosted on GitHub: [pauljohn21/dioxus-element-plug](https://github.com/pauljohn21/dioxus-element-plug)**
 
@@ -19,6 +29,7 @@ This crate provides a set of UI components styled with the popular Element UI th
 - 🎯 **Consistent API** - Intuitive props and events matching Dioxus patterns
 - 📱 **Responsive design** - Mobile-friendly components with flexible grid system
 - 🔧 **Active Development** - Regular updates and community contributions
+- 🎨 **SCSS Support** - Built-in SCSS compilation and theme customization
 
 ## Quick Start
 
@@ -41,13 +52,31 @@ Or use directly from GitHub:
 dioxus-element-plug = { git = "https://github.com/pauljohn21/dioxus-element-plug.git" }
 ```
 
-### 2. Build the CSS
+### 2. Use Built-in SCSS Support
+
+With Dioxus Element Plug, CSS compilation is built-in using manganis. No external tools needed!
+
+```rust
+use manganis::asset;
+
+static STYLES: Asset = asset!("/assets/theme-chalk.scss");
+```
+
+查看 [`examples/with-scss-asset/`](examples/with-scss-asset/) 示例了解完整用法。
+
+#### 方式二：传统外部编译方式 (推荐用于现有项目)
+使用传统的 Sass 编译器进行构建：
 
 ```bash
 cd dioxus-element-plug
-make setup    # Install dependencies
-make build-css # Compile CSS
+make setup    # Install dependencies (Node.js + Sass compiler)
+make build-css # Compile SCSS to CSS
 ```
+
+**关于 Dioxus 0.7 的样式支持说明：**
+- 🎉 **Dioxus 0.7 支持内置 SCSS 编译** (通过 manganis asset 宏)
+- 传统的外部 Sass 编译器方式仍然可用
+- 两种方式都支持，开发者可以根据项目需求选择
 
 ### 3. Add CSS to your HTML
 

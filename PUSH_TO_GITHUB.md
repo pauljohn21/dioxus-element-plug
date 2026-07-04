@@ -64,4 +64,4 @@ Your GitHub repository will contain:
 - [ ] Share with the community!
 
 **Your project is now live at:**
-https://github.com/YOUR_USERNAME/dioxus-element-plug 🎉
+https://github.com/pauljohn21/dioxus-element-plug 🎉

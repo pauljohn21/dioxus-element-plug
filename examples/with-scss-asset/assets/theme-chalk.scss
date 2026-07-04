@@ -1,0 +1,394 @@
+// 这是一个简化的 theme-chalk SCSS 文件，展示 Dioxus 0.7 的内置 SCSS 支持
+// 在实际项目中，这个文件可以导入完整的 theme-chalk SCSS 源文件
+
+// 变量定义
+$primary-color: #409EFF;
+$success-color: #67C23A;
+$warning-color: #E6A23C;
+$danger-color: #F56C6C;
+$info-color: #909399;
+
+$text-color: #303133;
+$text-color-secondary: #606266;
+$border-color: #DCDFE6;
+$background-color: #F5F7FA;
+
+$border-radius: 4px;
+$font-size-base: 14px;
+$spacing-base: 16px;
+
+// mixin 定义
+@mixin button-variant($color, $background, $border) {
+    color: $color;
+    background-color: $background;
+    border-color: $border;
+    
+    &:hover {
+        background: darken($background, 5%);
+        border-color: darken($border, 5%);
+    }
+    
+    &:active {
+        background: darken($background, 10%);
+        border-color: darken($border, 10%);
+    }
+}
+
+// 基础按钮样式
+.el-button {
+    display: inline-block;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    background: #fff;
+    border: 1px solid $border-color;
+    color: $text-color;
+    text-align: center;
+    box-sizing: border-box;
+    outline: none;
+    margin: 0;
+    transition: .1s;
+    font-weight: 500;
+    padding: 12px 20px;
+    font-size: $font-size-base;
+    border-radius: $border-radius;
+    
+    // 按钮变体
+    &--default {
+        @include button-variant($text-color, #fff, $border-color);
+    }
+    
+    &--primary {
+        @include button-variant(#fff, $primary-color, $primary-color);
+    }
+    
+    &--success {
+        @include button-variant(#fff, $success-color, $success-color);
+    }
+    
+    &--warning {
+        @include button-variant(#fff, $warning-color, $warning-color);
+    }
+    
+    &--danger {
+        @include button-variant(#fff, $danger-color, $danger-color);
+    }
+    
+    &--info {
+        @include button-variant(#fff, $info-color, $info-color);
+    }
+    
+    // 按钮尺寸
+    &--large {
+        padding: 13px 20px;
+        font-size: 16px;
+    }
+    
+    &--medium {
+        padding: 10px 20px;
+    }
+    
+    &--small {
+        padding: 9px 15px;
+        font-size: 12px;
+        border-radius: $border-radius - 1;
+    }
+    
+    &--mini {
+        padding: 7px 15px;
+        font-size: 12px;
+        border-radius: $border-radius - 1;
+    }
+    
+    // 禁用状态
+    &.is-disabled {
+        cursor: not-allowed;
+        opacity: 0.5;
+    }
+}
+
+// 轮廓按钮
+.el-button.outline {
+    background-color: transparent;
+    
+    &--primary {
+        color: $primary-color;
+        &:hover {
+            background-color: rgba($primary-color, 0.1);
+        }
+    }
+    
+    &--success {
+        color: $success-color;
+        &:hover {
+            background-color: rgba($success-color, 0.1);
+        }
+    }
+    
+    &--danger {
+        color: $danger-color;
+        &:hover {
+            background-color: rgba($danger-color, 0.1);
+        }
+    }
+}
+
+// 输入框样式
+.el-input {
+    position: relative;
+    font-size: $font-size-base;
+    display: inline-block;
+    width: 100%;
+    
+    &__inner {
+        -webkit-appearance: none;
+        background-color: #fff;
+        background-image: none;
+        border-radius: $border-radius;
+        border: 1px solid $border-color;
+        box-sizing: border-box;
+        color: $text-color;
+        display: inline-block;
+        font-size: inherit;
+        height: 40px;
+        line-height: 40px;
+        outline: none;
+        padding: 0 15px;
+        transition: border-color .2s cubic-bezier(.645,.045,.355,1);
+        width: 100%;
+        
+        &:focus {
+            outline: none;
+            border-color: $primary-color;
+        }
+        
+        &::placeholder {
+            color: #c0c4cc;
+        }
+    }
+    
+    // 输入框尺寸
+    &--large &__inner {
+        height: 44px;
+        font-size: 16px;
+    }
+    
+    &--medium &__inner {
+        height: 36px;
+    }
+    
+    &--small &__inner {
+        height: 32px;
+        font-size: 13px;
+    }
+    
+    &--mini &__inner {
+        height: 28px;
+        font-size: 12px;
+    }
+}
+
+// 卡片组件样式
+.el-card {
+    border-radius: $border-radius;
+    border: 1px solid #ebeef5;
+    background-color: #fff;
+    overflow: hidden;
+    color: $text-color;
+    transition: .3s;
+    
+    &:hover {
+        box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    }
+    
+    &__header {
+        padding: 18px 20px;
+        border-bottom: 1px solid #ebeef5;
+        box-sizing: border-box;
+    }
+    
+    &__body {
+        padding: 20px;
+    }
+}
+
+// 网格系统
+.el-row {
+    position: relative;
+    box-sizing: border-box;
+    
+    &::after, &::before {
+        display: table;
+        content: "";
+    }
+    
+    &::after {
+        clear: both;
+    }
+}
+
+// 列样式
+[class*="el-col-"] {
+    float: left;
+    box-sizing: border-box;
+    padding: 0 10px;
+}
+
+// 基础列宽度
+@for $i from 1 through 24 {
+    .el-col-#{$i} {
+        width: calc($i / 24) * 100%;
+    }
+}
+
+// 响应式断点
+@media only screen and (max-width: 768px) {
+    [class*="el-col-"] {
+        width: 100%;
+    }
+    
+    .el-col-md-12 {
+        width: 50%;
+    }
+}
+
+@media only screen and (min-width: 992px) {
+    @for $i from 1 through 24 {
+        .el-col-lg-#{$i} {
+            width: calc($i / 24) * 100%;
+        }
+    }
+}
+
+// 间距工具类
+@for $i from 1 through 10 {
+    .mt-#{$i} {
+        margin-top: $spacing-base * $i * 0.25;
+    }
+    
+    .mb-#{$i} {
+        margin-bottom: $spacing-base * $i * 0.25;
+    }
+    
+    .ml-#{$i} {
+        margin-left: $spacing-base * $i * 0.25;
+    }
+    
+    .mr-#{$i} {
+        margin-right: $spacing-base * $i * 0.25;
+    }
+    
+    .pt-#{$i} {
+        padding-top: $spacing-base * $i * 0.25;
+    }
+    
+    .pb-#{$i} {
+        padding-bottom: $spacing-base * $i * 0.25;
+    }
+}
+
+// 文字样式
+.text-primary {
+    color: $primary-color;
+}
+
+.text-success {
+    color: $success-color;
+}
+
+.text-warning {
+    color: $warning-color;
+}
+
+.text-danger {
+    color: $danger-color;
+}
+
+.text-info {
+    color: $info-color;
+}
+
+.bg-primary {
+    background-color: $primary-color;
+    color: white;
+}
+
+.bg-success {
+    background-color: $success-color;
+    color: white;
+}
+
+.bg-warning {
+    background-color: $warning-color;
+    color: white;
+}
+
+.bg-danger {
+    background-color: $danger-color;
+    color: white;
+}
+
+.bg-info {
+    background-color: $info-color;
+    color: white;
+}
+
+// 弹性布局工具
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.gap-1 {
+    gap: 0.25rem;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-3 {
+    gap: 1rem;
+}
+
+// Demonstrate SCSS features working with Dioxus
+.dioxus-scss-demo {
+    border: 2px solid $primary-color;
+    border-radius: $border-radius;
+    padding: $spacing-base;
+    margin: $spacing-base 0;
+    
+    h3 {
+        color: $primary-color;
+        margin-top: 0;
+    }
+    
+    p {
+        color: $text-color-secondary;
+    }
+    
+    .demo-button {
+        @extend .el-button;
+        @extend .el-button--primary;
+        margin-top: 0.5rem;
+    }
+}

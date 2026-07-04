@@ -7,29 +7,40 @@
 //!
 //! ## Usage
 //!
-//! First, add the theme CSS to your HTML:
+//! ## Modern DX: Dioxus 0.7+ Built-in SCSS
 //!
-//! ```html
-//! <link rel="stylesheet" href="/assets/theme-chalk.css">
-//! ```
-//!
-//! Then use the components in your Dioxus app:
+//! Dioxus Element Plug uses manganis for automatic SCSS compilation:
 //!
 //! ```rust,ignore
-//! use dioxus_theme_chalk::components::button::Button;
+//! use dioxus::prelude::*;
+//! use dioxus_element_plug::prelude::*;
+//! use manganis::asset;
+//!
+//! static STYLES: Asset = asset!("/assets/theme-chalk.scss");
 //!
 //! fn App() -> Element {
 //!     rsx! {
-//!         Button { variant: "primary", "Click me!" }
+//!         Button {
+//!             variant: ButtonVariant::Primary,
+//!             "Click me!"
+//!         }
 //!     }
 //! }
 //! ```
+//!
 
 /// Re-export commonly used components
 pub mod components;
 
 /// CSS theme utilities and constants
 pub mod theme;
+
+/// SCSS asset utilities for Dioxus 0.7+ built-in SCSS support
+/// Now always available as manganis is required
+pub mod scss;
+
+/// Re-export manganis tools for convenient access
+pub use scss::{asset, class_names, helpers, prebuilt};
 
 pub use components::*;
 pub use theme::*;
@@ -40,12 +51,14 @@ pub mod prelude {
     pub use crate::components::input::*;
     pub use crate::components::layout::*;
     pub use crate::theme::*;
+    
+    pub use crate::scss::{asset, manganis};
 }
 
 // Simple test module to verify the library compiles
 #[cfg(test)]
 mod tests {
-    use super::*;
+    
 
     #[test]
     fn test_theme_constants() {
