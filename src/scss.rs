@@ -99,90 +99,24 @@ pub mod spacing {
     pub const XL: u8 = UNIT * 8;
 }
 
-/// Pre-defined SCSS assets for common use cases
-/// These can be used directly in your Dioxus applications
+/// SCSS utility functions and helpers
+/// Note: The prebuilt macros that referenced internal SCSS files have been removed
+/// as they don't work correctly when the library is used as a dependency.
+/// 
+/// Users should either:
+/// 1. Use their own SCSS files and reference them via manganis::asset!()
+/// 2. Use the pre-compiled CSS distribution method
+/// 3. Copy the SCSS files from the library into their own project
 pub mod prebuilt {
-    /// Complete theme-chalk SCSS
-    /// Usage: `static THEME: Asset = theme_chalk_scss!();`
-    /// 
-    /// Note: This macro will only work when the SCSS files are available.
-    /// For docs.rs builds, this macro is disabled to prevent build failures.
-    #[cfg(not(docsrs))]
-    #[macro_export]
-    macro_rules! theme_chalk_scss {
-        () => {
-            manganis::asset!("/scss/index.scss")
-        };
-    }
-    
-    /// Button component SCSS
-    /// 
-    /// Note: This macro will only work when the SCSS files are available.
-    /// For docs.rs builds, this macro is disabled to prevent build failures.
-    #[cfg(not(docsrs))]
-    #[macro_export]
-    macro_rules! button_scss {
-        () => {
-            manganis::asset!("/scss/components/button.scss")
-        };
-    }
-    
-    /// Input component SCSS
-    /// 
-    /// Note: This macro will only work when the SCSS files are available.
-    /// For docs.rs builds, this macro is disabled to prevent build failures.
-    #[cfg(not(docsrs))]
-    #[macro_export]
-    macro_rules! input_scss {
-        () => {
-            manganis::asset!("/scss/components/input.scss")
-        };
-    }
-    
-    /// Layout component SCSS
-    /// 
-    /// Note: This macro will only work when the SCSS files are available.
-    /// For docs.rs builds, this macro is disabled to prevent build failures.
-    #[cfg(not(docsrs))]
-    #[macro_export]
-    macro_rules! layout_scss {
-        () => {
-            manganis::asset!("/scss/layout/*.scss")
-        };
-    }
-
-    // Provide stub implementations for docs.rs builds
-    #[cfg(docsrs)]
-    #[macro_export]
-    macro_rules! theme_chalk_scss {
-        () => {
-            compile_error!("SCSS asset macros are disabled during documentation generation to prevent build failures. Use the asset! macro directly with your SCSS file paths in your application code.")
-        };
-    }
-
-    #[cfg(docsrs)]
-    #[macro_export]
-    macro_rules! button_scss {
-        () => {
-            compile_error!("SCSS asset macros are disabled during documentation generation to prevent build failures. Use the asset! macro directly with your SCSS file paths in your application code.")
-        };
-    }
-
-    #[cfg(docsrs)]
-    #[macro_export]
-    macro_rules! input_scss {
-        () => {
-            compile_error!("SCSS asset macros are disabled during documentation generation to prevent build failures. Use the asset! macro directly with your SCSS file paths in your application code.")
-        };
-    }
-
-    #[cfg(docsrs)]
-    #[macro_export]
-    macro_rules! layout_scss {
-        () => {
-            compile_error!("SCSS asset macros are disabled during documentation generation to prevent build failures. Use the asset! macro directly with your SCSS file paths in your application code.")
-        };
-    }
+    //! This module is intentionally left empty.
+    //!
+    //! Previously, this contained macros that referenced internal SCSS files,
+    //! but those don't work when the library is used as a dependency from crates.io.
+    //!
+    //! For SCSS usage, users should:
+    //! - Create their own SCSS files in their project
+    //! - Use manganis::asset!() directly with their file paths
+    //! - Or copy SCSS files from this library into their project structure
 }
 
 /// CSS class name utilities

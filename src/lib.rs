@@ -65,7 +65,7 @@ pub mod scss {
 
 /// Re-export manganis tools for convenient access
 #[cfg(not(docsrs))]
-pub use scss::{asset, class_names, helpers, prebuilt};
+pub use scss::{asset, class_names, helpers};
 
 /// Re-export manganis for docs builds
 #[cfg(docsrs)]
@@ -82,7 +82,7 @@ pub mod prelude {
     pub use crate::theme::*;
     
     #[cfg(not(docsrs))]
-    pub use crate::scss::{asset, manganis};
+    pub use crate::scss::{asset, class_names, helpers};
     
     #[cfg(docsrs)]
     pub use manganis;

@@ -1,6 +1,6 @@
 [package]
 name = "dioxus-element-plug"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 authors = ["Paul Johnson"]
 description = "Element UI theme-chalk components for Dioxus applications with built-in SCSS support"
