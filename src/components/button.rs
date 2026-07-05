@@ -1,5 +1,15 @@
 use dioxus::prelude::*;
-use crate::theme::classes;
+
+// Button CSS class constants
+pub const BUTTON: &str = "el-button";
+pub const BUTTON_PRIMARY: &str = "el-button--primary";
+pub const BUTTON_SUCCESS: &str = "el-button--success";
+pub const BUTTON_WARNING: &str = "el-button--warning";
+pub const BUTTON_DANGER: &str = "el-button--danger";
+pub const BUTTON_INFO: &str = "el-button--info";
+pub const BUTTON_LARGE: &str = "el-button--large";
+pub const BUTTON_SMALL: &str = "el-button--small";
+pub const BUTTON_DISABLED: &str = "is-disabled";
 
 /// Button variants matching theme-chalk styles
 #[derive(Clone, PartialEq)]
@@ -15,12 +25,12 @@ pub enum ButtonVariant {
 impl ButtonVariant {
     pub fn as_class(&self) -> &'static str {
         match self {
-            ButtonVariant::Default => "el-button",
-            ButtonVariant::Primary => classes::BUTTON_PRIMARY,
-            ButtonVariant::Success => classes::BUTTON_SUCCESS,
-            ButtonVariant::Warning => classes::BUTTON_WARNING,
-            ButtonVariant::Danger => classes::BUTTON_DANGER,
-            ButtonVariant::Info => classes::BUTTON_INFO,
+            ButtonVariant::Default => BUTTON,
+            ButtonVariant::Primary => BUTTON_PRIMARY,
+            ButtonVariant::Success => BUTTON_SUCCESS,
+            ButtonVariant::Warning => BUTTON_WARNING,
+            ButtonVariant::Danger => BUTTON_DANGER,
+            ButtonVariant::Info => BUTTON_INFO,
         }
     }
 }
@@ -37,10 +47,10 @@ pub enum ButtonSize {
 impl ButtonSize {
     pub fn as_class(&self) -> &'static str {
         match self {
-            ButtonSize::Large => classes::BUTTON_LARGE,
-            ButtonSize::Medium => classes::BUTTON_MEDIUM,
-            ButtonSize::Small => classes::BUTTON_SMALL,
-            ButtonSize::Mini => classes::BUTTON_MINI,
+            ButtonSize::Large => "el-button--large",
+            ButtonSize::Medium => "el-button--medium",
+            ButtonSize::Small => "el-button--small",
+            ButtonSize::Mini => "el-button--mini",
         }
     }
 }
@@ -118,7 +128,7 @@ pub struct ButtonProps {
 /// ```
 #[component]
 pub fn Button(props: ButtonProps) -> Element {
-    let base_class = "el-button";
+    let base_class = BUTTON;
     let variant_class = props.variant.as_class();
 
     let mut classes = vec![base_class, variant_class];
@@ -128,7 +138,7 @@ pub fn Button(props: ButtonProps) -> Element {
     }
 
     if props.disabled {
-        classes.push(classes::IS_DISABLED);
+        classes.push("is-disabled");
     }
 
     if props.round {

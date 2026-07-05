@@ -1,5 +1,13 @@
 use dioxus::prelude::*;
-use crate::theme::classes;
+
+// Layout CSS class constants
+pub const CONTAINER: &str = "el-container";
+pub const HEADER: &str = "el-header";
+pub const ASIDE: &str = "el-aside";
+pub const MAIN: &str = "el-main";
+pub const FOOTER: &str = "el-footer";
+pub const ROW: &str = "el-row";
+pub const COL: &str = "el-col";
 
 /// Container props
 #[derive(Props, Clone, PartialEq)]
@@ -20,14 +28,14 @@ pub struct ContainerProps {
 /// Container component for layout
 #[component]
 pub fn Container(props: ContainerProps) -> Element {
-    let mut class_names = vec![classes::CONTAINER];
+    let mut class_names = vec![CONTAINER.to_string()];
 
     if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class);
+        class_names.push(custom_class.to_string());
     }
 
     let class_string = class_names.join(" ");
-    let style_string = props.style.unwrap_or_default();
+    let style_string = props.style.as_ref().cloned().unwrap_or_default();
 
     rsx! {
         div {
@@ -57,17 +65,17 @@ pub struct HeaderProps {
 /// Header component
 #[component]
 pub fn Header(props: HeaderProps) -> Element {
-    let mut class_names = vec![classes::HEADER];
+    let mut class_names = vec![HEADER.to_string()];
 
     if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class);
+        class_names.push(custom_class.to_string());
     }
 
     let class_string = class_names.join(" ");
     let style_string = format!(
         "height: {}px;{}",
         props.height,
-        props.style.unwrap_or_default()
+        props.style.as_ref().cloned().unwrap_or_default()
     );
 
     rsx! {
@@ -98,17 +106,17 @@ pub struct AsideProps {
 /// Aside component
 #[component]
 pub fn Aside(props: AsideProps) -> Element {
-    let mut class_names = vec![classes::ASIDE];
+    let mut class_names = vec![ASIDE.to_string()];
 
     if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class);
+        class_names.push(custom_class.to_string());
     }
 
     let class_string = class_names.join(" ");
     let style_string = format!(
         "width: {}px;{}",
         props.width,
-        props.style.unwrap_or_default()
+        props.style.as_ref().cloned().unwrap_or_default()
     );
 
     rsx! {
@@ -136,14 +144,14 @@ pub struct MainProps {
 /// Main content component
 #[component]
 pub fn Main(props: MainProps) -> Element {
-    let mut class_names = vec![classes::MAIN];
+    let mut class_names = vec![MAIN.to_string()];
 
     if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class);
+        class_names.push(custom_class.to_string());
     }
 
     let class_string = class_names.join(" ");
-    let style_string = props.style.unwrap_or_default();
+    let style_string = props.style.as_ref().cloned().unwrap_or_default();
 
     rsx! {
         main {
@@ -173,17 +181,17 @@ pub struct FooterProps {
 /// Footer component
 #[component]
 pub fn Footer(props: FooterProps) -> Element {
-    let mut class_names = vec![classes::FOOTER];
+    let mut class_names = vec![FOOTER.to_string()];
 
     if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class);
+        class_names.push(custom_class.to_string());
     }
 
     let class_string = class_names.join(" ");
     let style_string = format!(
         "height: {}px;{}",
         props.height,
-        props.style.unwrap_or_default()
+        props.style.as_ref().cloned().unwrap_or_default()
     );
 
     rsx! {
@@ -220,7 +228,7 @@ pub struct RowProps {
 /// Row component for grid layout
 #[component]
 pub fn Row(props: RowProps) -> Element {
-    let mut class_names = vec![classes::ROW.to_string()];
+    let mut class_names = vec![ROW.to_string()];
 
     if let Some(ref justify) = props.justify {
         class_names.push(format!("is-justify-{}", justify));
@@ -236,7 +244,7 @@ pub fn Row(props: RowProps) -> Element {
 
     let class_string = class_names.join(" ");
 
-    let mut style_parts = vec![props.style.unwrap_or_default()];
+    let mut style_parts = vec![props.style.as_ref().cloned().unwrap_or_default()];
 
     if let Some(gutter) = props.gutter {
         let gutter_margin = -(gutter as i32 / 2);
@@ -282,7 +290,7 @@ pub struct ColProps {
 /// Column component for grid layout
 #[component]
 pub fn Col(props: ColProps) -> Element {
-    let mut class_names = vec![classes::COL.to_string()];
+    let mut class_names = vec![COL.to_string()];
 
     if let Some(span) = props.span {
         class_names.push(format!("el-col-{}", span));
@@ -305,7 +313,7 @@ pub fn Col(props: ColProps) -> Element {
     }
 
     let class_string = class_names.join(" ");
-    let style_string = props.style.unwrap_or_default();
+    let style_string = props.style.as_ref().cloned().unwrap_or_default();
 
     rsx! {
         div {

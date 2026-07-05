@@ -1,5 +1,21 @@
 use dioxus::prelude::*;
-use crate::theme::classes;
+// Use string literals for CSS classes
+
+// Input CSS class constants
+pub const INPUT: &str = "el-input";
+pub const INPUT_INNER: &str = "el-input__inner";
+pub const INPUT_WRAPPER: &str = "el-input__wrapper";
+pub const INPUT_PREFIX: &str = "el-input__prefix";
+pub const INPUT_SUFFIX: &str = "el-input__suffix";
+pub const INPUT_DISABLED: &str = "is-disabled";
+pub const INPUT_LARGE: &str = "el-input--large";
+pub const INPUT_MEDIUM: &str = "el-input--medium";
+pub const INPUT_SMALL: &str = "el-input--small";
+pub const INPUT_MINI: &str = "el-input--mini";
+pub const INPUT_ERROR: &str = "is-error";
+pub const INPUT_GROUP: &str = "el-input-group";
+pub const INPUT_GROUP_APPEND: &str = "el-input-group__append";
+pub const INPUT_GROUP_PREPEND: &str = "el-input-group__prepend";
 
 /// Input sizes matching theme-chalk
 #[derive(Clone, PartialEq)]
@@ -13,10 +29,10 @@ pub enum InputSize {
 impl InputSize {
     pub fn as_class(&self) -> &'static str {
         match self {
-            InputSize::Large => classes::INPUT_LARGE,
-            InputSize::Medium => classes::INPUT_MEDIUM,
-            InputSize::Small => classes::INPUT_SMALL,
-            InputSize::Mini => classes::INPUT_MINI,
+            InputSize::Large => "el-input--large",
+            InputSize::Medium => "el-input--medium",
+            InputSize::Small => "el-input--small",
+            InputSize::Mini => "el-input--mini",
         }
     }
 }
@@ -178,7 +194,7 @@ pub fn Input(props: InputProps) -> Element {
     }
 
     if props.disabled {
-        wrapper_classes.push(classes::IS_DISABLED);
+        wrapper_classes.push("is-disabled");
     }
 
     if props.error {

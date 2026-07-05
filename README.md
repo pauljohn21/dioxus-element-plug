@@ -160,12 +160,27 @@ fn App() -> Element {
 - `Input` - Text inputs with validation
 - `SearchInput` - Search input with icon
 - `PasswordInput` - Password input with toggle
+- `Form` - Form wrapper with layout options
+- `FormItem` - Individual form fields with validation
+- `Select` - Dropdown selection
+- `Checkbox`/`Radio` - Boolean selection controls
+- `Slider` - Range input with tooltip
 
-### Soon to come
-- Forms (Checkbox, Radio, Select)
-- Navigation (Menu, Tabs, Breadcrumb)
-- Feedback (Alert, Message, Notification)
-- Data Display (Table, Card, List)
+### Card & Container Components
+- `Card` - Content container with shadow options
+- `Panel` - Collapsible content panels
+- `Box` - Flexible box container with styling options
+- `Accordion` - Collapsible section groups
+
+### Alert & Notification
+- `Alert` - Important information display
+- `Callout` - Prominent information boxes
+- `Notification` - Toast-style temporary messages
+- `Tooltip` - Contextual help information
+
+### Data Display
+- `Table` - Feature-rich data tables with sorting and selection
+- `DataList` - Flexible list component with custom templates
 
 ## Component Examples
 
@@ -236,6 +251,106 @@ rsx! {
         Footer { height: 60 {
             p { "Footer" }
         }}
+    }
+}
+```
+
+### Forms
+
+```rust
+use dioxus_element_plug::components::form::*;
+
+rsx! {
+    Form {
+        layout: "horizontal".to_string(),
+        
+        FormItem {
+            label: "Email".to_string(),
+            required: true,
+            
+            Input {
+                input_type: InputType::Email,
+                placeholder: "Enter your email",
+            }
+        }
+        
+        FormItem {
+            label: "Country".to_string(),
+            
+            Select {
+                options: vec![
+                    SelectOption { value: "us".to_string(), label: "United States".to_string(), disabled: false },
+                    SelectOption { value: "ca".to_string(), label: "Canada".to_string(), disabled: false },
+                ],
+                placeholder: "Select your country",
+            }
+        }
+    }
+}
+```
+
+### Alerts
+
+```rust
+use dioxus_element_plug::components::alert::*;
+
+rsx! {
+    Alert {
+        title: "Success!".to_string(),
+        description: Some("Operation completed successfully".to_string()),
+        alert_type: AlertType::Success,
+        closable: true,
+        show_icon: true,
+    }
+}
+```
+
+### Cards
+
+```rust
+use dioxus_element_plug::components::card::*;
+
+rsx! {
+    Card {
+        header: Some("User Profile".to_string()),
+        shadow: "hover".to_string(),
+        
+        div {
+            h3 { "John Doe" }
+            p { "Software Developer" }
+        }
+    }
+}
+```
+
+### Data Tables
+
+```rust
+use dioxus_element_plug::components::table::*;
+use serde_json::json;
+
+let columns = vec![
+    TableColumn {
+        title: "Name".to_string(),
+        key: "name".to_string(),
+        width: Some("200px".to_string()),
+        sortable: true,
+        fixed: None,
+        render: None,
+    },
+];
+
+let data = vec![
+    json!({"name": "John Doe", "age": 30}),
+    json!({"name": "Jane Smith", "age": 25}),
+];
+
+rsx! {
+    Table {
+        columns: columns,
+        data: data,
+        stripe: true,
+        border: true,
     }
 }
 ```
