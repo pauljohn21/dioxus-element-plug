@@ -1,121 +1,130 @@
 //! # Dioxus Element Plug
 //!
-//! Element UI components for Dioxus applications with pure Rust styling system.
+//! Element Plus components for Dioxus applications with pure Rust styling system.
 //!
-//! This crate provides a set of UI components styled with the popular Element UI theme-chalk design,
-//! designed specifically for use with the Dioxus framework. All styling is generated in pure Rust
-//! for zero runtime overhead and maximum performance.
+//! This crate provides 115+ UI components styled with Element Plus theme-chalk design,
+//! designed specifically for use with the Dioxus 0.7 framework.
 //!
 //! ## Features
 //!
-//! - 🎨 **Pure Rust styling** - Zero runtime overhead with compile-time CSS generation
-//! - 🦀 **Rust-native components** - Type-safe components built for Dioxus
-//! - 📦 **Ready to use** - Components work out of the box with proper styling
-//! - 🎯 **Consistent API** - Intuitive props and events matching Dioxus patterns
-//! - 📱 **Responsive design** - Mobile-friendly components with flexible grid system
-//! - 🔥 **Tree-shaking friendly** - Only include styles for components you use
-//! - ⚡ **Zero dependencies** - No SCSS compilation required at runtime
+//! - 🎨 **115+ Element Plus components** - Complete coverage of all component categories
+//! - 🦀 **Pure Rust styling** - Zero runtime overhead with compile-time CSS generation
+//! - 🎯 **Controlled component pattern** - State managed by parent via props + events
+//! - 📦 **Ready to use** - Components work out of the box with Element Plus CSS
+//! - ⚡ **Zero SCSS dependencies** - Pure Rust CSS generation system
 //!
-//! ## Usage
-//!
-//! ### Basic Usage with Pure Rust Styling
+//! ## Quick Start
 //!
 //! ```rust,ignore
 //! use dioxus::prelude::*;
 //! use dioxus_element_plug::prelude::*;
-//! use dioxus_element_plug::style_system::CompleteStyleManager;
 //!
 //! fn App() -> Element {
-//!     // Generate styles for specific components
-//!     let styles = CompleteStyleManager::new()
-//!         .generate_styles_for_components(&["button", "input", "alert"]);
-//!
 //!     rsx! {
-//!         style { "{styles}" }
-//!         
-//!         div {
-//!             Button {
-//!                 variant: ButtonVariant::Primary,
-//!                 "Click me!"
-//!             }
-//!             
-//!             Input {
-//!                 placeholder: "Enter text...",
-//!                 size: Some(InputSize::Medium),
-//!             }
+//!         document::Link {
+//!             rel: "stylesheet",
+//!             href: "//unpkg.com/element-plus@2.4.4/dist/index.css"
 //!         }
-//!     }
-//! }
-//! ```
 //!
-//! ### Generate Complete Stylesheet
-//!
-//! ```rust,ignore
-//! use dioxus::prelude::*;
-//! use dioxus_element_plug::prelude::*;
-//!
-//! fn App() -> Element {
-//!     // Generate complete Element Plus styles
-//!     let complete_styles = CompleteStyleManager::new()
-//!         .generate_complete_styles();
-//!
-//!     rsx! {
-//!         style { "{complete_styles}" }
-//!         
-//!         // Use any Element Plus component
 //!         Button {
 //!             variant: ButtonVariant::Primary,
-//!             "Primary Button"
+//!             on_click: move |_: MouseEvent| println!("Clicked!"),
+//!             "Click me!"
 //!         }
-//!         
-//!         Alert {
-//!             title: "Success!".to_string(),
-//!             alert_type: AlertType::Success,
+//!
+//!         Input {
+//!             value: "Hello".to_string(),
+//!             on_change: move |e: Event<FormData>| println!("{}", e.value()),
 //!         }
 //!     }
 //! }
 //! ```
 
-/// Re-export commonly used components
+/// Re-export all components
 pub mod components;
 
-/// Pure Rust CSS generation system - zero runtime overhead styling solution
+/// Pure Rust CSS generation system
 pub mod style_system;
 
-/// Modular Element Plus style system (SCSS to Rust converted)
+/// Modular Element Plus style system
 pub mod styles;
 
-/// Pure Rust styling system
-/// This module provides comprehensive styling without SCSS dependencies
+/// Styling system re-exports
 pub use style_system::{Theme, CompleteStyleManager, CompleteCssBuilder};
-
-/// Theme and style re-exports from modular system
 pub use crate::styles::prelude::*;
-
 pub use components::*;
 
-/// Prelude module for easy importing
+/// Prelude module for easy importing of all components and types
+#[allow(ambiguous_glob_reexports)]
+#[allow(unused_imports)]
 pub mod prelude {
+    // Core components
     pub use crate::components::button::*;
     pub use crate::components::input::*;
-    pub use crate::components::layout::*;
-    pub use crate::components::form::*;
-    pub use crate::components::alert::*;
+    pub use crate::components::input_number::*;
+    pub use crate::components::select::*;
+    pub use crate::components::switch::*;
+    pub use crate::components::checkbox::*;
+    pub use crate::components::radio::*;
+    pub use crate::components::slider::*;
+    pub use crate::components::rate::*;
+
+    // Layout
+    // layout.rs removed - use container.rs and row.rs instead
+    pub use crate::components::container::*;
+    pub use crate::components::row::*;
+    pub use crate::components::col::*;
+    pub use crate::components::space::*;
+
+    // Display
     pub use crate::components::card::*;
+    pub use crate::components::alert::*;
+    pub use crate::components::tag::*;
+    pub use crate::components::progress::*;
+    pub use crate::components::badge::*;
+    pub use crate::components::empty::*;
+    pub use crate::components::divider::*;
+    pub use crate::components::link::*;
+    pub use crate::components::skeleton::*;
     pub use crate::components::table::*;
+    pub use crate::components::tree::*;
+
+    // Navigation
+    pub use crate::components::menu::*;
+    pub use crate::components::tabs::*;
+    pub use crate::components::steps::*;
+    pub use crate::components::pagination::*;
+    pub use crate::components::breadcrumb::*;
+    pub use crate::components::dropdown::*;
+    pub use crate::components::affix::*;
+    pub use crate::components::page_header::*;
+
+    // Feedback
+    pub use crate::components::dialog::*;
+    pub use crate::components::drawer::*;
+    pub use crate::components::tooltip::*;
+    pub use crate::components::popover::*;
+    pub use crate::components::popconfirm::*;
+    pub use crate::components::message::*;
+    pub use crate::components::notification::*;
+
+    // Form
+    pub use crate::components::form::*;
+    pub use crate::components::cascader::*;
+    pub use crate::components::transfer::*;
+
+    // Icons
+    pub use crate::components::icon::*;
+
+    // Styling
     pub use crate::Theme;
     pub use crate::CompleteStyleManager;
     pub use crate::CompleteCssBuilder;
-    
-    /// Complete Element Plus styling from modular system
     pub use crate::styles::prelude::*;
 }
 
-// Simple test module to verify the library compiles
 #[cfg(test)]
 mod tests {
-    
-
     #[test]
     fn test_generated_style_constants() {
         use crate::styles::prelude::*;
@@ -144,5 +153,32 @@ mod tests {
 
         let password = InputType::Password;
         assert_eq!(password.as_str(), "password");
+    }
+
+    #[test]
+    fn test_tag_types() {
+        use crate::components::tag::TagType;
+
+        let primary = TagType::Primary;
+        assert_eq!(primary.as_class(), "el-tag--primary");
+
+        let danger = TagType::Danger;
+        assert_eq!(danger.as_class(), "el-tag--danger");
+    }
+
+    #[test]
+    fn test_badge_types() {
+        use crate::components::badge::BadgeType;
+
+        let primary = BadgeType::Primary;
+        assert_eq!(primary.as_class(), "el-badge__content--primary");
+    }
+
+    #[test]
+    fn test_switch_size() {
+        use crate::components::switch::SwitchSize;
+
+        let large = SwitchSize::Large;
+        assert_eq!(large.as_class(), "el-switch--large");
     }
 }

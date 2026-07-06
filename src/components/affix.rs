@@ -1,170 +1,87 @@
-//! affix component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Affix component classes
-pub mod classes {
-    /// Base affix class
-    pub const BASE: &str = "el-affix";
-    
-    /// affix size variants
-    pub const LARGE: &str = "el-affix--large";
-    pub const SMALL: &str = "el-affix--small";
-    
-    /// affix type variants
-    pub const PRIMARY: &str = "el-affix--primary";
-    pub const SUCCESS: &str = "el-affix--success";
-    pub const WARNING: &str = "el-affix--warning";
-    pub const DANGER: &str = "el-affix--danger";
-    pub const INFO: &str = "el-affix--info";
-    
-    /// affix states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Affix position variants
+#[derive(Clone, PartialEq)]
+pub enum AffixPosition {
+    Top,
+    Bottom,
 }
 
-/// Basic affix component structure
-#[derive(Debug, Clone)]
-pub struct Affix {
-    pub id: Option<String>,
+impl AffixPosition {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            AffixPosition::Top => "top",
+            AffixPosition::Bottom => "bottom",
+        }
+    }
+}
+
+/// Affix props - 固定元素在页面滚动时保持在视口内
+#[derive(Props, Clone, PartialEq)]
+pub struct AffixProps {
+    /// Affix content
+    pub children: Element,
+
+    /// Offset distance (px)
+    #[props(default = 0)]
+    pub offset: u32,
+
+    /// Position of affix (top or bottom)
+    #[props(default = AffixPosition::Top)]
+    pub position: AffixPosition,
+
+    /// Z-index value
+    #[props(default = 100)]
+    pub z_index: u32,
+
+    /// Whether the affix is currently fixed
+    #[props(default = false)]
+    pub fixed: bool,
+
+    /// Change event when fixed state changes
+    #[props(default)]
+    pub on_change: Option<EventHandler<bool>>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Affix {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Affix {
-    /// Create a new affix component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "affix".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_affix_creation() {
-        let component = Affix::new()
-            .id("test-affix")
-            .class("custom-affix-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-affix");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-affix-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Affix component - fixes content to viewport on scroll
+///
+/// Mirrors Element Plus `el-affix` behavior.
+#[component]
+pub fn Affix(props: AffixProps) -> Element {
+    let mut class_names = vec!["el-affix".to_string()];
+
+    if props.fixed {
+        class_names.push("el-affix--fixed".to_string());
     }
-    
-    #[test]
-    fn test_affix_class_generation() {
-        let component = Affix::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_affix_states() {
-        let active_disabled = Affix::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+
+    let class_string = class_names.join(" ");
+
+    let mut style_parts = vec![props.style.unwrap_or_default()];
+    if props.fixed {
+        style_parts.push(format!("z-index: {};", props.z_index));
+        match props.position {
+            AffixPosition::Top => style_parts.push(format!("top: {}px;", props.offset)),
+            AffixPosition::Bottom => style_parts.push(format!("bottom: {}px;", props.offset)),
+        }
+    }
+    let style_string = style_parts.join("");
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
     }
 }

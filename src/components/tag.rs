@@ -1,170 +1,171 @@
-//! tag component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Tag component classes
-pub mod classes {
-    /// Base tag class
-    pub const BASE: &str = "el-tag";
-    
-    /// tag size variants
-    pub const LARGE: &str = "el-tag--large";
-    pub const SMALL: &str = "el-tag--small";
-    
-    /// tag type variants
-    pub const PRIMARY: &str = "el-tag--primary";
-    pub const SUCCESS: &str = "el-tag--success";
-    pub const WARNING: &str = "el-tag--warning";
-    pub const DANGER: &str = "el-tag--danger";
-    pub const INFO: &str = "el-tag--info";
-    
-    /// tag states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Tag type variants
+#[derive(Clone, PartialEq)]
+pub enum TagType {
+    Primary,
+    Success,
+    Info,
+    Warning,
+    Danger,
 }
 
-/// Basic tag component structure
-#[derive(Debug, Clone)]
-pub struct Tag {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+impl TagType {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            TagType::Primary => "el-tag--primary",
+            TagType::Success => "el-tag--success",
+            TagType::Info => "el-tag--info",
+            TagType::Warning => "el-tag--warning",
+            TagType::Danger => "el-tag--danger",
+        }
+    }
+}
+
+/// Tag size variants
+#[derive(Clone, PartialEq)]
+pub enum TagSize {
+    Large,
+    Default,
+    Small,
+}
+
+impl TagSize {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            TagSize::Large => "el-tag--large",
+            TagSize::Default => "",
+            TagSize::Small => "el-tag--small",
+        }
+    }
+}
+
+/// Tag effect variants
+#[derive(Clone, PartialEq)]
+pub enum TagEffect {
+    Dark,
+    Light,
+    Plain,
+}
+
+impl TagEffect {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            TagEffect::Dark => "el-tag--dark",
+            TagEffect::Light => "el-tag--light",
+            TagEffect::Plain => "el-tag--plain",
+        }
+    }
+}
+
+/// Tag props - 标签
+#[derive(Props, Clone, PartialEq)]
+pub struct TagProps {
+    /// Tag content
+    pub children: Element,
+
+    /// Tag type
+    #[props(default = TagType::Primary)]
+    pub tag_type: TagType,
+
+    /// Whether closable
+    #[props(default = false)]
+    pub closable: bool,
+
+    /// Whether disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Tag {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Tag effect
+    #[props(default = TagEffect::Light)]
+    pub effect: TagEffect,
 
-impl Tag {
-    /// Create a new tag component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "tag".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Whether hit
+    #[props(default = false)]
+    pub hit: bool,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Tag size
+    #[props(default = TagSize::Default)]
+    pub size: TagSize,
+
+    /// Close handler
+    #[props(default)]
+    pub on_close: Option<EventHandler<MouseEvent>>,
+
+    /// Click handler
+    #[props(default)]
+    pub on_click: Option<EventHandler<MouseEvent>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_tag_creation() {
-        let component = Tag::new()
-            .id("test-tag")
-            .class("custom-tag-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-tag");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-tag-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Tag component - marks and categorizes content
+///
+/// Mirrors Element Plus `el-tag`.
+#[component]
+pub fn Tag(props: TagProps) -> Element {
+    let mut class_names = vec!["el-tag".to_string()];
+
+    class_names.push(props.tag_type.as_class().to_string());
+    class_names.push(props.effect.as_class().to_string());
+
+    let size_class = props.size.as_class();
+    if !size_class.is_empty() {
+        class_names.push(size_class.to_string());
     }
-    
-    #[test]
-    fn test_tag_class_generation() {
-        let component = Tag::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    if props.hit {
+        class_names.push("is-hit".to_string());
     }
-    
-    #[test]
-    fn test_tag_states() {
-        let active_disabled = Tag::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
+    }
+    if props.closable {
+        class_names.push("is-closable".to_string());
+    }
+
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    let on_close = props.on_close;
+    let on_click = props.on_click;
+
+    rsx! {
+        span {
+            class: "{class_string}",
+            style: "{style_string}",
+            onclick: move |e: MouseEvent| {
+                if let Some(handler) = on_click.as_ref() {
+                    handler.call(e);
+                }
+            },
+
+            span {
+                class: "el-tag__content",
+                {props.children}
+            }
+
+            if props.closable {
+                span {
+                    class: "el-tag__close",
+                    onclick: move |e: MouseEvent| {
+                        e.stop_propagation();
+                        if let Some(handler) = on_close.as_ref() {
+                            handler.call(e);
+                        }
+                    },
+                    "×"
+                }
+            }
+        }
     }
 }

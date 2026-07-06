@@ -1,170 +1,142 @@
-//! input-number component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// InputNumber component classes
-pub mod classes {
-    /// Base input-number class
-    pub const BASE: &str = "el-input-number";
-    
-    /// input-number size variants
-    pub const LARGE: &str = "el-input-number--large";
-    pub const SMALL: &str = "el-input-number--small";
-    
-    /// input-number type variants
-    pub const PRIMARY: &str = "el-input-number--primary";
-    pub const SUCCESS: &str = "el-input-number--success";
-    pub const WARNING: &str = "el-input-number--warning";
-    pub const DANGER: &str = "el-input-number--danger";
-    pub const INFO: &str = "el-input-number--info";
-    
-    /// input-number states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// InputNumber props - 数字输入框
+#[derive(Props, Clone, PartialEq)]
+pub struct InputNumberProps {
+    /// Current value (controlled)
+    #[props(default = 0)]
+    pub model_value: i64,
 
-/// Basic input-number component structure
-#[derive(Debug, Clone)]
-pub struct InputNumber {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    /// Minimum value
+    #[props(default = i64::MIN)]
+    pub min: i64,
+
+    /// Maximum value
+    #[props(default = i64::MAX)]
+    pub max: i64,
+
+    /// Step size
+    #[props(default = 1)]
+    pub step: i64,
+
+    /// Whether disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for InputNumber {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Number of precision digits
+    #[props(default)]
+    pub precision: Option<u32>,
 
-impl InputNumber {
-    /// Create a new input-number component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "input-number".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Size
+    #[props(default)]
+    pub size: Option<InputNumberSize>,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Change handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<i64>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_input_number_creation() {
-        let component = InputNumber::new()
-            .id("test-input-number")
-            .class("custom-input-number-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-input-number");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-input-number-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// InputNumber size
+#[derive(Clone, PartialEq)]
+pub enum InputNumberSize {
+    Large,
+    Default,
+    Small,
+}
+
+impl InputNumberSize {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            InputNumberSize::Large => "el-input-number--large",
+            InputNumberSize::Default => "",
+            InputNumberSize::Small => "el-input-number--small",
+        }
     }
-    
-    #[test]
-    fn test_input_number_class_generation() {
-        let component = InputNumber::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+}
+
+/// InputNumber component - numeric input with controls
+///
+/// Mirrors Element Plus `el-input-number`.
+#[component]
+pub fn InputNumber(props: InputNumberProps) -> Element {
+    let mut class_names = vec!["el-input-number".to_string()];
+
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-    
-    #[test]
-    fn test_input_number_states() {
-        let active_disabled = InputNumber::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if let Some(ref s) = props.size {
+        class_names.push(s.as_class().to_string());
+    }
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    let on_change = props.on_change;
+    let disabled = props.disabled;
+    let min = props.min;
+    let max = props.max;
+    let step = props.step;
+    let current = props.model_value;
+    let can_decrease = !disabled && current > min;
+    let can_increase = !disabled && current < max;
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+
+            button {
+                class: if can_decrease { "el-input-number__decrease" } else { "el-input-number__decrease is-disabled" },
+                disabled: !can_decrease,
+                onclick: move |_| {
+                    if can_decrease {
+                        let new_val = (current - step).max(min);
+                        if let Some(handler) = on_change.as_ref() {
+                            handler.call(new_val);
+                        }
+                    }
+                },
+                "−"
+            }
+
+            input {
+                class: "el-input-number__inner",
+                r#type: "number",
+                value: "{current}",
+                disabled: disabled,
+                onchange: move |e: Event<FormData>| {
+                    if let Ok(v) = e.value().parse::<i64>() {
+                        let clamped = v.clamp(min, max);
+                        if let Some(handler) = on_change.as_ref() {
+                            handler.call(clamped);
+                        }
+                    }
+                },
+            }
+
+            button {
+                class: if can_increase { "el-input-number__increase" } else { "el-input-number__increase is-disabled" },
+                disabled: !can_increase,
+                onclick: move |_| {
+                    if can_increase {
+                        let new_val = (current + step).min(max);
+                        if let Some(handler) = on_change.as_ref() {
+                            handler.call(new_val);
+                        }
+                    }
+                },
+                "+"
+            }
+        }
     }
 }

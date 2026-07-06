@@ -1,170 +1,235 @@
-//! checkbox component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Checkbox component classes
-pub mod classes {
-    /// Base checkbox class
-    pub const BASE: &str = "el-checkbox";
-    
-    /// checkbox size variants
-    pub const LARGE: &str = "el-checkbox--large";
-    pub const SMALL: &str = "el-checkbox--small";
-    
-    /// checkbox type variants
-    pub const PRIMARY: &str = "el-checkbox--primary";
-    pub const SUCCESS: &str = "el-checkbox--success";
-    pub const WARNING: &str = "el-checkbox--warning";
-    pub const DANGER: &str = "el-checkbox--danger";
-    pub const INFO: &str = "el-checkbox--info";
-    
-    /// checkbox states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Checkbox props - 多选框
+#[derive(Props, Clone, PartialEq)]
+pub struct CheckboxProps {
+    /// Checkbox label/content
+    pub children: Element,
 
-/// Basic checkbox component structure
-#[derive(Debug, Clone)]
-pub struct Checkbox {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    /// Whether checked (controlled)
+    #[props(default = false)]
+    pub model_value: bool,
+
+    /// Checkbox value for group
+    #[props(default)]
+    pub label: Option<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Checkbox {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Whether indeterminate
+    #[props(default = false)]
+    pub indeterminate: bool,
 
-impl Checkbox {
-    /// Create a new checkbox component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "checkbox".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Border
+    #[props(default = false)]
+    pub border: bool,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Size
+    #[props(default)]
+    pub size: Option<CheckboxSize>,
+
+    /// Change handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<bool>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_checkbox_creation() {
-        let component = Checkbox::new()
-            .id("test-checkbox")
-            .class("custom-checkbox-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-checkbox");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-checkbox-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Checkbox size
+#[derive(Clone, PartialEq)]
+pub enum CheckboxSize {
+    Large,
+    Default,
+    Small,
+}
+
+impl CheckboxSize {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            CheckboxSize::Large => "el-checkbox--large",
+            CheckboxSize::Default => "",
+            CheckboxSize::Small => "el-checkbox--small",
+        }
     }
-    
-    #[test]
-    fn test_checkbox_class_generation() {
-        let component = Checkbox::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+}
+
+/// Checkbox component
+///
+/// Mirrors Element Plus `el-checkbox`.
+#[component]
+pub fn Checkbox(props: CheckboxProps) -> Element {
+    let mut class_names = vec!["el-checkbox".to_string()];
+
+    if props.model_value {
+        class_names.push("is-checked".to_string());
     }
-    
-    #[test]
-    fn test_checkbox_states() {
-        let active_disabled = Checkbox::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
+    }
+    if props.indeterminate {
+        class_names.push("is-indeterminate".to_string());
+    }
+    if props.border {
+        class_names.push("is-bordered".to_string());
+    }
+    if let Some(ref s) = props.size {
+        class_names.push(s.as_class().to_string());
+    }
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    let on_change = props.on_change;
+    let checked = props.model_value;
+    let disabled = props.disabled;
+
+    rsx! {
+        label {
+            class: "{class_string}",
+            style: "{style_string}",
+
+            span {
+                class: "el-checkbox__input",
+
+                span {
+                    class: if checked { "el-checkbox__inner is-checked" } else { "el-checkbox__inner" },
+                }
+
+                input {
+                    class: "el-checkbox__original",
+                    r#type: "checkbox",
+                    checked: checked,
+                    disabled: disabled,
+                    onchange: move |_e: Event<FormData>| {
+                        if !disabled {
+                            if let Some(handler) = on_change.as_ref() {
+                                handler.call(!checked);
+                            }
+                        }
+                    },
+                }
+            }
+
+            span {
+                class: "el-checkbox__label",
+                {props.children}
+            }
+        }
+    }
+}
+
+/// CheckboxGroup props
+#[derive(Props, Clone, PartialEq)]
+pub struct CheckboxGroupProps {
+    /// Group content
+    pub children: Element,
+
+    /// Selected values
+    #[props(default)]
+    pub model_value: Vec<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
+    pub disabled: bool,
+
+    /// Change handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<Vec<String>>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// CheckboxGroup component
+#[component]
+pub fn CheckboxGroup(props: CheckboxGroupProps) -> Element {
+    let mut class_names = vec!["el-checkbox-group".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            role: "group",
+            {props.children}
+        }
+    }
+}
+
+/// CheckboxButton props
+#[derive(Props, Clone, PartialEq)]
+pub struct CheckboxButtonProps {
+    /// Button content
+    pub children: Element,
+
+    /// Whether checked
+    #[props(default = false)]
+    pub model_value: bool,
+
+    /// Label value
+    #[props(default)]
+    pub label: Option<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
+    pub disabled: bool,
+
+    /// Change handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<bool>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// CheckboxButton component
+#[component]
+pub fn CheckboxButton(props: CheckboxButtonProps) -> Element {
+    let mut class_names = vec!["el-checkbox-button".to_string()];
+    if props.model_value {
+        class_names.push("is-checked".to_string());
+    }
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
+    }
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    let on_change = props.on_change;
+    let checked = props.model_value;
+    let disabled = props.disabled;
+
+    rsx! {
+        label {
+            class: "{class_string}",
+
+            span {
+                class: "el-checkbox-button__inner",
+                onclick: move |_| {
+                    if !disabled {
+                        if let Some(handler) = on_change.as_ref() {
+                            handler.call(!checked);
+                        }
+                    }
+                },
+                {props.children}
+            }
+        }
     }
 }

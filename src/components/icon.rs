@@ -1,170 +1,52 @@
-//! icon component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Icon component classes
-pub mod classes {
-    /// Base icon class
-    pub const BASE: &str = "el-icon";
-    
-    /// icon size variants
-    pub const LARGE: &str = "el-icon--large";
-    pub const SMALL: &str = "el-icon--small";
-    
-    /// icon type variants
-    pub const PRIMARY: &str = "el-icon--primary";
-    pub const SUCCESS: &str = "el-icon--success";
-    pub const WARNING: &str = "el-icon--warning";
-    pub const DANGER: &str = "el-icon--danger";
-    pub const INFO: &str = "el-icon--info";
-    
-    /// icon states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Icon props - 图标
+#[derive(Props, Clone, PartialEq)]
+pub struct IconProps {
+    /// Icon content
+    #[props(default)]
+    pub children: Element,
 
-/// Basic icon component structure
-#[derive(Debug, Clone)]
-pub struct Icon {
-    pub id: Option<String>,
+    /// Icon color
+    #[props(default)]
+    pub color: Option<String>,
+
+    /// Icon size
+    #[props(default)]
+    pub size: Option<u32>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Icon {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Icon {
-    /// Create a new icon component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "icon".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_icon_creation() {
-        let component = Icon::new()
-            .id("test-icon")
-            .class("custom-icon-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-icon");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-icon-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Icon component
+#[component]
+pub fn Icon(props: IconProps) -> Element {
+    let mut class_names = vec!["el-icon".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_icon_class_generation() {
-        let component = Icon::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+    let class_string = class_names.join(" ");
+
+    let mut style_parts = vec![props.style.unwrap_or_default()];
+    if let Some(ref color) = props.color {
+        style_parts.push(format!("color: {};", color));
     }
-    
-    #[test]
-    fn test_icon_states() {
-        let active_disabled = Icon::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if let Some(size) = props.size {
+        style_parts.push(format!("font-size: {}px;", size));
+    }
+    let style_string = style_parts.join("");
+
+    rsx! {
+        i {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
     }
 }

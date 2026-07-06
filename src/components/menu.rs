@@ -1,170 +1,246 @@
-//! menu component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Menu component classes
-pub mod classes {
-    /// Base menu class
-    pub const BASE: &str = "el-menu";
-    
-    /// menu size variants
-    pub const LARGE: &str = "el-menu--large";
-    pub const SMALL: &str = "el-menu--small";
-    
-    /// menu type variants
-    pub const PRIMARY: &str = "el-menu--primary";
-    pub const SUCCESS: &str = "el-menu--success";
-    pub const WARNING: &str = "el-menu--warning";
-    pub const DANGER: &str = "el-menu--danger";
-    pub const INFO: &str = "el-menu--info";
-    
-    /// menu states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Menu mode
+#[derive(Clone, PartialEq)]
+pub enum MenuMode {
+    Vertical,
+    Horizontal,
 }
 
-/// Basic menu component structure
-#[derive(Debug, Clone)]
-pub struct Menu {
-    pub id: Option<String>,
+/// Menu props - 导航菜单
+#[derive(Props, Clone, PartialEq)]
+pub struct MenuProps {
+    /// Menu items
+    pub children: Element,
+
+    /// Menu mode
+    #[props(default = MenuMode::Vertical)]
+    pub mode: MenuMode,
+
+    /// Default active index
+    #[props(default)]
+    pub default_active: Option<String>,
+
+    /// Whether collapsed (vertical mode only)
+    #[props(default = false)]
+    pub collapse: bool,
+
+    /// Background color
+    #[props(default)]
+    pub background_color: Option<String>,
+
+    /// Text color
+    #[props(default)]
+    pub text_color: Option<String>,
+
+    /// Active text color
+    #[props(default)]
+    pub active_text_color: Option<String>,
+
+    /// Select handler
+    #[props(default)]
+    pub on_select: Option<EventHandler<String>>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
-    pub active: bool,
+}
+
+/// Menu component
+#[component]
+pub fn Menu(props: MenuProps) -> Element {
+    let mut class_names = vec!["el-menu".to_string()];
+
+    match props.mode {
+        MenuMode::Vertical => {}
+        MenuMode::Horizontal => class_names.push("el-menu--horizontal".to_string()),
+    }
+
+    if props.collapse {
+        class_names.push("el-menu--collapse".to_string());
+    }
+
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    let mut style_parts = vec![props.style.unwrap_or_default()];
+    if let Some(ref bg) = props.background_color {
+        style_parts.push(format!("background-color: {};", bg));
+    }
+    let style_string = style_parts.join("");
+
+    rsx! {
+        ul {
+            class: "{class_string}",
+            style: "{style_string}",
+            role: "menubar",
+            {props.children}
+        }
+    }
+}
+
+/// MenuItem props
+#[derive(Props, Clone, PartialEq)]
+pub struct MenuItemProps {
+    /// Item content
+    pub children: Element,
+
+    /// Item index
+    #[props(default)]
+    pub index: Option<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
     pub disabled: bool,
+
+    /// Click handler
+    #[props(default)]
+    pub on_click: Option<EventHandler<String>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
 }
 
-impl Default for Menu {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
+/// MenuItem component
+#[component]
+pub fn MenuItem(props: MenuItemProps) -> Element {
+    let mut class_names = vec!["el-menu-item".to_string()];
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-}
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
 
-impl Menu {
-    /// Create a new menu component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "menu".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
+    let on_click = props.on_click;
+    let index = props.index.clone();
+    let disabled = props.disabled;
+
+    rsx! {
+        li {
+            class: "{class_string}",
+            role: "menuitem",
+            tabindex: "0",
+            onclick: move |_| {
+                if !disabled {
+                    if let Some(handler) = on_click.as_ref() {
+                        if let Some(ref idx) = index {
+                            handler.call(idx.clone());
+                        }
+                    }
+                }
+            },
+
+            span {
+                class: "el-menu-item__content",
+                {props.children}
+            }
         }
     }
 }
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
-    pub style: Option<String>,
+/// SubMenu props
+#[derive(Props, Clone, PartialEq)]
+pub struct SubMenuProps {
+    /// SubMenu content
+    pub children: Element,
+
+    /// SubMenu index
+    #[props(default)]
+    pub index: Option<String>,
+
+    /// SubMenu title
+    #[props(default)]
+    pub title: Option<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
+    pub disabled: bool,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_menu_creation() {
-        let component = Menu::new()
-            .id("test-menu")
-            .class("custom-menu-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-menu");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-menu-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// SubMenu component
+#[component]
+pub fn SubMenu(props: SubMenuProps) -> Element {
+    let mut class_names = vec!["el-sub-menu".to_string()];
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-    
-    #[test]
-    fn test_menu_class_generation() {
-        let component = Menu::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_menu_states() {
-        let active_disabled = Menu::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    let class_string = class_names.join(" ");
+
+    rsx! {
+        li {
+            class: "{class_string}",
+
+            div {
+                class: "el-sub-menu__title",
+                if let Some(ref t) = props.title {
+                    "{t}"
+                }
+                " ▾"
+            }
+
+            ul {
+                class: "el-menu",
+                role: "menu",
+                {props.children}
+            }
+        }
+    }
+}
+
+/// MenuItemGroup props
+#[derive(Props, Clone, PartialEq)]
+pub struct MenuItemGroupProps {
+    /// Group items
+    pub children: Element,
+
+    /// Group title
+    #[props(default)]
+    pub title: Option<String>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// MenuItemGroup component
+#[component]
+pub fn MenuItemGroup(props: MenuItemGroupProps) -> Element {
+    let mut class_names = vec!["el-menu-item-group".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    rsx! {
+        li {
+            class: "{class_string}",
+
+            div {
+                class: "el-menu-item-group__title",
+                if let Some(ref t) = props.title {
+                    "{t}"
+                }
+            }
+
+            ul {
+                {props.children}
+            }
+        }
     }
 }

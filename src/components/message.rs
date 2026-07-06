@@ -1,170 +1,119 @@
-//! message component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Message component classes
-pub mod classes {
-    /// Base message class
-    pub const BASE: &str = "el-message";
-    
-    /// message size variants
-    pub const LARGE: &str = "el-message--large";
-    pub const SMALL: &str = "el-message--small";
-    
-    /// message type variants
-    pub const PRIMARY: &str = "el-message--primary";
-    pub const SUCCESS: &str = "el-message--success";
-    pub const WARNING: &str = "el-message--warning";
-    pub const DANGER: &str = "el-message--danger";
-    pub const INFO: &str = "el-message--info";
-    
-    /// message states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Message type
+#[derive(Clone, PartialEq)]
+pub enum MessageType {
+    Success,
+    Warning,
+    Info,
+    Error,
 }
 
-/// Basic message component structure
-#[derive(Debug, Clone)]
-pub struct Message {
-    pub id: Option<String>,
+impl MessageType {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            MessageType::Success => "el-message--success",
+            MessageType::Warning => "el-message--warning",
+            MessageType::Info => "el-message--info",
+            MessageType::Error => "el-message--error",
+        }
+    }
+}
+
+/// Message props - 消息提示
+#[derive(Props, Clone, PartialEq)]
+pub struct MessageProps {
+    /// Message text
+    #[props(default)]
+    pub message: Option<String>,
+
+    /// Message type
+    #[props(default = MessageType::Info)]
+    pub message_type: MessageType,
+
+    /// Whether closable
+    #[props(default = false)]
+    pub closable: bool,
+
+    /// Whether to show icon
+    #[props(default = true)]
+    pub show_icon: bool,
+
+    /// Whether centered
+    #[props(default = false)]
+    pub center: bool,
+
+    /// Whether to use HTML
+    #[props(default = false)]
+    pub dangerously_use_html_string: bool,
+
+    /// Duration in ms
+    #[props(default = 3000)]
+    pub duration: u32,
+
+    /// Whether visible
+    #[props(default = true)]
+    pub visible: bool,
+
+    /// Close handler
+    #[props(default)]
+    pub on_close: Option<EventHandler<()>>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
 }
 
-impl Default for Message {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
+/// Message component
+#[component]
+pub fn Message(props: MessageProps) -> Element {
+    if !props.visible {
+        return rsx! {};
     }
-}
 
-impl Message {
-    /// Create a new message component
-    pub fn new() -> Self {
-        Self::default()
+    let mut class_names = vec!["el-message".to_string()];
+    class_names.push(props.message_type.as_class().to_string());
+    if props.center {
+        class_names.push("is-center".to_string());
     }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
+    if props.closable {
+        class_names.push("is-closable".to_string());
     }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "message".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    let class_string = class_names.join(" ");
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
-    pub style: Option<String>,
-}
+    let on_close = props.on_close;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_message_creation() {
-        let component = Message::new()
-            .id("test-message")
-            .class("custom-message-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-message");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-message-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_message_class_generation() {
-        let component = Message::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_message_states() {
-        let active_disabled = Message::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    rsx! {
+        div {
+            class: "{class_string}",
+
+            if props.show_icon {
+                i {
+                    class: "el-message__icon",
+                }
+            }
+
+            p {
+                class: "el-message__content",
+                if let Some(ref msg) = props.message {
+                    "{msg}"
+                }
+            }
+
+            if props.closable {
+                div {
+                    class: "el-message__closeBtn",
+                    onclick: move |_| {
+                        if let Some(handler) = on_close.as_ref() {
+                            handler.call(());
+                        }
+                    },
+                    "×"
+                }
+            }
+        }
     }
 }

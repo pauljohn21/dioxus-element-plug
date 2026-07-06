@@ -1,170 +1,207 @@
-//! container component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Container component classes
-pub mod classes {
-    /// Base container class
-    pub const BASE: &str = "el-container";
-    
-    /// container size variants
-    pub const LARGE: &str = "el-container--large";
-    pub const SMALL: &str = "el-container--small";
-    
-    /// container type variants
-    pub const PRIMARY: &str = "el-container--primary";
-    pub const SUCCESS: &str = "el-container--success";
-    pub const WARNING: &str = "el-container--warning";
-    pub const DANGER: &str = "el-container--danger";
-    pub const INFO: &str = "el-container--info";
-    
-    /// container states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Container direction
+#[derive(Clone, PartialEq)]
+pub enum ContainerDirection {
+    Horizontal,
+    Vertical,
 }
 
-/// Basic container component structure
-#[derive(Debug, Clone)]
-pub struct Container {
-    pub id: Option<String>,
+/// Container props - 布局容器
+#[derive(Props, Clone, PartialEq)]
+pub struct ContainerProps {
+    /// Container content
+    pub children: Element,
+
+    /// Direction
+    #[props(default)]
+    pub direction: Option<ContainerDirection>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Container {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Container {
-    /// Create a new container component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "container".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_container_creation() {
-        let component = Container::new()
-            .id("test-container")
-            .class("custom-container-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-container");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-container-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Container component - layout container
+///
+/// Mirrors Element Plus `el-container`.
+#[component]
+pub fn Container(props: ContainerProps) -> Element {
+    let mut class_names = vec!["el-container".to_string()];
+
+    if let Some(ref d) = props.direction {
+        match d {
+            ContainerDirection::Horizontal => class_names.push("is-horizontal".to_string()),
+            ContainerDirection::Vertical => {}
+        }
     }
-    
-    #[test]
-    fn test_container_class_generation() {
-        let component = Container::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_container_states() {
-        let active_disabled = Container::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    rsx! {
+        section {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
+    }
+}
+
+/// Header props - 顶栏容器
+#[derive(Props, Clone, PartialEq)]
+pub struct HeaderProps {
+    /// Header content
+    pub children: Element,
+
+    /// Height
+    #[props(default = "60px".to_string())]
+    pub height: String,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
+    pub style: Option<String>,
+}
+
+/// Header component - top bar container
+#[component]
+pub fn Header(props: HeaderProps) -> Element {
+    let mut class_names = vec!["el-header".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    let style_string = format!("height: {};{}", props.height, props.style.as_ref().map(|s| s.as_str()).unwrap_or(""));
+
+    rsx! {
+        header {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
+    }
+}
+
+/// Footer props - 底栏容器
+#[derive(Props, Clone, PartialEq)]
+pub struct FooterProps {
+    /// Footer content
+    pub children: Element,
+
+    /// Height
+    #[props(default = "60px".to_string())]
+    pub height: String,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
+    pub style: Option<String>,
+}
+
+/// Footer component - bottom bar container
+#[component]
+pub fn Footer(props: FooterProps) -> Element {
+    let mut class_names = vec!["el-footer".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    let style_string = format!("height: {};{}", props.height, props.style.as_ref().map(|s| s.as_str()).unwrap_or(""));
+
+    rsx! {
+        footer {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
+    }
+}
+
+/// Main props - 主区域容器
+#[derive(Props, Clone, PartialEq)]
+pub struct MainProps {
+    /// Main content
+    pub children: Element,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
+    pub style: Option<String>,
+}
+
+/// Main component - main area container
+#[component]
+pub fn Main(props: MainProps) -> Element {
+    let mut class_names = vec!["el-main".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    rsx! {
+        main {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
+    }
+}
+
+/// Aside props - 侧边栏容器
+#[derive(Props, Clone, PartialEq)]
+pub struct AsideProps {
+    /// Aside content
+    pub children: Element,
+
+    /// Width
+    #[props(default = "300px".to_string())]
+    pub width: String,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
+    pub style: Option<String>,
+}
+
+/// Aside component - sidebar container
+#[component]
+pub fn Aside(props: AsideProps) -> Element {
+    let mut class_names = vec!["el-aside".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    let style_string = format!("width: {};{}", props.width, props.style.as_ref().map(|s| s.as_str()).unwrap_or(""));
+
+    rsx! {
+        aside {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
     }
 }

@@ -1,170 +1,180 @@
-//! row component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Row component classes
-pub mod classes {
-    /// Base row class
-    pub const BASE: &str = "el-row";
-    
-    /// row size variants
-    pub const LARGE: &str = "el-row--large";
-    pub const SMALL: &str = "el-row--small";
-    
-    /// row type variants
-    pub const PRIMARY: &str = "el-row--primary";
-    pub const SUCCESS: &str = "el-row--success";
-    pub const WARNING: &str = "el-row--warning";
-    pub const DANGER: &str = "el-row--danger";
-    pub const INFO: &str = "el-row--info";
-    
-    /// row states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Row justify type
+#[derive(Clone, PartialEq)]
+pub enum RowJustify {
+    Start,
+    End,
+    Center,
+    SpaceAround,
+    SpaceBetween,
+    SpaceEvenly,
 }
 
-/// Basic row component structure
-#[derive(Debug, Clone)]
-pub struct Row {
-    pub id: Option<String>,
+impl RowJustify {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            RowJustify::Start => "is-justify-start",
+            RowJustify::End => "is-justify-end",
+            RowJustify::Center => "is-justify-center",
+            RowJustify::SpaceAround => "is-justify-space-around",
+            RowJustify::SpaceBetween => "is-justify-space-between",
+            RowJustify::SpaceEvenly => "is-justify-space-evenly",
+        }
+    }
+}
+
+/// Row align type
+#[derive(Clone, PartialEq)]
+pub enum RowAlign {
+    Top,
+    Middle,
+    Bottom,
+}
+
+impl RowAlign {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            RowAlign::Top => "is-align-top",
+            RowAlign::Middle => "is-align-middle",
+            RowAlign::Bottom => "is-align-bottom",
+        }
+    }
+}
+
+/// Row props - 栅格行
+#[derive(Props, Clone, PartialEq)]
+pub struct RowProps {
+    /// Row content (Col components)
+    pub children: Element,
+
+    /// Grid spacing (px)
+    #[props(default = 0)]
+    pub gutter: u32,
+
+    /// Flex layout justify
+    #[props(default)]
+    pub justify: Option<RowJustify>,
+
+    /// Flex layout align
+    #[props(default)]
+    pub align: Option<RowAlign>,
+
+    /// Whether flex layout
+    #[props(default = false)]
+    pub r#type: bool,
+
+    /// Tag name
+    #[props(default = "div".to_string())]
+    pub tag: String,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Row {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Row {
-    /// Create a new row component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "row".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_row_creation() {
-        let component = Row::new()
-            .id("test-row")
-            .class("custom-row-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-row");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-row-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Row component - grid row
+///
+/// Mirrors Element Plus `el-row`.
+#[component]
+pub fn Row(props: RowProps) -> Element {
+    let mut class_names = vec!["el-row".to_string()];
+
+    if props.r#type {
+        class_names.push("el-row--flex".to_string());
     }
-    
-    #[test]
-    fn test_row_class_generation() {
-        let component = Row::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    if let Some(ref j) = props.justify {
+        class_names.push(j.as_class().to_string());
     }
-    
-    #[test]
-    fn test_row_states() {
-        let active_disabled = Row::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if let Some(ref a) = props.align {
+        class_names.push(a.as_class().to_string());
+    }
+
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    let gutter_style = if props.gutter > 0 {
+        format!("margin-left: -{}px; margin-right: -{}px;", props.gutter / 2, props.gutter / 2)
+    } else {
+        String::new()
+    };
+    let style_string = format!("{}{}", gutter_style, props.style.as_ref().map(|s| s.as_str()).unwrap_or(""));
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
+    }
+}
+
+/// Col props - 栅格列
+#[derive(Props, Clone, PartialEq)]
+pub struct ColProps {
+    /// Col content
+    pub children: Element,
+
+    /// Number of columns spanned (1-24)
+    #[props(default = 24)]
+    pub span: u32,
+
+    /// Number of columns offset
+    #[props(default = 0)]
+    pub offset: u32,
+
+    /// Number of columns pushed
+    #[props(default = 0)]
+    pub push: u32,
+
+    /// Number of columns pulled
+    #[props(default = 0)]
+    pub pull: u32,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
+    pub style: Option<String>,
+}
+
+/// Col component - grid column
+///
+/// Mirrors Element Plus `el-col`.
+#[component]
+pub fn Col(props: ColProps) -> Element {
+    let mut class_names = vec![format!("el-col-{}", props.span)];
+
+    if props.offset > 0 {
+        class_names.push(format!("el-col-offset-{}", props.offset));
+    }
+    if props.push > 0 {
+        class_names.push(format!("el-col-push-{}", props.push));
+    }
+    if props.pull > 0 {
+        class_names.push(format!("el-col-pull-{}", props.pull));
+    }
+
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+            {props.children}
+        }
     }
 }

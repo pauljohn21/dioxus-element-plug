@@ -1,170 +1,128 @@
-//! link component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Link component classes
-pub mod classes {
-    /// Base link class
-    pub const BASE: &str = "el-link";
-    
-    /// link size variants
-    pub const LARGE: &str = "el-link--large";
-    pub const SMALL: &str = "el-link--small";
-    
-    /// link type variants
-    pub const PRIMARY: &str = "el-link--primary";
-    pub const SUCCESS: &str = "el-link--success";
-    pub const WARNING: &str = "el-link--warning";
-    pub const DANGER: &str = "el-link--danger";
-    pub const INFO: &str = "el-link--info";
-    
-    /// link states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Link type variants
+#[derive(Clone, PartialEq)]
+pub enum LinkType {
+    Default,
+    Primary,
+    Success,
+    Warning,
+    Danger,
+    Info,
 }
 
-/// Basic link component structure
-#[derive(Debug, Clone)]
-pub struct Link {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+impl LinkType {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            LinkType::Default => "",
+            LinkType::Primary => "el-link--primary",
+            LinkType::Success => "el-link--success",
+            LinkType::Warning => "el-link--warning",
+            LinkType::Danger => "el-link--danger",
+            LinkType::Info => "el-link--info",
+        }
+    }
+}
+
+/// Link props - 文字链接
+#[derive(Props, Clone, PartialEq)]
+pub struct LinkProps {
+    /// Link content
+    pub children: Element,
+
+    /// Link type
+    #[props(default = LinkType::Default)]
+    pub link_type: LinkType,
+
+    /// Whether disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Link {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Whether underline
+    #[props(default = true)]
+    pub underline: bool,
 
-impl Link {
-    /// Create a new link component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "link".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Icon class name
+    #[props(default)]
+    pub icon: Option<String>,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Link href
+    #[props(default)]
+    pub href: Option<String>,
+
+    /// Link target
+    #[props(default)]
+    pub target: Option<String>,
+
+    /// Click handler
+    #[props(default)]
+    pub on_click: Option<EventHandler<MouseEvent>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_link_creation() {
-        let component = Link::new()
-            .id("test-link")
-            .class("custom-link-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-link");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-link-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Link component - text hyperlink
+///
+/// Mirrors Element Plus `el-link`.
+#[component]
+pub fn Link(props: LinkProps) -> Element {
+    let mut class_names = vec!["el-link".to_string()];
+
+    let type_class = props.link_type.as_class();
+    if !type_class.is_empty() {
+        class_names.push(type_class.to_string());
     }
-    
-    #[test]
-    fn test_link_class_generation() {
-        let component = Link::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-    
-    #[test]
-    fn test_link_states() {
-        let active_disabled = Link::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if !props.underline {
+        class_names.push("is-underline".to_string());
+    }
+
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    let on_click = props.on_click;
+
+    rsx! {
+        if let Some(ref href) = props.href {
+            a {
+                class: "{class_string}",
+                style: "{style_string}",
+                href: "{href}",
+                target: props.target.as_ref().map(|s| s.as_str()).unwrap_or("_blank"),
+                onclick: move |e: MouseEvent| {
+                    if props.disabled {
+                        e.prevent_default();
+                    } else if let Some(handler) = on_click.as_ref() {
+                        handler.call(e);
+                    }
+                },
+                {props.children}
+            }
+        } else {
+            a {
+                class: "{class_string}",
+                style: "{style_string}",
+                onclick: move |e: MouseEvent| {
+                    if !props.disabled {
+                        if let Some(handler) = on_click.as_ref() {
+                            handler.call(e);
+                        }
+                    }
+                },
+                {props.children}
+            }
+        }
     }
 }

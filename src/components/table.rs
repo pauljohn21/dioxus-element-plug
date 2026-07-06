@@ -125,8 +125,8 @@ pub fn Table(props: TableProps) -> Element {
         class_names.push(custom_class.to_string());
     }
     
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
+    let _class_string = class_names.join(" ");
+    let _style_string = props.style.as_ref().cloned().unwrap_or_default();
     
     let class_string = if props.border { "el-table el-table--border" } else { "el-table" };
     let stripe_class = if props.stripe { " el-table--striped" } else { "" };

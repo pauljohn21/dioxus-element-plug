@@ -1,170 +1,140 @@
-//! badge component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Badge component classes
-pub mod classes {
-    /// Base badge class
-    pub const BASE: &str = "el-badge";
-    
-    /// badge size variants
-    pub const LARGE: &str = "el-badge--large";
-    pub const SMALL: &str = "el-badge--small";
-    
-    /// badge type variants
-    pub const PRIMARY: &str = "el-badge--primary";
-    pub const SUCCESS: &str = "el-badge--success";
-    pub const WARNING: &str = "el-badge--warning";
-    pub const DANGER: &str = "el-badge--danger";
-    pub const INFO: &str = "el-badge--info";
-    
-    /// badge states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Badge type variants
+#[derive(Clone, PartialEq)]
+pub enum BadgeType {
+    Primary,
+    Success,
+    Warning,
+    Info,
+    Danger,
 }
 
-/// Basic badge component structure
-#[derive(Debug, Clone)]
-pub struct Badge {
-    pub id: Option<String>,
+impl BadgeType {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            BadgeType::Primary => "el-badge__content--primary",
+            BadgeType::Success => "el-badge__content--success",
+            BadgeType::Warning => "el-badge__content--warning",
+            BadgeType::Info => "el-badge__content--info",
+            BadgeType::Danger => "el-badge__content--danger",
+        }
+    }
+}
+
+/// Badge props - 标记/徽章组件
+#[derive(Props, Clone, PartialEq)]
+pub struct BadgeProps {
+    /// Badge content (the element the badge is attached to)
+    pub children: Element,
+
+    /// Display value
+    #[props(default)]
+    pub value: Option<String>,
+
+    /// Maximum value (shows `{max}+` when exceeded)
+    #[props(default = 99)]
+    pub max: u32,
+
+    /// Show a dot instead of value
+    #[props(default = false)]
+    pub is_dot: bool,
+
+    /// Hidden badge
+    #[props(default = false)]
+    pub hidden: bool,
+
+    /// Badge type
+    #[props(default = BadgeType::Danger)]
+    pub badge_type: BadgeType,
+
+    /// Whether to show badge when value is zero
+    #[props(default = true)]
+    pub show_zero: bool,
+
+    /// Custom badge background color
+    #[props(default)]
+    pub color: Option<String>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Badge {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Badge {
-    /// Create a new badge component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "badge".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_badge_creation() {
-        let component = Badge::new()
-            .id("test-badge")
-            .class("custom-badge-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-badge");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-badge-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Badge component - shows a status dot or number
+///
+/// Mirrors Element Plus `el-badge`.
+#[component]
+pub fn Badge(props: BadgeProps) -> Element {
+    let mut class_names = vec!["el-badge".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_badge_class_generation() {
-        let component = Badge::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    // Determine display content
+    let should_show = !props.hidden && {
+        if let Some(ref val) = props.value {
+            if val == "0" {
+                props.show_zero
+            } else {
+                true
+            }
+        } else {
+            false
+        }
+    };
+
+    let display_text = if props.is_dot {
+        String::new()
+    } else if let Some(ref val) = props.value {
+        if let Ok(num) = val.parse::<u32>() {
+            if num > props.max {
+                format!("{}+", props.max)
+            } else {
+                val.clone()
+            }
+        } else {
+            val.clone()
+        }
+    } else {
+        String::new()
+    };
+
+    let mut content_classes = vec!["el-badge__content".to_string()];
+    content_classes.push(props.badge_type.as_class().to_string());
+    if props.is_dot {
+        content_classes.push("is-dot".to_string());
     }
-    
-    #[test]
-    fn test_badge_states() {
-        let active_disabled = Badge::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if !should_show {
+        content_classes.push("is-hidden".to_string());
+    }
+    let content_class = content_classes.join(" ");
+
+    let mut content_style = String::new();
+    if let Some(ref color) = props.color {
+        content_style = format!("background-color: {};", color);
+    }
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+
+            {props.children}
+
+            if should_show {
+                sup {
+                    class: "{content_class}",
+                    style: "{content_style}",
+                    "{display_text}"
+                }
+            }
+        }
     }
 }

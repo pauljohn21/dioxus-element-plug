@@ -1,170 +1,112 @@
-//! popover component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Popover component classes
-pub mod classes {
-    /// Base popover class
-    pub const BASE: &str = "el-popover";
-    
-    /// popover size variants
-    pub const LARGE: &str = "el-popover--large";
-    pub const SMALL: &str = "el-popover--small";
-    
-    /// popover type variants
-    pub const PRIMARY: &str = "el-popover--primary";
-    pub const SUCCESS: &str = "el-popover--success";
-    pub const WARNING: &str = "el-popover--warning";
-    pub const DANGER: &str = "el-popover--danger";
-    pub const INFO: &str = "el-popover--info";
-    
-    /// popover states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Popover placement
+#[derive(Clone, PartialEq)]
+pub enum PopoverPlacement {
+    Top,
+    Bottom,
+    Left,
+    Right,
 }
 
-/// Basic popover component structure
-#[derive(Debug, Clone)]
-pub struct Popover {
-    pub id: Option<String>,
+impl PopoverPlacement {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            PopoverPlacement::Top => "top",
+            PopoverPlacement::Bottom => "bottom",
+            PopoverPlacement::Left => "left",
+            PopoverPlacement::Right => "right",
+        }
+    }
+}
+
+/// Popover trigger type
+#[derive(Clone, PartialEq)]
+pub enum PopoverTrigger {
+    Click,
+    Hover,
+    Focus,
+    Manual,
+}
+
+/// Popover props - 气泡卡片
+#[derive(Props, Clone, PartialEq)]
+pub struct PopoverProps {
+    /// Trigger element
+    pub children: Element,
+
+    /// Popover content
+    #[props(default)]
+    pub content: Option<String>,
+
+    /// Popover title
+    #[props(default)]
+    pub title: Option<String>,
+
+    /// Placement
+    #[props(default = PopoverPlacement::Bottom)]
+    pub placement: PopoverPlacement,
+
+    /// Trigger type
+    #[props(default = PopoverTrigger::Click)]
+    pub trigger: PopoverTrigger,
+
+    /// Width
+    #[props(default = "150px".to_string())]
+    pub width: String,
+
+    /// Whether visible (controlled)
+    #[props(default = false)]
+    pub visible: bool,
+
+    /// Close handler
+    #[props(default)]
+    pub on_close: Option<EventHandler<()>>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Popover {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Popover {
-    /// Create a new popover component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "popover".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_popover_creation() {
-        let component = Popover::new()
-            .id("test-popover")
-            .class("custom-popover-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-popover");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-popover-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Popover component
+#[component]
+pub fn Popover(props: PopoverProps) -> Element {
+    let mut class_names = vec!["el-popover".to_string()];
+    class_names.push(format!("el-popover--{}", props.placement.as_str()));
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_popover_class_generation() {
-        let component = Popover::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_popover_states() {
-        let active_disabled = Popover::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    let class_string = class_names.join(" ");
+
+    let outer_style = format!("position: relative; display: inline-block;{}", props.style.as_ref().map(|s| s.as_str()).unwrap_or(""));
+
+    rsx! {
+        div {
+            style: "{outer_style}",
+
+            {props.children}
+
+            if props.visible {
+                div {
+                    class: "{class_string}",
+                    style: "position: absolute; z-index: 2000; width: {props.width};",
+
+                    if let Some(ref title) = props.title {
+                        div {
+                            class: "el-popover__title",
+                            "{title}"
+                        }
+                    }
+
+                    if let Some(ref content) = props.content {
+                        "{content}"
+                    }
+                }
+            }
+        }
     }
 }

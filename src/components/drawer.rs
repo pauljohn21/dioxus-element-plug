@@ -1,170 +1,141 @@
-//! drawer component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Drawer component classes
-pub mod classes {
-    /// Base drawer class
-    pub const BASE: &str = "el-drawer";
-    
-    /// drawer size variants
-    pub const LARGE: &str = "el-drawer--large";
-    pub const SMALL: &str = "el-drawer--small";
-    
-    /// drawer type variants
-    pub const PRIMARY: &str = "el-drawer--primary";
-    pub const SUCCESS: &str = "el-drawer--success";
-    pub const WARNING: &str = "el-drawer--warning";
-    pub const DANGER: &str = "el-drawer--danger";
-    pub const INFO: &str = "el-drawer--info";
-    
-    /// drawer states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Drawer direction
+#[derive(Clone, PartialEq)]
+pub enum DrawerDirection {
+    Left,
+    Right,
+    Top,
+    Bottom,
 }
 
-/// Basic drawer component structure
-#[derive(Debug, Clone)]
-pub struct Drawer {
-    pub id: Option<String>,
+impl DrawerDirection {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            DrawerDirection::Left => "ltr",
+            DrawerDirection::Right => "rtl",
+            DrawerDirection::Top => "ttb",
+            DrawerDirection::Bottom => "btt",
+        }
+    }
+}
+
+/// Drawer props - 抽屉
+#[derive(Props, Clone, PartialEq)]
+pub struct DrawerProps {
+    /// Drawer content
+    #[props(default)]
+    pub children: Element,
+
+    /// Drawer title
+    #[props(default)]
+    pub title: Option<String>,
+
+    /// Whether visible
+    #[props(default = false)]
+    pub visible: bool,
+
+    /// Direction
+    #[props(default = DrawerDirection::Right)]
+    pub direction: DrawerDirection,
+
+    /// Drawer size
+    #[props(default = "30%".to_string())]
+    pub size: String,
+
+    /// Whether modal overlay
+    #[props(default = true)]
+    pub modal: bool,
+
+    /// Close on click modal
+    #[props(default = true)]
+    pub close_on_click_modal: bool,
+
+    /// Show close button
+    #[props(default = true)]
+    pub show_close: bool,
+
+    /// Close handler
+    #[props(default)]
+    pub on_close: Option<EventHandler<()>>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Drawer {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Drawer {
-    /// Create a new drawer component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "drawer".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_drawer_creation() {
-        let component = Drawer::new()
-            .id("test-drawer")
-            .class("custom-drawer-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-drawer");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-drawer-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Drawer component
+#[component]
+pub fn Drawer(props: DrawerProps) -> Element {
+    if !props.visible {
+        return rsx! {};
     }
-    
-    #[test]
-    fn test_drawer_class_generation() {
-        let component = Drawer::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    let mut class_names = vec!["el-drawer".to_string()];
+    class_names.push(props.direction.as_class().to_string());
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_drawer_states() {
-        let active_disabled = Drawer::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    let class_string = class_names.join(" ");
+
+    let is_horizontal = matches!(props.direction, DrawerDirection::Left | DrawerDirection::Right);
+    let drawer_style = if is_horizontal {
+        format!("width: {};{}", props.size, props.style.as_ref().map(|s| s.as_str()).unwrap_or(""))
+    } else {
+        format!("height: {};{}", props.size, props.style.as_ref().map(|s| s.as_str()).unwrap_or(""))
+    };
+
+    let on_close = props.on_close;
+    let close_on_click_modal = props.close_on_click_modal;
+
+    rsx! {
+        div {
+            class: "el-overlay",
+            onclick: move |_| {
+                if close_on_click_modal {
+                    if let Some(handler) = on_close.as_ref() {
+                        handler.call(());
+                    }
+                }
+            },
+
+            div {
+                class: "{class_string}",
+                style: "{drawer_style}",
+                onclick: |e: MouseEvent| e.stop_propagation(),
+
+                div {
+                    class: "el-drawer__header",
+
+                    if let Some(ref title) = props.title {
+                        span {
+                            class: "el-drawer__title",
+                            "{title}"
+                        }
+                    }
+
+                    if props.show_close {
+                        button {
+                            class: "el-drawer__close-btn",
+                            onclick: move |_| {
+                                if let Some(handler) = on_close.as_ref() {
+                                    handler.call(());
+                                }
+                            },
+                            "×"
+                        }
+                    }
+                }
+
+                div {
+                    class: "el-drawer__body",
+                    {props.children}
+                }
+            }
+        }
     }
 }

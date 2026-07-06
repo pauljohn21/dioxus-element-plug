@@ -1,5 +1,3 @@
-> ⚠️ This file has been auto-generated. Do not edit.
-
 # Dioxus Element Plus - Examples
 
 This directory contains example projects demonstrating how to use Dioxus Element Plus.
@@ -54,8 +52,6 @@ examples/
     ├── Cargo.toml          # Example configuration
     ├── Dioxus.toml         # Dioxus settings
     ├── README.md           # Detailed guide
-    ├── input.css           # CSS placeholder (not used)
-    ├── assets/             # Static assets
     └── src/main.rs         # Main example code
 ```
 

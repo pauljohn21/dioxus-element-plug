@@ -1,170 +1,232 @@
-//! radio component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Radio component classes
-pub mod classes {
-    /// Base radio class
-    pub const BASE: &str = "el-radio";
-    
-    /// radio size variants
-    pub const LARGE: &str = "el-radio--large";
-    pub const SMALL: &str = "el-radio--small";
-    
-    /// radio type variants
-    pub const PRIMARY: &str = "el-radio--primary";
-    pub const SUCCESS: &str = "el-radio--success";
-    pub const WARNING: &str = "el-radio--warning";
-    pub const DANGER: &str = "el-radio--danger";
-    pub const INFO: &str = "el-radio--info";
-    
-    /// radio states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Radio props - 单选框
+#[derive(Props, Clone, PartialEq)]
+pub struct RadioProps {
+    /// Radio content
+    pub children: Element,
 
-/// Basic radio component structure
-#[derive(Debug, Clone)]
-pub struct Radio {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    /// Whether checked (controlled)
+    #[props(default = false)]
+    pub model_value: bool,
+
+    /// Radio value for group
+    #[props(default)]
+    pub label: Option<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Radio {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Border
+    #[props(default = false)]
+    pub border: bool,
 
-impl Radio {
-    /// Create a new radio component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "radio".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Size
+    #[props(default)]
+    pub size: Option<RadioSize>,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Change handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<bool>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_radio_creation() {
-        let component = Radio::new()
-            .id("test-radio")
-            .class("custom-radio-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-radio");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-radio-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Radio size
+#[derive(Clone, PartialEq)]
+pub enum RadioSize {
+    Large,
+    Default,
+    Small,
+}
+
+impl RadioSize {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            RadioSize::Large => "el-radio--large",
+            RadioSize::Default => "",
+            RadioSize::Small => "el-radio--small",
+        }
     }
-    
-    #[test]
-    fn test_radio_class_generation() {
-        let component = Radio::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+}
+
+/// Radio component
+///
+/// Mirrors Element Plus `el-radio`.
+#[component]
+pub fn Radio(props: RadioProps) -> Element {
+    let mut class_names = vec!["el-radio".to_string()];
+
+    if props.model_value {
+        class_names.push("is-checked".to_string());
     }
-    
-    #[test]
-    fn test_radio_states() {
-        let active_disabled = Radio::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
+    }
+    if props.border {
+        class_names.push("is-bordered".to_string());
+    }
+    if let Some(ref s) = props.size {
+        class_names.push(s.as_class().to_string());
+    }
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    let on_change = props.on_change;
+    let checked = props.model_value;
+    let disabled = props.disabled;
+
+    rsx! {
+        label {
+            class: "{class_string}",
+            style: "{style_string}",
+
+            span {
+                class: "el-radio__input",
+
+                span {
+                    class: if checked { "el-radio__inner is-checked" } else { "el-radio__inner" },
+                }
+
+                input {
+                    class: "el-radio__original",
+                    r#type: "radio",
+                    checked: checked,
+                    disabled: disabled,
+                    onchange: move |_: Event<FormData>| {
+                        if !disabled {
+                            if let Some(handler) = on_change.as_ref() {
+                                handler.call(true);
+                            }
+                        }
+                    },
+                }
+            }
+
+            span {
+                class: "el-radio__label",
+                {props.children}
+            }
+        }
+    }
+}
+
+/// RadioGroup props
+#[derive(Props, Clone, PartialEq)]
+pub struct RadioGroupProps {
+    /// Group content
+    pub children: Element,
+
+    /// Selected value
+    #[props(default)]
+    pub model_value: Option<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
+    pub disabled: bool,
+
+    /// Size
+    #[props(default)]
+    pub size: Option<RadioSize>,
+
+    /// Change handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<String>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// RadioGroup component
+#[component]
+pub fn RadioGroup(props: RadioGroupProps) -> Element {
+    let mut class_names = vec!["el-radio-group".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            role: "radiogroup",
+            {props.children}
+        }
+    }
+}
+
+/// RadioButton props
+#[derive(Props, Clone, PartialEq)]
+pub struct RadioButtonProps {
+    /// Button content
+    pub children: Element,
+
+    /// Whether active
+    #[props(default = false)]
+    pub model_value: bool,
+
+    /// Label value
+    #[props(default)]
+    pub label: Option<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
+    pub disabled: bool,
+
+    /// Change handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<bool>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// RadioButton component
+#[component]
+pub fn RadioButton(props: RadioButtonProps) -> Element {
+    let mut class_names = vec!["el-radio-button".to_string()];
+    if props.model_value {
+        class_names.push("is-active".to_string());
+    }
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
+    }
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    let on_change = props.on_change;
+    let checked = props.model_value;
+    let disabled = props.disabled;
+
+    rsx! {
+        label {
+            class: "{class_string}",
+
+            span {
+                class: "el-radio-button__inner",
+                onclick: move |_| {
+                    if !disabled {
+                        if let Some(handler) = on_change.as_ref() {
+                            handler.call(!checked);
+                        }
+                    }
+                },
+                {props.children}
+            }
+        }
     }
 }

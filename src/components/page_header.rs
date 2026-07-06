@@ -1,170 +1,85 @@
-//! page-header component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// PageHeader component classes
-pub mod classes {
-    /// Base page-header class
-    pub const BASE: &str = "el-page-header";
-    
-    /// page-header size variants
-    pub const LARGE: &str = "el-page-header--large";
-    pub const SMALL: &str = "el-page-header--small";
-    
-    /// page-header type variants
-    pub const PRIMARY: &str = "el-page-header--primary";
-    pub const SUCCESS: &str = "el-page-header--success";
-    pub const WARNING: &str = "el-page-header--warning";
-    pub const DANGER: &str = "el-page-header--danger";
-    pub const INFO: &str = "el-page-header--info";
-    
-    /// page-header states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// PageHeader props - 页头
+#[derive(Props, Clone, PartialEq)]
+pub struct PageHeaderProps {
+    /// PageHeader content
+    #[props(default)]
+    pub children: Element,
 
-/// Basic page-header component structure
-#[derive(Debug, Clone)]
-pub struct PageHeader {
-    pub id: Option<String>,
+    /// Title text
+    #[props(default)]
+    pub title: Option<String>,
+
+    /// Content/subtitle text
+    #[props(default)]
+    pub content: Option<String>,
+
+    /// Back icon click handler
+    #[props(default)]
+    pub on_back: Option<EventHandler<MouseEvent>>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for PageHeader {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl PageHeader {
-    /// Create a new page-header component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "page-header".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_page_header_creation() {
-        let component = PageHeader::new()
-            .id("test-page-header")
-            .class("custom-page-header-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-page-header");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-page-header-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// PageHeader component - page header with back navigation
+///
+/// Mirrors Element Plus `el-page-header`.
+#[component]
+pub fn PageHeader(props: PageHeaderProps) -> Element {
+    let mut class_names = vec!["el-page-header".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_page_header_class_generation() {
-        let component = PageHeader::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_page_header_states() {
-        let active_disabled = PageHeader::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    let on_back = props.on_back;
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+
+            div {
+                class: "el-page-header__left",
+
+                div {
+                    class: "el-page-header__back",
+                    onclick: move |e: MouseEvent| {
+                        if let Some(handler) = on_back.as_ref() {
+                            handler.call(e);
+                        }
+                    },
+                    div {
+                        class: "el-page-header__icon",
+                        "←"
+                    }
+                }
+
+                if let Some(ref title) = props.title {
+                    div {
+                        class: "el-page-header__title",
+                        "{title}"
+                    }
+                }
+            }
+
+            div {
+                class: "el-page-header__content",
+
+                if let Some(ref content) = props.content {
+                    "{content}"
+                }
+
+                {props.children}
+            }
+        }
     }
 }

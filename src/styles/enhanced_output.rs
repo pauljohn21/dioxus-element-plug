@@ -2,7 +2,6 @@
 //!
 //! Enhanced CSS generation with theme support and complete Element Plus stylesheets.
 
-use super::prelude::*;
 
 /// Generate a complete Element Plus stylesheet
 pub fn complete_element_plus_css() -> String {

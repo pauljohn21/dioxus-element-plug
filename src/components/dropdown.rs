@@ -1,170 +1,151 @@
-//! dropdown component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Dropdown component classes
-pub mod classes {
-    /// Base dropdown class
-    pub const BASE: &str = "el-dropdown";
-    
-    /// dropdown size variants
-    pub const LARGE: &str = "el-dropdown--large";
-    pub const SMALL: &str = "el-dropdown--small";
-    
-    /// dropdown type variants
-    pub const PRIMARY: &str = "el-dropdown--primary";
-    pub const SUCCESS: &str = "el-dropdown--success";
-    pub const WARNING: &str = "el-dropdown--warning";
-    pub const DANGER: &str = "el-dropdown--danger";
-    pub const INFO: &str = "el-dropdown--info";
-    
-    /// dropdown states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Dropdown trigger type
+#[derive(Clone, PartialEq)]
+pub enum DropdownTrigger {
+    Hover,
+    Click,
 }
 
-/// Basic dropdown component structure
-#[derive(Debug, Clone)]
-pub struct Dropdown {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+/// Dropdown props - 下拉菜单
+#[derive(Props, Clone, PartialEq)]
+pub struct DropdownProps {
+    /// Trigger element
+    pub children: Element,
+
+    /// Trigger type
+    #[props(default = DropdownTrigger::Hover)]
+    pub trigger: DropdownTrigger,
+
+    /// Whether visible (controlled)
+    #[props(default = false)]
+    pub visible: bool,
+
+    /// Whether disabled
+    #[props(default = false)]
     pub disabled: bool,
+
+    /// Size
+    #[props(default = "default".to_string())]
+    pub size: String,
+
+    /// Command handler
+    #[props(default)]
+    pub on_command: Option<EventHandler<String>>,
+
+    /// Click handler
+    #[props(default)]
+    pub on_click: Option<EventHandler<MouseEvent>>,
+
+    /// Visible change handler
+    #[props(default)]
+    pub on_visible_change: Option<EventHandler<bool>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
 }
 
-impl Default for Dropdown {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
+/// Dropdown component
+#[component]
+pub fn Dropdown(props: DropdownProps) -> Element {
+    let mut class_names = vec!["el-dropdown".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-}
+    let class_string = class_names.join(" ");
 
-impl Dropdown {
-    /// Create a new dropdown component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "dropdown".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
+    rsx! {
+        div {
+            class: "{class_string}",
+
+            {props.children}
         }
     }
 }
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
-    pub style: Option<String>,
+/// DropdownMenu props
+#[derive(Props, Clone, PartialEq)]
+pub struct DropdownMenuProps {
+    /// Menu items
+    pub children: Element,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_dropdown_creation() {
-        let component = Dropdown::new()
-            .id("test-dropdown")
-            .class("custom-dropdown-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-dropdown");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-dropdown-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// DropdownMenu component
+#[component]
+pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
+    let mut class_names = vec!["el-dropdown-menu".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_dropdown_class_generation() {
-        let component = Dropdown::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+    let class_string = class_names.join(" ");
+
+    rsx! {
+        ul {
+            class: "{class_string}",
+            role: "menu",
+            {props.children}
+        }
     }
-    
-    #[test]
-    fn test_dropdown_states() {
-        let active_disabled = Dropdown::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+}
+
+/// DropdownItem props
+#[derive(Props, Clone, PartialEq)]
+pub struct DropdownItemProps {
+    /// Item content
+    pub children: Element,
+
+    /// Command value
+    #[props(default)]
+    pub command: Option<String>,
+
+    /// Whether disabled
+    #[props(default = false)]
+    pub disabled: bool,
+
+    /// Whether divided
+    #[props(default = false)]
+    pub divided: bool,
+
+    /// Icon class
+    #[props(default)]
+    pub icon: Option<String>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// DropdownItem component
+#[component]
+pub fn DropdownItem(props: DropdownItemProps) -> Element {
+    let mut class_names = vec!["el-dropdown-menu__item".to_string()];
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
+    }
+    if props.divided {
+        class_names.push("is-divided".to_string());
+    }
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+
+    rsx! {
+        li {
+            class: "{class_string}",
+            role: "menuitem",
+            tabindex: if props.disabled { "-1" } else { "0" },
+
+            if let Some(ref icon) = props.icon {
+                i { class: "{icon}" }
+            }
+
+            {props.children}
+        }
     }
 }

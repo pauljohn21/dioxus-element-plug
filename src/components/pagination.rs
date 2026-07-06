@@ -1,170 +1,130 @@
-//! pagination component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Pagination component classes
-pub mod classes {
-    /// Base pagination class
-    pub const BASE: &str = "el-pagination";
-    
-    /// pagination size variants
-    pub const LARGE: &str = "el-pagination--large";
-    pub const SMALL: &str = "el-pagination--small";
-    
-    /// pagination type variants
-    pub const PRIMARY: &str = "el-pagination--primary";
-    pub const SUCCESS: &str = "el-pagination--success";
-    pub const WARNING: &str = "el-pagination--warning";
-    pub const DANGER: &str = "el-pagination--danger";
-    pub const INFO: &str = "el-pagination--info";
-    
-    /// pagination states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Pagination props - 分页
+#[derive(Props, Clone, PartialEq)]
+pub struct PaginationProps {
+    /// Total item count
+    #[props(default = 0)]
+    pub total: u32,
 
-/// Basic pagination component structure
-#[derive(Debug, Clone)]
-pub struct Pagination {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    /// Items per page
+    #[props(default = 10)]
+    pub page_size: u32,
+
+    /// Current page number (1-indexed, controlled)
+    #[props(default = 1)]
+    pub current_page: u32,
+
+    /// Number of page buttons shown
+    #[props(default = 7)]
+    pub pager_count: u32,
+
+    /// Whether disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Pagination {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Available page sizes
+    #[props(default)]
+    pub page_sizes: Vec<u32>,
 
-impl Pagination {
-    /// Create a new pagination component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "pagination".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Whether to show total text
+    #[props(default = false)]
+    pub show_total: bool,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Current change handler
+    #[props(default)]
+    pub on_current_change: Option<EventHandler<u32>>,
+
+    /// Size change handler
+    #[props(default)]
+    pub on_size_change: Option<EventHandler<u32>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_pagination_creation() {
-        let component = Pagination::new()
-            .id("test-pagination")
-            .class("custom-pagination-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-pagination");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-pagination-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Pagination component
+#[component]
+pub fn Pagination(props: PaginationProps) -> Element {
+    let mut class_names = vec!["el-pagination".to_string()];
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-    
-    #[test]
-    fn test_pagination_class_generation() {
-        let component = Pagination::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_pagination_states() {
-        let active_disabled = Pagination::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    let total_pages = if props.page_size > 0 { (props.total + props.page_size - 1) / props.page_size } else { 1 };
+    let current = props.current_page.min(total_pages).max(1);
+
+    let on_current_change = props.on_current_change;
+    let disabled = props.disabled;
+
+    let has_prev = current > 1;
+    let has_next = current < total_pages;
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+
+            if props.show_total {
+                span {
+                    class: "el-pagination__total",
+                    "共 {props.total} 条"
+                }
+            }
+
+            button {
+                class: "btn-prev",
+                disabled: !has_prev || disabled,
+                onclick: move |_| {
+                    if has_prev && !disabled {
+                        if let Some(handler) = on_current_change.as_ref() {
+                            handler.call(current - 1);
+                        }
+                    }
+                },
+                "‹"
+            }
+
+            ul {
+                class: "el-pager",
+
+                for page in 1..=total_pages.min(7) {
+                    li {
+                        class: if page == current { "number active" } else { "number" },
+                        onclick: move |_| {
+                            if !disabled {
+                                if let Some(handler) = on_current_change.as_ref() {
+                                    handler.call(page);
+                                }
+                            }
+                        },
+                        "{page}"
+                    }
+                }
+            }
+
+            button {
+                class: "btn-next",
+                disabled: !has_next || disabled,
+                onclick: move |_| {
+                    if has_next && !disabled {
+                        if let Some(handler) = on_current_change.as_ref() {
+                            handler.call(current + 1);
+                        }
+                    }
+                },
+                "›"
+            }
+        }
     }
 }

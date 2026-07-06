@@ -1,132 +1,179 @@
 ---
 name: dioxus-element-plug
-description: Expert assistance with dioxus-element-plug library - Complete Element Plus component system for Dioxus with 95+ components, full CSS theming, and production-ready Rust implementations
+description: Expert assistance with dioxus-element-plug library - Element Plus components for Dioxus 0.7 with 122+ components, pure Rust CSS generation, controlled component pattern, and theme-chalk CSS classes
 ---
 
-# Dioxus Element Plus Integration Assistant - Enhanced v1.0
+# Dioxus Element Plug - Skill Documentation
 
-This skill provides comprehensive expertise for the **dioxus-element-plug** library - a complete Element Plus component system featuring 95+ production-ready components with full CSS theming, Rust type safety, and modular architecture.
+This skill provides comprehensive expertise for the **dioxus-element-plug** library v0.1.5 — a complete Element Plus component system for the Dioxus 0.7 framework, featuring 122+ `#[component]` components with pure Rust CSS generation.
 
-## 🎯 When to Use
+## When to Use
 
 Use this skill when you need expert assistance with:
 
-### 📦 Component System
-- **Building Dioxus applications** with the complete Element Plus component library
-- **Using 95+ pre-built components** (Button, Input, Form, Table, Card, Menu, etc.)
-- **Component customization** and props configuration
-- **Type-safe Rust component development** patterns
+- **Building Dioxus 0.7 applications** with Element Plus styled components
+- **Using 122+ pre-built components** (Button, Input, Select, Table, Form, Dialog, etc.)
+- **Pure Rust CSS generation** via `CompleteStyleManager` and `Theme`
+- **Controlled component pattern** — parent owns state, passes via props + EventHandler
+- **Element Plus theme-chalk CSS classes** — `el-button`, `el-button--primary`, `is-disabled`, etc.
+- **Component creation and customization** following project conventions
 
-### 🎨 CSS & Theming
-- **CSS asset management** (integrated CSS system vs CDN)
-- **Theme customization** using CSS variables and custom themes
-- **Responsive design implementation** with the 24-column grid system
-- **Component styling** and visual customization
+## Core Architecture
 
-### 🏗️ Architecture & Integration
-- **Project structure** optimization and component organization
-- **Integration with Dioxus ecosystem** (routing, state management, forms)
-- **Component composition** and reusable patterns
-- **Performance optimization** for Rust web components
+### Controlled Component Pattern (CRITICAL)
 
-### 🚀 Production & Deployment
-- **Production deployment** and optimization strategies
-- **Build configuration** and Dioxus.toml setup
-- **Bundle optimization** and asset management
-- **Troubleshooting** common issues and performance bottlenecks
+ALL interactive components follow the **controlled component pattern**:
 
-## 🛠️ Instructions
+- State is owned by the parent and passed via props (`model_value`, `visible`, etc.)
+- Changes are communicated upward via `EventHandler<T>` callbacks (`on_change`, `on_close`, etc.)
+- Components NEVER hold their own state for data the parent should control
 
-When activated, I will provide comprehensive expert assistance with the complete dioxus-element-plug ecosystem:
-
-### 1. **🔍 Project Analysis & Assessment**
-   - **Review project structure** and existing component usage patterns
-   - **Analyze dependencies** and integration requirements
-   - **Evaluate CSS strategy** needs (integrated vs CDN)
-   - **Assess performance requirements** and optimization opportunities
-
-### 2. **📦 Component Implementation**
-   - **Generate/styled components** from the complete library (95+ components)
-   - **Configure component props** with proper type safety
-   - **Implement component logic** following Rust best practices
-   - **Adapt components** to specific UI requirements and brand guidelines
-
-### 3. **🎨 CSS System Integration**
-   - **Set up theme system** using CSS variables (primary, success, warning, danger, info)
-   - **Configure responsive design** with 24-column grid system
-   - **Integrate component styles** or migrate to CDN-based approach
-   - **Customize visual themes** and brand-specific styling
-
-### 4. **🧩 Ecosystem Integration**
-   - **Connect with Dioxus routing** and navigation patterns
-   - **Integrate state management** (Handle state with proper Rust patterns)
-   - **Implement forms validation** with Form component integration
-   - **Set up event handling** and user interaction patterns
-
-### 5. **⚡ Performance Optimization**
-   - **Apply Rust-specific optimizations** for maximum performance
-   - **Implement component memoization** and update strategies
-   - **Optimize bundle size** and code splitting strategies
-   - **Configure build settings** for production deployment
-
-### 6. **🚀 Production Deployment**
-   - **Set up production builds** with optimized configurations
-   - **Configure asset management** and deployment pipelines
-   - **Implement CSP compatibility** and security best practices
-   - **Debug and troubleshoot** common production issues
-
-### 7. **📚 Documentation & Examples**
-   - **Provide complete code examples** for each component category
-   - **Document integration patterns** and best practices
-   - **Share performance tips** and optimization techniques
-   - **Create usage guides** for specific use cases
-
-## 📋 Project Capabilities
-
-### **Component Library Coverage**
-- ✅ **95/114 Element Plus components** (83% coverage)
-- ✅ **Complete component categories**: Basic UI, Form, Layout, Navigation, Data Display, Feedback
-- ✅ **Type-safe Rust implementations** with compile-time validation
-- ✅ **Comprehensive testing** (269/269 tests passing)
-
-### **CSS System Features**
-- ✅ **Complete Element Plus CSS** with theme variables
-- ✅ **Responsive 24-column grid** system
-- ✅ **Modern CSS features**: CSS Variables, Flexbox, Transitions
-- ✅ **Component-specific styles** for all components
-
-### **Production Readiness**
-- ✅ **Zero compilation errors** - Fully production-ready
-- ✅ **Modular architecture** - Clean separation of concerns
-- ✅ **Tooling support** - Component generation and CSS tools
-- ✅ **Comprehensive documentation** - Complete usage guides
-
-## 💡 Example Usage Patterns
-
-### Basic Component Usage:
 ```rust
-use dioxus_element_plug::components::*;
-
-// Use complete component library
-let button = Button::new().primary(true);
-let form = Form::new().layout("horizontal");
-let table = Table::new().bordered(true);
+let mut switch_on = use_signal(|| false);
+rsx! {
+    Switch {
+        model_value: switch_on(),
+        on_change: move |v: bool| switch_on.set(v),
+    }
+}
 ```
 
-### Theme Integration:
-```rust
-use dioxus_element_plug::styles;
+### Component Definition Convention
 
-// Get complete Element Plus CSS
-let css = styles::all_styles();
+Every component uses `#[derive(Props, Clone, PartialEq)]` + `#[component]`:
+
+```rust
+#[derive(Props, Clone, PartialEq)]
+pub struct MyProps {
+    pub children: Element,
+    #[props(default = MyType::Default)]
+    pub my_type: MyType,
+    #[props(default = false)]
+    pub disabled: bool,
+    #[props(default)]
+    pub on_click: Option<EventHandler<MouseEvent>>,
+    #[props(default)]
+    pub class: Option<String>,
+    #[props(default)]
+    pub style: Option<String>,
+}
+
+#[component]
+pub fn MyComponent(props: MyProps) -> Element { /* ... */ }
 ```
 
-### Component Categories Available:
-- **Basic UI**: Button, Alert, Badge, Card, Tag, Avatar
-- **Form Controls**: Input, Select, Checkbox, Radio, Slider, Switch
-- **Data Display**: Table, Descriptions, Timeline, Tree, Transfer
-- **Layout**: Container, Grid (24-column), Space
-- **Navigation**: Menu, Tabs, Steps, Pagination, Dropdown
-- **Feedback**: Message, Dialog, Loading, Tooltip, Progress
+### CSS Class Naming
 
-I will leverage the complete skill knowledge base for proven patterns, best practices, and optimized solutions specific to the dioxus-element-plug ecosystem.
+- Base: `el-{component}` (e.g., `el-button`, `el-input`)
+- Modifier: `el-{component}--{variant}` (e.g., `el-button--primary`)
+- State: `is-{state}` (e.g., `is-disabled`, `is-checked`)
+- Part: `el-{component}__{part}` (e.g., `el-card__header`)
+
+### rsx! Ownership Rules
+
+1. **Pre-extract data from `props` before `rsx!`** — `props` is moved into `rsx!`
+2. **Clone values that closures need to own** — each closure gets its own copy
+3. **Use `as_ref()` for `Option<EventHandler>`** — `handler.as_ref().call(value)`
+4. **Pre-compute style strings outside `rsx!`** — use `format!()` before the macro
+
+## Component API Quick Reference
+
+### Form Components
+
+| Component | Key Props | Key Events |
+|-----------|-----------|------------|
+| Button | `variant: ButtonVariant`, `size: Option<ButtonSize>`, `disabled: bool` | `on_click: EventHandler<MouseEvent>` |
+| Input | `value: Option<String>`, `input_type: InputType`, `size: InputSize` | `on_change: EventHandler<Event<FormData>>`, `on_input: EventHandler<Event<FormData>>` |
+| Select | `model_value: Option<String>`, `options: Vec<SelectOption>`, `placeholder: String` | `on_change: EventHandler<String>` |
+| Switch | `model_value: bool`, `size: SwitchSize`, `active_color: String` | `on_change: EventHandler<bool>` |
+| Checkbox | `model_value: bool`, `border: bool`, `indeterminate: bool` | `on_change: EventHandler<bool>` |
+| Radio | `model_value: bool`, `border: bool` | `on_change: EventHandler<bool>` |
+| Rate | `model_value: u32`, `max: u32`, `allow_half: bool` | `on_change: EventHandler<u32>` |
+| Slider | `model_value: u32`, `min: u32`, `max: u32`, `step: u32` | `on_change: EventHandler<u32>` |
+| InputNumber | `model_value: i64`, `min: i64`, `max: i64`, `step: i64` | `on_change: EventHandler<i64>` |
+| Cascader | `model_value: Option<String>`, `options: Vec<CascaderOption>` | `on_change: EventHandler<String>` |
+| Transfer | `model_value: Vec<String>`, `data: Vec<TransferItem>` | `on_change: EventHandler<Vec<String>>` |
+
+### Display Components
+
+| Component | Key Props | Notes |
+|-----------|-----------|-------|
+| Table | `columns: Vec<TableColumn>`, `data: Vec<HashMap<String, String>>`, `stripe: bool` | `on_sort_change: EventHandler<(String, SortOrder)>` |
+| Tree | `data: Vec<TreeNodeData>`, `show_checkbox: bool`, `expanded_keys: Vec<String>` | `on_node_click: EventHandler<String>` |
+| Tag | `tag_type: TagType`, `size: TagSize`, `effect: TagEffect`, `closable: bool` | `on_close: EventHandler<MouseEvent>` |
+| Progress | `percentage: u32`, `progress_type: ProgressType`, `status: ProgressStatus` | |
+| Badge | `value: Option<String>`, `is_dot: bool`, `badge_type: BadgeType` | Wraps children |
+| Alert | `title: String`, `alert_type: AlertType`, `closable: bool` | |
+| Card | `header: Option<String>`, `shadow: CardShadow` | |
+
+### Navigation Components
+
+| Component | Key Props | Notes |
+|-----------|-----------|-------|
+| Menu | `mode: MenuMode`, `collapse: bool` | Contains MenuItem, SubMenu, MenuItemGroup |
+| Tabs | `model_value: String`, `type: TabsType` | Contains TabPane |
+| Steps | `active: u32`, `direction: StepsDirection` | Contains Step |
+| Pagination | `total: u32`, `page_size: u32`, `current_page: u32` | `on_current_change: EventHandler<u32>` |
+| Dropdown | `trigger: DropdownTrigger` | Contains DropdownMenu, DropdownItem |
+| Breadcrumb | children | Contains BreadcrumbItem |
+
+### Feedback Components
+
+| Component | Key Props | Notes |
+|-----------|-----------|-------|
+| Dialog | `visible: bool`, `title: Option<String>`, `width: String` | `on_close: EventHandler<()>` |
+| Drawer | `visible: bool`, `direction: DrawerDirection`, `size: String` | `on_close: EventHandler<()>` |
+| Tooltip | `content: String`, `placement: TooltipPlacement` | |
+| Popover | `content: String`, `title: Option<String>` | |
+| Popconfirm | `title: String` | `on_confirm`, `on_cancel` |
+| Message | `message: String`, `message_type: MessageType` | |
+| Notification | `title: String`, `message: Option<String>` | |
+
+### Layout Components
+
+| Component | Key Props | Notes |
+|-----------|-----------|-------|
+| Container | `direction: Option<ContainerDirection>` | All in container.rs: Container, Header, Footer, Main, Aside |
+| Row | `gutter: u32`, `justify: Option<RowJustify>`, `align: Option<RowAlign>` | |
+| Col | `span: u32`, `offset: u32` | 24-column grid |
+| Space | `direction: SpaceDirection`, `size: SpaceSize` | |
+
+## CSS Strategy
+
+Two approaches:
+
+1. **CDN** (quick start):
+```rust
+rsx! {
+    document::Link { rel: "stylesheet", href: "//unpkg.com/element-plus@2.4.4/dist/index.css" }
+}
+```
+
+2. **Pure Rust CSS generation**:
+```rust
+let css = CompleteStyleManager::new().generate_complete_styles();
+rsx! { style { "{css}" } }
+```
+
+## Import Pattern
+
+```rust
+use dioxus::prelude::*;
+use dioxus_element_plug::prelude::*;
+```
+
+This imports all components, enums, and types.
+
+## Project Stats
+
+- **122+ components** with `#[component]` macro
+- **96 component files** in `src/components/`
+- **29 tests** passing (enum `as_class()` methods + CSS generation)
+- **Zero compilation errors**
+- Built on **Dioxus 0.7**
+
+## Common Commands
+
+- `cargo check` — Verify compilation
+- `cargo test --lib` — Run tests
+- `cargo clippy` — Lint check

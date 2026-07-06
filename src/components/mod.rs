@@ -1,8 +1,10 @@
 //! Component modules for Element Plus Dioxus integration
 //! Auto-generated module declarations
 
-// Layout Components
-pub mod layout;
+#![allow(ambiguous_glob_reexports)]
+#![allow(unused_imports)]
+
+// Layout Components (layout.rs removed - functionality in container.rs and row.rs)
 
 // Basic UI Components
 pub mod alert;
@@ -134,7 +136,6 @@ pub use cascader_panel::*;
 pub use checkbox::*;
 pub use checkbox_button::*;
 pub use checkbox_group::*;
-pub use col::*;
 pub use collapse::*;
 pub use collapse_item::*;
 pub use color_picker::*;
@@ -142,17 +143,13 @@ pub use container::*;
 
 // Re-exports - Layout Components
 pub use drawer::*;
-pub use footer::*;
-pub use header::*;
-pub use layout::*;
-pub use main::*;
+// layout re-export removed - use container::* and row::* instead
 pub use row::*;
 pub use space::*;
 
 // Re-exports - Form Components
 pub use date_picker::*;
 pub use form::*;
-pub use form_item::*;
 pub use input::*;
 pub use input_number::*;
 pub use select::*;
@@ -194,7 +191,6 @@ pub use menu_item::*;
 pub use menu_item_group::*;
 pub use page_header::*;
 pub use pagination::*;
-pub use step::*;
 pub use steps::*;
 pub use sub_menu::*;
 pub use tabs::*;
@@ -214,7 +210,7 @@ pub use spin::*;
 pub use tooltip::*;
 
 // Re-exports - Data Components
-pub use option::OptionComponent as Option;
+pub use option::*;
 pub use option_group::*;
 pub use radio::*;
 pub use radio_button::*;

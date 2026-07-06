@@ -1,170 +1,173 @@
-//! select component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Select component classes
-pub mod classes {
-    /// Base select class
-    pub const BASE: &str = "el-select";
-    
-    /// select size variants
-    pub const LARGE: &str = "el-select--large";
-    pub const SMALL: &str = "el-select--small";
-    
-    /// select type variants
-    pub const PRIMARY: &str = "el-select--primary";
-    pub const SUCCESS: &str = "el-select--success";
-    pub const WARNING: &str = "el-select--warning";
-    pub const DANGER: &str = "el-select--danger";
-    pub const INFO: &str = "el-select--info";
-    
-    /// select states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
-
-/// Basic select component structure
-#[derive(Debug, Clone)]
-pub struct Select {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+/// Select option data
+#[derive(Clone, PartialEq)]
+pub struct SelectOption {
+    pub value: String,
+    pub label: String,
     pub disabled: bool,
 }
 
-impl Default for Select {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
+impl SelectOption {
+    pub fn new(value: &str, label: &str) -> Self {
+        Self { value: value.to_string(), label: label.to_string(), disabled: false }
     }
-}
 
-impl Select {
-    /// Create a new select component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "select".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
+}
+
+/// Select size
+#[derive(Clone, PartialEq)]
+pub enum SelectSize {
+    Large,
+    Default,
+    Small,
+}
+
+impl SelectSize {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            SelectSize::Large => "el-select--large",
+            SelectSize::Default => "",
+            SelectSize::Small => "el-select--small",
         }
     }
 }
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+/// Select props - 选择器
+#[derive(Props, Clone, PartialEq)]
+pub struct SelectProps {
+    /// Selected value
+    #[props(default)]
+    pub model_value: Option<String>,
+
+    /// Options
+    #[props(default)]
+    pub options: Vec<SelectOption>,
+
+    /// Whether disabled
+    #[props(default = false)]
+    pub disabled: bool,
+
+    /// Whether clearable
+    #[props(default = false)]
+    pub clearable: bool,
+
+    /// Whether filterable
+    #[props(default = false)]
+    pub filterable: bool,
+
+    /// Whether multiple
+    #[props(default = false)]
+    pub multiple: bool,
+
+    /// Placeholder
+    #[props(default = "Select".to_string())]
+    pub placeholder: String,
+
+    /// Size
+    #[props(default)]
+    pub size: Option<SelectSize>,
+
+    /// Collapse tags
+    #[props(default)]
+    pub collapse_tags: Option<bool>,
+
+    /// Collapse tags tooltip
+    #[props(default)]
+    pub collapse_tags_tooltip: Option<bool>,
+
+    /// Max collapse tags
+    #[props(default)]
+    pub max_collapse_tags: Option<u32>,
+
+    /// Change handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<String>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_select_creation() {
-        let component = Select::new()
-            .id("test-select")
-            .class("custom-select-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-select");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-select-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Select component
+#[component]
+pub fn Select(props: SelectProps) -> Element {
+    let mut class_names = vec!["el-select".to_string()];
+    if let Some(ref s) = props.size {
+        class_names.push(s.as_class().to_string());
     }
-    
-    #[test]
-    fn test_select_class_generation() {
-        let component = Select::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-    
-    #[test]
-    fn test_select_states() {
-        let active_disabled = Select::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
+    }
+    let class_string = class_names.join(" ");
+    let style_string = props.style.unwrap_or_default();
+
+    let selected_label = props.model_value.as_ref().and_then(|val| {
+        props.options.iter().find(|o| &o.value == val).map(|o| o.label.clone())
+    }).unwrap_or_default();
+
+    let on_change = props.on_change;
+    let disabled = props.disabled;
+    let model_value = props.model_value.clone();
+
+    // Pre-extract option data to avoid borrow issues in rsx!
+    let option_data: Vec<(String, String, bool)> = props.options.iter()
+        .map(|o| (o.value.clone(), o.label.clone(), o.disabled))
+        .collect();
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+
+            div {
+                class: "el-select__wrapper",
+
+                div {
+                    class: "el-select__input-wrapper",
+
+                    if !selected_label.is_empty() {
+                        span { class: "el-select__selected-item", "{selected_label}" }
+                    } else {
+                        span { class: "el-select__placeholder", "{props.placeholder}" }
+                    }
+                }
+            }
+
+            div {
+                class: "el-select__dropdown",
+
+                for (value, label, opt_disabled) in option_data.into_iter() {
+                    div {
+                        class: if model_value.as_ref() == Some(&value) {
+                            "el-select-dropdown__item selected"
+                        } else if opt_disabled {
+                            "el-select-dropdown__item is-disabled"
+                        } else {
+                            "el-select-dropdown__item"
+                        },
+                        onclick: move |_| {
+                            if !disabled && !opt_disabled {
+                                if let Some(handler) = on_change.as_ref() {
+                                    handler.call(value.clone());
+                                }
+                            }
+                        },
+                        "{label}"
+                    }
+                }
+            }
+        }
     }
 }
