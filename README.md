@@ -43,7 +43,7 @@ For production use:
 ```toml
 [dependencies]
 dioxus = { version = "0.7", features = ["web"] }
-dioxus-element-plug = "0.1.4"
+dioxus-element-plug = "0.1.5"
 ```
 
 Or use directly from GitHub:
