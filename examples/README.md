@@ -1,5 +1,3 @@
-> ⚠️ This file has been auto-generated. Do not edit.
-
 # Dioxus Element Plus - Examples
 
 This directory contains example projects demonstrating how to use Dioxus Element Plus.
@@ -50,13 +48,9 @@ dx build --release          # Production build
 
 ```
 examples/
-└── modern-pure-rust-example/
-    ├── Cargo.toml          # Example configuration
-    ├── Dioxus.toml         # Dioxus settings
-    ├── README.md           # Detailed guide
-    ├── input.css           # CSS placeholder (not used)
-    ├── assets/             # Static assets
-    └── src/main.rs         # Main example code
+├── modern-pure-rust-example/  # Pure Rust styling demo
+├── component-showcase/        # Component verification demo
+└── theme-switcher/            # Theme switching demo
 ```
 
 ## Examples Overview

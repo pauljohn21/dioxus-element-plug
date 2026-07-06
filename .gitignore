@@ -1,6 +1,5 @@
 # Rust
 /target
-Cargo.lock
 **/*.rs.bk
 
 # IDE
@@ -13,35 +12,18 @@ Cargo.lock
 .DS_Store
 Thumbs.db
 
-# Build artifacts
-dist/*.map
-
-# Node.js
-node_modules/
-npm-debug.log
-package-lock.json
-
-# Temporary files
-*.tmp
-*.temp
-
 # Logs
-logs/
 *.log
 
-# rust-toolchain should be tracked (for reproducible builds)
-# But we keep it in the repo
+# Build artifacts
+dist/
 
 # Cache files
-/.cache
+.cache/
 
-# Build outputs
+# Example build artifacts
 /examples/*/target/
-**/Cargo.lock
 
 # Environment variables
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
