@@ -1,170 +1,109 @@
-//! input-number component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// InputNumber component classes
-pub mod classes {
-    /// Base input-number class
-    pub const BASE: &str = "el-input-number";
-    
-    /// input-number size variants
-    pub const LARGE: &str = "el-input-number--large";
-    pub const SMALL: &str = "el-input-number--small";
-    
-    /// input-number type variants
-    pub const PRIMARY: &str = "el-input-number--primary";
-    pub const SUCCESS: &str = "el-input-number--success";
-    pub const WARNING: &str = "el-input-number--warning";
-    pub const DANGER: &str = "el-input-number--danger";
-    pub const INFO: &str = "el-input-number--info";
-    
-    /// input-number states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// InputNumber props
+#[derive(Props, Clone, PartialEq)]
+pub struct InputNumberProps {
+    #[props(default = 0.0)]
+    pub model_value: f64,
 
-/// Basic input-number component structure
-#[derive(Debug, Clone)]
-pub struct InputNumber {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    #[props(default = f64::MIN)]
+    pub min: f64,
+
+    #[props(default = f64::MAX)]
+    pub max: f64,
+
+    #[props(default = 1.0)]
+    pub step: f64,
+
+    #[props(default = false)]
+    pub step_strictly: bool,
+
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for InputNumber {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    #[props(default = false)]
+    pub controls: bool,
 
-impl InputNumber {
-    /// Create a new input-number component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "input-number".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    #[props(default = "default".to_string())]
+    pub size: String,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    #[props(default)]
+    pub precision: Option<u32>,
+
+    #[props(default = "large".to_string())]
+    pub controls_position: String,
+
+    #[props(default)]
+    pub on_change: Option<EventHandler<f64>>,
+
+    #[props(default)]
+    pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_input_number_creation() {
-        let component = InputNumber::new()
-            .id("test-input-number")
-            .class("custom-input-number-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-input-number");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-input-number-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_input_number_class_generation() {
-        let component = InputNumber::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_input_number_states() {
-        let active_disabled = InputNumber::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+/// InputNumber component for numeric input with controls
+#[component]
+pub fn InputNumber(props: InputNumberProps) -> Element {
+    let mut class_names = vec!["el-input-number".to_string()];
+    if props.disabled { class_names.push("is-disabled".to_string()); }
+    class_names.push(format!("el-input-number--{}", props.size));
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+            if props.controls {
+                span {
+                    class: "el-input-number__decrease",
+                    role: "button",
+                    onclick: move |_| {
+                        if !props.disabled {
+                            let new_val = (props.model_value - props.step).max(props.min);
+                            if let Some(handler) = props.on_change {
+                                handler.call(new_val);
+                            }
+                        }
+                    },
+                    i { class: "el-icon-minus" }
+                }
+            }
+            div {
+                class: "el-input",
+                input {
+                    class: "el-input__inner",
+                    r#type: "number",
+                    value: "{props.model_value}",
+                    min: "{props.min}",
+                    max: "{props.max}",
+                    step: "{props.step}",
+                    disabled: props.disabled,
+                    onchange: move |e| {
+                        if let Ok(val) = e.value().parse::<f64>() {
+                            if let Some(handler) = props.on_change {
+                                handler.call(val);
+                            }
+                        }
+                    },
+                }
+            }
+            if props.controls {
+                span {
+                    class: "el-input-number__increase",
+                    role: "button",
+                    onclick: move |_| {
+                        if !props.disabled {
+                            let new_val = (props.model_value + props.step).min(props.max);
+                            if let Some(handler) = props.on_change {
+                                handler.call(new_val);
+                            }
+                        }
+                    },
+                    i { class: "el-icon-plus" }
+                }
+            }
+        }
     }
 }

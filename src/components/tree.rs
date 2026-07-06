@@ -1,170 +1,360 @@
-//! tree component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
+use std::collections::HashSet;
 
-/// Tree component classes
-pub mod classes {
-    /// Base tree class
-    pub const BASE: &str = "el-tree";
-    
-    /// tree size variants
-    pub const LARGE: &str = "el-tree--large";
-    pub const SMALL: &str = "el-tree--small";
-    
-    /// tree type variants
-    pub const PRIMARY: &str = "el-tree--primary";
-    pub const SUCCESS: &str = "el-tree--success";
-    pub const WARNING: &str = "el-tree--warning";
-    pub const DANGER: &str = "el-tree--danger";
-    pub const INFO: &str = "el-tree--info";
-    
-    /// tree states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
-
-/// Basic tree component structure
-#[derive(Debug, Clone)]
-pub struct Tree {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+/// Tree node data
+#[derive(Clone, PartialEq)]
+pub struct TreeNodeData {
+    pub label: String,
+    pub children: Vec<TreeNodeData>,
     pub disabled: bool,
 }
 
-impl Default for Tree {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
+impl TreeNodeData {
+    pub fn new(label: &str) -> Self {
+        Self { label: label.to_string(), children: vec![], disabled: false }
     }
-}
 
-impl Tree {
-    /// Create a new tree component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
+    pub fn child(mut self, node: TreeNodeData) -> Self {
+        self.children.push(node);
         self
     }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
+
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "tree".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
 }
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+/// Tree props
+#[derive(Props, Clone, PartialEq)]
+pub struct TreeProps {
+    /// Tree data
+    #[props(default)]
+    pub data: Vec<TreeNodeData>,
+
+    /// Whether to show checkboxes
+    #[props(default = false)]
+    pub show_checkbox: bool,
+
+    /// Whether to expand all nodes by default
+    #[props(default = false)]
+    pub default_expand_all: bool,
+
+    /// Currently expanded node labels
+    #[props(default)]
+    pub expanded_keys: Vec<String>,
+
+    /// Currently checked node labels
+    #[props(default)]
+    pub checked_keys: Vec<String>,
+
+    /// Currently highlighted node label
+    #[props(default)]
+    pub current_key: Option<String>,
+
+    /// Whether to highlight current node
+    #[props(default = false)]
+    pub highlight_current: bool,
+
+    /// Whether to expand on node click
+    #[props(default = true)]
+    pub expand_on_click_node: bool,
+
+    /// Node click handler
+    #[props(default)]
+    pub on_node_click: Option<EventHandler<String>>,
+
+    /// Node expand/collapse toggle handler
+    #[props(default)]
+    pub on_node_expand: Option<EventHandler<(String, bool)>>,
+
+    /// Node check handler (for checkboxes)
+    #[props(default)]
+    pub on_node_check: Option<EventHandler<(String, bool)>>,
+
+    #[props(default)]
+    pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_tree_creation() {
-        let component = Tree::new()
-            .id("test-tree")
-            .class("custom-tree-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-tree");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-tree-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Tree component for hierarchical data
+///
+/// This component renders a tree structure with optional expand/collapse,
+/// checkboxes, and node highlighting.
+///
+/// ## Example
+///
+/// ```rust,ignore
+/// use dioxus_element_plug::components::tree::{Tree, TreeNodeData};
+///
+/// let data = vec![
+///     TreeNodeData::new("Level 1")
+///         .child(TreeNodeData::new("Level 2-1"))
+///         .child(TreeNodeData::new("Level 2-2")),
+/// ];
+///
+/// rsx! {
+///     Tree {
+///         data: data,
+///         default_expand_all: true,
+///         highlight_current: true,
+///     }
+/// }
+/// ```
+#[component]
+pub fn Tree(props: TreeProps) -> Element {
+    let mut class_names = vec!["el-tree".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_tree_class_generation() {
-        let component = Tree::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    // Build expanded set from props
+    let expanded_set: HashSet<String> = if props.default_expand_all {
+        collect_all_labels(&props.data).into_iter().collect()
+    } else {
+        props.expanded_keys.iter().cloned().collect()
+    };
+
+    let checked_set: HashSet<String> = props.checked_keys.iter().cloned().collect();
+    let current_key = props.current_key.clone();
+
+    // Pre-compute top-level node render data
+    let node_data: Vec<TreeNodeRenderData> = props
+        .data
+        .iter()
+        .map(|node| build_node_render_data(node, 0, &expanded_set, &checked_set, &current_key, props.highlight_current, props.show_checkbox))
+        .collect();
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+            role: "tree",
+
+            for render_node in node_data.into_iter() {
+                TreeChild {
+                    node: render_node,
+                    show_checkbox: props.show_checkbox,
+                    highlight_current: props.highlight_current,
+                    expand_on_click: props.expand_on_click_node,
+                    on_click: props.on_node_click,
+                    on_expand: props.on_node_expand,
+                    on_check: props.on_node_check,
+                }
+            }
+        }
     }
-    
-    #[test]
-    fn test_tree_states() {
-        let active_disabled = Tree::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+}
+
+/// Pre-computed render data for a tree node
+#[derive(Clone, PartialEq)]
+struct TreeNodeRenderData {
+    label: String,
+    disabled: bool,
+    level: u32,
+    is_expanded: bool,
+    is_checked: bool,
+    is_current: bool,
+    has_children: bool,
+    children: Vec<TreeNodeRenderData>,
+}
+
+fn build_node_render_data(
+    node: &TreeNodeData,
+    level: u32,
+    expanded: &HashSet<String>,
+    checked: &HashSet<String>,
+    current: &Option<String>,
+    highlight: bool,
+    show_checkbox: bool,
+) -> TreeNodeRenderData {
+    let is_expanded = expanded.contains(&node.label);
+    let is_checked = checked.contains(&node.label);
+    let is_current = highlight && current.as_ref().map_or(false, |c| c == &node.label);
+    let has_children = !node.children.is_empty();
+
+    let children = if has_children {
+        node.children
+            .iter()
+            .map(|child| build_node_render_data(child, level + 1, expanded, checked, current, highlight, show_checkbox))
+            .collect()
+    } else {
+        vec![]
+    };
+
+    TreeNodeRenderData {
+        label: node.label.clone(),
+        disabled: node.disabled,
+        level,
+        is_expanded,
+        is_checked,
+        is_current,
+        has_children,
+        children,
+    }
+}
+
+fn collect_all_labels(data: &[TreeNodeData]) -> Vec<String> {
+    let mut result = vec![];
+    for node in data {
+        result.push(node.label.clone());
+        if !node.children.is_empty() {
+            result.extend(collect_all_labels(&node.children));
+        }
+    }
+    result
+}
+
+#[derive(Props, Clone, PartialEq)]
+struct TreeChildProps {
+    node: TreeNodeRenderData,
+    show_checkbox: bool,
+    highlight_current: bool,
+    expand_on_click: bool,
+    on_click: Option<EventHandler<String>>,
+    on_expand: Option<EventHandler<(String, bool)>>,
+    on_check: Option<EventHandler<(String, bool)>>,
+}
+
+#[component]
+fn TreeChild(props: TreeChildProps) -> Element {
+    let node_label = props.node.label.clone();
+    let padding = props.node.level * 18;
+    let has_children = props.node.has_children;
+    let is_expanded = props.node.is_expanded;
+    let is_current = props.node.is_current;
+    let is_checked = props.node.is_checked;
+    let disabled = props.node.disabled;
+    let show_checkbox = props.show_checkbox;
+    let expand_on_click = props.expand_on_click;
+    let on_click = props.on_click;
+    let on_expand = props.on_expand;
+    let on_check = props.on_check;
+
+    // Clone labels for each closure that needs it
+    let label_for_click = node_label.clone();
+    let label_for_expand = node_label.clone();
+    let label_for_expand_icon = node_label.clone();
+    let label_for_check = node_label.clone();
+
+    // Pre-compute child render data
+    let child_nodes: Vec<TreeNodeRenderData> = if has_children && is_expanded {
+        props.node.children.clone()
+    } else {
+        vec![]
+    };
+
+    // Build content class
+    let content_class = {
+        let mut cls = vec!["el-tree-node__content".to_string()];
+        if is_current {
+            cls.push("is-current".to_string());
+        }
+        if disabled {
+            cls.push("is-disabled".to_string());
+        }
+        cls.join(" ")
+    };
+
+    // Build expand icon class
+    let expand_icon_class = if is_expanded {
+        "el-tree-node__expand-icon el-icon-caret-right expanded"
+    } else {
+        "el-tree-node__expand-icon el-icon-caret-right"
+    };
+
+    // Build checkbox class
+    let checkbox_class = {
+        let mut cls = vec!["el-checkbox".to_string()];
+        if is_checked {
+            cls.push("is-checked".to_string());
+        }
+        cls.push("el-tree-node__checkbox".to_string());
+        cls.join(" ")
+    };
+
+    rsx! {
+        div {
+            class: "el-tree-node",
+            role: "treeitem",
+            "aria-expanded": "{is_expanded}",
+
+            div {
+                class: "{content_class}",
+                style: "padding-left: {padding}px;",
+
+                onclick: move |_| {
+                    if !disabled {
+                        if let Some(handler) = on_click.as_ref() {
+                            handler.call(label_for_click.clone());
+                        }
+                        if expand_on_click && has_children {
+                            if let Some(handler) = on_expand.as_ref() {
+                                handler.call((label_for_expand.clone(), !is_expanded));
+                            }
+                        }
+                    }
+                },
+
+                if has_children {
+                    span {
+                        class: "{expand_icon_class}",
+                        onclick: move |e: Event<MouseData>| {
+                            e.stop_propagation();
+                            if !disabled {
+                                if let Some(handler) = on_expand.as_ref() {
+                                    handler.call((label_for_expand_icon.clone(), !is_expanded));
+                                }
+                            }
+                        },
+                    }
+                } else {
+                    span {
+                        class: "el-tree-node__expand-icon is-leaf",
+                    }
+                }
+
+                if show_checkbox {
+                    span {
+                        class: "{checkbox_class}",
+                        onclick: move |e: Event<MouseData>| {
+                            e.stop_propagation();
+                            if !disabled {
+                                if let Some(handler) = on_check.as_ref() {
+                                    handler.call((label_for_check.clone(), !is_checked));
+                                }
+                            }
+                        },
+                        span { class: "el-checkbox__inner" }
+                    }
+                }
+
+                span {
+                    class: "el-tree-node__label",
+                    "{props.node.label}"
+                }
+            }
+
+            if has_children && is_expanded {
+                div {
+                    class: "el-tree-node__children",
+                    role: "group",
+
+                    for child in child_nodes.into_iter() {
+                        TreeChild {
+                            node: child,
+                            show_checkbox: show_checkbox,
+                            highlight_current: props.highlight_current,
+                            expand_on_click: expand_on_click,
+                            on_click: on_click,
+                            on_expand: on_expand,
+                            on_check: on_check,
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,170 +1,92 @@
-//! tooltip component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Tooltip component classes
-pub mod classes {
-    /// Base tooltip class
-    pub const BASE: &str = "el-tooltip";
-    
-    /// tooltip size variants
-    pub const LARGE: &str = "el-tooltip--large";
-    pub const SMALL: &str = "el-tooltip--small";
-    
-    /// tooltip type variants
-    pub const PRIMARY: &str = "el-tooltip--primary";
-    pub const SUCCESS: &str = "el-tooltip--success";
-    pub const WARNING: &str = "el-tooltip--warning";
-    pub const DANGER: &str = "el-tooltip--danger";
-    pub const INFO: &str = "el-tooltip--info";
-    
-    /// tooltip states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Tooltip placement
+#[derive(Clone, PartialEq)]
+pub enum TooltipPlacement {
+    Top, TopStart, TopEnd,
+    Bottom, BottomStart, BottomEnd,
+    Left, LeftStart, LeftEnd,
+    Right, RightStart, RightEnd,
 }
 
-/// Basic tooltip component structure
-#[derive(Debug, Clone)]
-pub struct Tooltip {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+impl TooltipPlacement {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            TooltipPlacement::Top => "top",
+            TooltipPlacement::TopStart => "top-start",
+            TooltipPlacement::TopEnd => "top-end",
+            TooltipPlacement::Bottom => "bottom",
+            TooltipPlacement::BottomStart => "bottom-start",
+            TooltipPlacement::BottomEnd => "bottom-end",
+            TooltipPlacement::Left => "left",
+            TooltipPlacement::LeftStart => "left-start",
+            TooltipPlacement::LeftEnd => "left-end",
+            TooltipPlacement::Right => "right",
+            TooltipPlacement::RightStart => "right-start",
+            TooltipPlacement::RightEnd => "right-end",
+        }
+    }
+}
+
+/// Tooltip props
+#[derive(Props, Clone, PartialEq)]
+pub struct TooltipProps {
+    #[props(default)]
+    pub children: Element,
+
+    /// Tooltip content
+    pub content: String,
+
+    /// Tooltip placement
+    #[props(default = TooltipPlacement::Top)]
+    pub placement: TooltipPlacement,
+
+    /// Tooltip effect (dark/light)
+    #[props(default = "dark".to_string())]
+    pub effect: String,
+
+    /// Whether the tooltip is disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Tooltip {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Whether the tooltip is always visible
+    #[props(default = false)]
+    pub visible: bool,
 
-impl Tooltip {
-    /// Create a new tooltip component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "tooltip".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Show delay in ms
+    #[props(default = 0)]
+    pub show_delay: u32,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Hide delay in ms
+    #[props(default = 0)]
+    pub hide_delay: u32,
+
+    #[props(default)]
+    pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_tooltip_creation() {
-        let component = Tooltip::new()
-            .id("test-tooltip")
-            .class("custom-tooltip-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-tooltip");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-tooltip-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Tooltip component for hover information
+#[component]
+pub fn Tooltip(props: TooltipProps) -> Element {
+    if props.disabled {
+        return rsx! { {props.children} };
     }
-    
-    #[test]
-    fn test_tooltip_class_generation() {
-        let component = Tooltip::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_tooltip_states() {
-        let active_disabled = Tooltip::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+
+    rsx! {
+        span {
+            class: "el-tooltip__trigger",
+            style: "display: inline-block; position: relative;",
+            {props.children}
+            if props.visible {
+                span {
+                    class: "el-tooltip__popper is-{props.effect}",
+                    style: "position: absolute; z-index: 3000; transform: translateX(-50%); top: -100%; left: 50%;",
+                    span { class: "el-tooltip__content", "{props.content}" }
+                }
+            }
+        }
     }
 }

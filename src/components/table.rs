@@ -10,6 +10,14 @@ pub const TABLE_BODY: &str = "el-table__body";
 pub const TABLE_ROW: &str = "el-table__row";
 pub const TABLE_CELL: &str = "el-table__cell";
 
+/// Sort direction for table columns
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum SortOrder {
+    Ascending,
+    Descending,
+    None,
+}
+
 /// Table column definition
 #[derive(Clone, PartialEq)]
 pub struct TableColumn {
@@ -25,7 +33,7 @@ pub struct TableColumn {
     pub fixed: Option<String>,
 }
 
-/// Table row data type - simplified
+/// Table row data type
 pub type TableData = Vec<std::collections::HashMap<String, String>>;
 
 /// Table props
@@ -56,6 +64,24 @@ pub struct TableProps {
     /// Whether table is loading
     #[props(default = false)]
     pub loading: bool,
+    /// Empty state text
+    #[props(default = "No Data".to_string())]
+    pub empty_text: String,
+    /// Current sort column key
+    #[props(default)]
+    pub sort_key: Option<String>,
+    /// Current sort order
+    #[props(default = SortOrder::None)]
+    pub sort_order: SortOrder,
+    /// Current highlighted row index
+    #[props(default)]
+    pub current_row_index: Option<usize>,
+    /// Row click handler
+    #[props(default)]
+    pub on_row_click: Option<EventHandler<usize>>,
+    /// Sort change handler
+    #[props(default)]
+    pub on_sort_change: Option<EventHandler<(String, SortOrder)>>,
     /// Additional CSS classes
     #[props(default)]
     pub class: Option<String>,
@@ -66,7 +92,8 @@ pub struct TableProps {
 
 /// A table component for displaying structured data
 ///
-/// This component provides a basic table with features like sorting and styling.
+/// This component provides a table with features like sorting, row highlighting,
+/// loading state, and empty state.
 ///
 /// ## Example
 ///
@@ -82,18 +109,10 @@ pub struct TableProps {
 ///         sortable: true,
 ///         fixed: None,
 ///     },
-///     TableColumn {
-///         title: "Age".to_string(),
-///         key: "age".to_string(),
-///         width: None,
-///         sortable: false,
-///         fixed: None,
-///     },
 /// ];
 ///
 /// let mut row1 = HashMap::new();
 /// row1.insert("name".to_string(), "John".to_string());
-/// row1.insert("age".to_string(), "30".to_string());
 ///
 /// let data = vec![row1];
 ///
@@ -108,229 +127,243 @@ pub struct TableProps {
 #[component]
 pub fn Table(props: TableProps) -> Element {
     let mut class_names = vec!["el-table".to_string()];
-    
+
     if props.border {
         class_names.push("el-table--border".to_string());
     }
-    
     if props.stripe {
         class_names.push("el-table--striped".to_string());
     }
-    
     if props.highlight_current_row {
         class_names.push("el-table--highlight-current-row".to_string());
     }
-    
     if let Some(ref custom_class) = props.class {
         class_names.push(custom_class.to_string());
     }
-    
+
     let class_string = class_names.join(" ");
     let style_string = props.style.as_ref().cloned().unwrap_or_default();
-    
-    let class_string = if props.border { "el-table el-table--border" } else { "el-table" };
-    let stripe_class = if props.stripe { " el-table--striped" } else { "" };
-    let full_class = format!("{}{}", class_string, stripe_class);
+
+    let active_sort_key = props.sort_key.clone().unwrap_or_default();
+    let active_sort_order = props.sort_order.clone();
+
+    // Pre-compute sorted data
+    let sorted_rows: Vec<(usize, std::collections::HashMap<String, String>)> = {
+        if !active_sort_key.is_empty() && active_sort_order != SortOrder::None {
+            let mut indexed: Vec<(usize, &std::collections::HashMap<String, String>)> =
+                props.data.iter().enumerate().collect();
+            let sk = active_sort_key.clone();
+            indexed.sort_by(|a, b| {
+                let va = a.1.get(&sk).map(|s| s.as_str()).unwrap_or("");
+                let vb = b.1.get(&sk).map(|s| s.as_str()).unwrap_or("");
+                match active_sort_order {
+                    SortOrder::Ascending => va.cmp(vb),
+                    SortOrder::Descending => vb.cmp(va),
+                    SortOrder::None => std::cmp::Ordering::Equal,
+                }
+            });
+            indexed.into_iter().map(|(i, row)| (i, row.clone())).collect()
+        } else {
+            props.data.iter().enumerate().map(|(i, row)| (i, row.clone())).collect()
+        }
+    };
+
+    // Pre-compute header column data: (title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order)
+    let header_cols: Vec<(String, String, bool, String, String, String, bool, SortOrder)> = props
+        .columns
+        .iter()
+        .map(|col| {
+            let width_style = col
+                .width
+                .as_ref()
+                .map(|w| format!("width: {};", w))
+                .unwrap_or_default();
+            let is_active = active_sort_key == col.key;
+            let asc_class = if is_active {
+                match active_sort_order {
+                    SortOrder::Ascending => "sort-caret ascending is-active",
+                    _ => "sort-caret ascending",
+                }
+            } else {
+                "sort-caret ascending"
+            };
+            let desc_class = if is_active {
+                match active_sort_order {
+                    SortOrder::Descending => "sort-caret descending is-active",
+                    _ => "sort-caret descending",
+                }
+            } else {
+                "sort-caret descending"
+            };
+            let current_order = if is_active { active_sort_order } else { SortOrder::None };
+            (
+                col.title.clone(),
+                width_style,
+                col.sortable,
+                asc_class.to_string(),
+                desc_class.to_string(),
+                col.key.clone(),
+                is_active,
+                current_order,
+            )
+        })
+        .collect();
+
+    // Pre-compute row rendering data: (orig_idx, row_class, cells)
+    let row_render_data: Vec<(usize, String, Vec<(String, String)>)> = {
+        let cur = props.current_row_index;
+        let stripe = props.stripe;
+        let columns_keys: Vec<String> = props.columns.iter().map(|c| c.key.clone()).collect();
+        sorted_rows
+            .iter()
+            .map(|(orig_idx, row)| {
+                let is_current = cur.map_or(false, |r| r == *orig_idx);
+                let base_class = if *orig_idx % 2 == 1 && stripe {
+                    "el-table__row el-table__row--striped"
+                } else {
+                    "el-table__row"
+                };
+                let row_class = if is_current {
+                    format!("{} current-row", base_class)
+                } else {
+                    base_class.to_string()
+                };
+                let cells: Vec<(String, String)> = columns_keys
+                    .iter()
+                    .map(|key| {
+                        (
+                            "el-table__cell".to_string(),
+                            row.get(key).cloned().unwrap_or_default(),
+                        )
+                    })
+                    .collect();
+                (*orig_idx, row_class, cells)
+            })
+            .collect()
+    };
+
+    let has_data = !props.data.is_empty();
+    let col_count = props.columns.len();
+    let empty_text = props.empty_text.clone();
+    let show_header = props.show_header;
+    let on_row_click = props.on_row_click;
+    let on_sort_change = props.on_sort_change;
+    let loading = props.loading;
 
     rsx! {
         div {
             class: "el-table__wrapper",
-            
-            if let Some(height) = &props.height {
-                div {
-                    style: "max-height: {height}; overflow-y: auto;",
-                    table {
-                        class: "{full_class}",
-                        {build_table_content(&props)}
-                    }
-                }
-            } else {
-                table {
-                    class: "{full_class}",
-                    {build_table_content(&props)}
-                }
-            }
-        }
-    }
-}
+            style: "{style_string}",
 
-fn build_table_content(props: &TableProps) -> Element {
-    rsx! {
-        if props.show_header {
-            thead {
-                class: "el-table__header",
-                
-                tr {
-                    class: "el-table__row",
-                    
-                    for column in props.columns.iter() {
-                        th {
-                            class: "el-table__cell",
-                            style: column.width.as_ref().map(|w| format!("width: {};", w)).unwrap_or_default(),
-                            
-                            div {
-                                class: "cell",
-                                
-                                if column.sortable {
-                                    span {
-                                        "{column.title}"
-                                    }
-                                    span {
-                                        class: "caret-wrapper",
-                                        
-                                        i {
-                                            class: "sort-caret ascending"
-                                        }
-                                        
-                                        i {
-                                            class: "sort-caret descending"
-                                        }
-                                    }
-                                } else {
-                                    "{column.title}"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        tbody {
-            class: "el-table__body",
-            
-            for (row_index, row_data) in props.data.iter().enumerate() {
-                tr {
-                    class: if row_index % 2 == 1 && props.stripe {
-                        "el-table__row el-table__row--striped"
-                    } else {
-                        "el-table__row"
-                    },
-                    
-                    for column in props.columns.iter() {
-                        td {
-                            class: "el-table__cell",
-                            
-                            div {
-                                class: "cell",
-                                "{row_data.get(&column.key).unwrap_or(&String::new())}"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        
-        if props.loading {
-            div {
-                class: "el-table__loading",
-                
-                div {
-                    class: "el-loading-spinner",
-                    
-                    i {
-                        class: "el-icon-loading"
-                    }
-                    
-                    span {
-                        "Loading..."
-                    }
-                }
-            }
-        }
-    }
-}
+            table {
+                class: "{class_string}",
 
-#[component]
-fn table_content(props: TableProps) -> Element {
-    let class_string = if props.border { "el-table el-table--border" } else { "el-table" };
-    let stripe_class = if props.stripe { " el-table--striped" } else { "" };
-    let full_class = format!("{}{}", class_string, stripe_class);
+                if show_header {
+                    thead {
+                        class: "el-table__header",
 
-    rsx! {
-        table {
-            class: "{full_class}",
-            style: props.style.as_ref().cloned().unwrap_or_default(),
-            
-            if props.show_header {
-                thead {
-                    class: "el-table__header",
-                    
-                    tr {
-                        class: "el-table__row",
-                        
-                        for column in props.columns.iter() {
-                            th {
-                                class: "el-table__cell",
-                                style: column.width.as_ref().map(|w| format!("width: {};", w)).unwrap_or_default(),
-                                
-                                div {
-                                    class: "cell",
-                                    
-                                    if column.sortable {
-                                        span {
-                                            "{column.title}"
-                                        }
-                                        span {
-                                            class: "caret-wrapper",
-                                            
-                                            i {
-                                                class: "sort-caret ascending"
-                                            }
-                                            
-                                            i {
-                                                class: "sort-caret descending"
+                        tr {
+                            class: "el-table__row",
+
+                            for (title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order) in header_cols.into_iter() {
+                                th {
+                                    class: "el-table__cell",
+                                    style: "{width_style}",
+
+                                    onclick: move |_| {
+                                        if sortable {
+                                            let new_order = if is_active {
+                                                match current_order {
+                                                    SortOrder::None => SortOrder::Ascending,
+                                                    SortOrder::Ascending => SortOrder::Descending,
+                                                    SortOrder::Descending => SortOrder::None,
+                                                }
+                                            } else {
+                                                SortOrder::Ascending
+                                            };
+                                            if let Some(handler) = on_sort_change.as_ref() {
+                                                handler.call((col_key.clone(), new_order));
                                             }
                                         }
-                                    } else {
-                                        "{column.title}"
+                                    },
+
+                                    div {
+                                        class: "cell",
+
+                                        if sortable {
+                                            span {
+                                                class: "el-table__column-label",
+                                                "{title}"
+                                            }
+                                            span {
+                                                class: "caret-wrapper",
+                                                i { class: "{asc_class}" }
+                                                i { class: "{desc_class}" }
+                                            }
+                                        } else {
+                                            "{title}"
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
-            
-            tbody {
-                class: "el-table__body",
-                
-                for (row_index, row_data) in props.data.iter().enumerate() {
-                    tr {
-                        class: if row_index % 2 == 1 && props.stripe {
-                            "el-table__row el-table__row--striped"
-                        } else {
-                            "el-table__row"
-                        },
-                        
-                        for column in props.columns.iter() {
+
+                if has_data {
+                    tbody {
+                        class: "el-table__body",
+
+                        for (orig_idx, row_class, cells) in row_render_data.into_iter() {
+                            tr {
+                                class: "{row_class}",
+
+                                onclick: move |_| {
+                                    if let Some(handler) = on_row_click.as_ref() {
+                                        handler.call(orig_idx);
+                                    }
+                                },
+
+                                for (cell_class, cell_value) in cells.into_iter() {
+                                    td {
+                                        class: "{cell_class}",
+                                        div {
+                                            class: "cell",
+                                            "{cell_value}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    tbody {
+                        class: "el-table__body",
+                        tr {
+                            class: "el-table__empty-row",
                             td {
                                 class: "el-table__cell",
-                                
+                                colspan: "{col_count}",
                                 div {
-                                    class: "cell",
-                                    "{row_data.get(&column.key).unwrap_or(&String::new())}"
+                                    class: "el-table__empty-block",
+                                    div {
+                                        class: "el-table__empty-text",
+                                        "{empty_text}"
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-            
-            if props.loading {
+
+            if loading {
                 div {
-                    class: "el-table__loading",
-                    
+                    class: "el-table__loading-mask",
                     div {
                         class: "el-loading-spinner",
-                        
-                        i {
-                            class: "el-icon-loading"
-                        }
-                        
-                        span {
-                            "Loading..."
-                        }
+                        i { class: "el-icon-loading" }
+                        span { "Loading..." }
                     }
                 }
             }
@@ -367,90 +400,72 @@ pub struct DataListProps {
 }
 
 /// A data list component for displaying item collections
-///
-/// This component provides a flexible way to display collections of data
-/// with custom templates and interaction handlers.
 #[component]
 pub fn DataList(props: DataListProps) -> Element {
     let mut class_names = vec!["el-data-list".to_string()];
-    
+
     class_names.push(format!("el-data-list--{}", props.direction));
-    
+
     if props.loading {
         class_names.push("el-data-list--loading".to_string());
     }
-    
     if props.items.is_empty() {
         class_names.push("el-data-list--empty".to_string());
     }
-    
     if let Some(ref custom_class) = props.class {
         class_names.push(custom_class.to_string());
     }
-    
+
     let class_string = class_names.join(" ");
     let style_string = props.style.as_ref().cloned().unwrap_or_default();
-    
+
     if props.items.is_empty() && props.show_empty {
         return rsx! {
             div {
                 class: "{class_string} el-data-list--empty-state",
                 style: "{style_string}",
-                
+
                 div {
                     class: "el-empty",
-                    
                     div {
                         class: "el-empty__image",
-                        i {
-                            class: "el-icon-document"
-                        }
+                        i { class: "el-icon-document" }
                     }
-                    
                     div {
                         class: "el-empty__description",
-                        p {
-                            "{props.empty_text}"
-                        }
+                        p { "{props.empty_text}" }
                     }
                 }
             }
         };
     }
-    
+
     rsx! {
         div {
             class: "{class_string}",
             style: "{style_string}",
-            
+
             for (index, item) in props.items.iter().enumerate() {
                 div {
                     class: "el-data-list__item",
-                    
+
                     onclick: move |_| {
                         if let Some(handler) = props.on_item_click {
                             handler.call(index);
                         }
                     },
-                    
+
                     "{item}"
                 }
             }
-            
+
             if props.loading {
                 div {
                     class: "el-data-list__loading",
-                    
                     div {
                         class: "el-loading-spinner",
-                        
-                        i {
-                            class: "el-icon-loading"
-                        }
-                        
-                        span {
-                            "Loading..."
-                        }
+                        i { class: "el-icon-loading" }
+                        span { "Loading..." }
                     }
                 }
             }

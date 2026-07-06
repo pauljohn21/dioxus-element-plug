@@ -1,170 +1,104 @@
-//! timeline component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Timeline component classes
-pub mod classes {
-    /// Base timeline class
-    pub const BASE: &str = "el-timeline";
-    
-    /// timeline size variants
-    pub const LARGE: &str = "el-timeline--large";
-    pub const SMALL: &str = "el-timeline--small";
-    
-    /// timeline type variants
-    pub const PRIMARY: &str = "el-timeline--primary";
-    pub const SUCCESS: &str = "el-timeline--success";
-    pub const WARNING: &str = "el-timeline--warning";
-    pub const DANGER: &str = "el-timeline--danger";
-    pub const INFO: &str = "el-timeline--info";
-    
-    /// timeline states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// TimelineItem timestamp placement
+#[derive(Clone, PartialEq)]
+pub enum TimestampPlacement {
+    Top,
+    Bottom,
 }
 
-/// Basic timeline component structure
-#[derive(Debug, Clone)]
-pub struct Timeline {
-    pub id: Option<String>,
+/// Timeline props
+#[derive(Props, Clone, PartialEq)]
+pub struct TimelineProps {
+    #[props(default)]
+    pub children: Element,
+
+    #[props(default = false)]
+    pub reverse: bool,
+
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Timeline {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Timeline {
-    /// Create a new timeline component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "timeline".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_timeline_creation() {
-        let component = Timeline::new()
-            .id("test-timeline")
-            .class("custom-timeline-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-timeline");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-timeline-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Timeline component for displaying chronological events
+#[component]
+pub fn Timeline(props: TimelineProps) -> Element {
+    let mut class_names = vec!["el-timeline".to_string()];
+    if props.reverse { class_names.push("is-reverse".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        ul {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+            {props.children}
+        }
     }
-    
-    #[test]
-    fn test_timeline_class_generation() {
-        let component = Timeline::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_timeline_states() {
-        let active_disabled = Timeline::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+}
+
+/// TimelineItem props
+#[derive(Props, Clone, PartialEq)]
+pub struct TimelineItemProps {
+    #[props(default)]
+    pub children: Option<Element>,
+
+    #[props(default)]
+    pub timestamp: Option<String>,
+
+    #[props(default = TimestampPlacement::Bottom)]
+    pub placement: TimestampPlacement,
+
+    #[props(default)]
+    pub icon: Option<String>,
+
+    #[props(default)]
+    pub color: Option<String>,
+
+    #[props(default = "default".to_string())]
+    pub node_type: String,
+
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// TimelineItem component for individual timeline events
+#[component]
+pub fn TimelineItem(props: TimelineItemProps) -> Element {
+    let dot_style = props.color.clone().map(|c| format!("background-color: {};", c)).unwrap_or_default();
+
+    rsx! {
+        li {
+            class: "el-timeline-item",
+            div {
+                class: "el-timeline-item__tail",
+            }
+            div {
+                class: "el-timeline-item__node el-timeline-item__node--{props.node_type}",
+                style: "{dot_style}",
+                if let Some(ref icon) = props.icon {
+                    i { class: "{icon}" }
+                }
+            }
+            div {
+                class: "el-timeline-item__wrapper",
+                if let Some(ref timestamp) = props.timestamp {
+                    if props.placement == TimestampPlacement::Top {
+                        div { class: "el-timeline-item__timestamp is-top", "{timestamp}" }
+                    }
+                }
+                div {
+                    class: "el-timeline-item__content",
+                    {props.children}
+                }
+                if let Some(ref timestamp) = props.timestamp {
+                    if props.placement == TimestampPlacement::Bottom {
+                        div { class: "el-timeline-item__timestamp is-bottom", "{timestamp}" }
+                    }
+                }
+            }
+        }
     }
 }

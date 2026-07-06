@@ -1,170 +1,284 @@
-//! transfer component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Transfer component classes
-pub mod classes {
-    /// Base transfer class
-    pub const BASE: &str = "el-transfer";
-    
-    /// transfer size variants
-    pub const LARGE: &str = "el-transfer--large";
-    pub const SMALL: &str = "el-transfer--small";
-    
-    /// transfer type variants
-    pub const PRIMARY: &str = "el-transfer--primary";
-    pub const SUCCESS: &str = "el-transfer--success";
-    pub const WARNING: &str = "el-transfer--warning";
-    pub const DANGER: &str = "el-transfer--danger";
-    pub const INFO: &str = "el-transfer--info";
-    
-    /// transfer states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
-
-/// Basic transfer component structure
-#[derive(Debug, Clone)]
-pub struct Transfer {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+/// Transfer data item
+#[derive(Clone, PartialEq)]
+pub struct TransferItem {
+    pub key: String,
+    pub label: String,
     pub disabled: bool,
 }
 
-impl Default for Transfer {
-    fn default() -> Self {
+impl TransferItem {
+    pub fn new(key: &str, label: &str) -> Self {
         Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
+            key: key.to_string(),
+            label: label.to_string(),
             disabled: false,
         }
     }
-}
 
-impl Transfer {
-    /// Create a new transfer component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "transfer".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
 }
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+/// Transfer props
+#[derive(Props, Clone, PartialEq)]
+pub struct TransferProps {
+    /// All available data items
+    #[props(default)]
+    pub data: Vec<TransferItem>,
+
+    /// Keys currently in the right panel
+    #[props(default)]
+    pub model_value: Vec<String>,
+
+    /// Whether the transfer is filterable
+    #[props(default = false)]
+    pub filterable: bool,
+
+    /// Panel titles [left_title, right_title]
+    #[props(default)]
+    pub titles: Vec<String>,
+
+    /// Filter placeholder text
+    #[props(default = "Enter keyword".to_string())]
+    pub filter_placeholder: String,
+
+    /// Empty state text
+    #[props(default = "No Data".to_string())]
+    pub empty_text: String,
+
+    /// Change handler - receives the right panel keys
+    #[props(default)]
+    pub on_change: Option<EventHandler<Vec<String>>>,
+
+    /// Left panel selection change handler
+    #[props(default)]
+    pub on_left_check: Option<EventHandler<Vec<String>>>,
+
+    /// Right panel selection change handler
+    #[props(default)]
+    pub on_right_check: Option<EventHandler<Vec<String>>>,
+
+    #[props(default)]
+    pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_transfer_creation() {
-        let component = Transfer::new()
-            .id("test-transfer")
-            .class("custom-transfer-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-transfer");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-transfer-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Transfer component for moving items between two panels
+///
+/// This component provides a dual-panel transfer list where users can move
+/// items between left (available) and right (selected) panels.
+///
+/// ## Example
+///
+/// ```rust,ignore
+/// use dioxus_element_plug::components::transfer::{Transfer, TransferItem};
+///
+/// let data = vec![
+///     TransferItem::new("1", "Option 1"),
+///     TransferItem::new("2", "Option 2"),
+///     TransferItem::new("3", "Option 3"),
+/// ];
+///
+/// rsx! {
+///     Transfer {
+///         data: data,
+///         model_value: vec!["1".to_string()],
+///         titles: vec!["Available".to_string(), "Selected".to_string()],
+///     }
+/// }
+/// ```
+#[component]
+pub fn Transfer(props: TransferProps) -> Element {
+    let mut class_names = vec!["el-transfer".to_string()];
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_transfer_class_generation() {
-        let component = Transfer::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_transfer_states() {
-        let active_disabled = Transfer::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+
+    // Split data into left and right panels
+    let right_keys: std::collections::HashSet<&String> = props.model_value.iter().collect();
+
+    let left_items: Vec<(String, String, bool)> = props
+        .data
+        .iter()
+        .filter(|item| !right_keys.contains(&item.key))
+        .map(|item| (item.key.clone(), item.label.clone(), item.disabled))
+        .collect();
+
+    let right_items: Vec<(String, String, bool)> = props
+        .data
+        .iter()
+        .filter(|item| right_keys.contains(&item.key))
+        .map(|item| (item.key.clone(), item.label.clone(), item.disabled))
+        .collect();
+
+    let left_title = props.titles.first().cloned().unwrap_or_else(|| "List 1".to_string());
+    let right_title = props.titles.get(1).cloned().unwrap_or_else(|| "List 2".to_string());
+
+    let left_count = left_items.len();
+    let right_count = right_items.len();
+    let left_empty = left_items.is_empty();
+    let right_empty = right_items.is_empty();
+    let empty_text = props.empty_text.clone();
+    let filterable = props.filterable;
+    let filter_placeholder = props.filter_placeholder.clone();
+
+    let on_change = props.on_change;
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+
+            // Left panel
+            div {
+                class: "el-transfer-panel",
+
+                p {
+                    class: "el-transfer-panel__header",
+                    span {
+                        class: "el-checkbox__label",
+                        "{left_title}"
+                    }
+                    span {
+                        class: "el-transfer-panel__header-count",
+                        "{left_count} items"
+                    }
+                }
+
+                if filterable {
+                    div {
+                        class: "el-transfer-panel__filter",
+                        input {
+                            class: "el-input__inner",
+                            r#type: "text",
+                            placeholder: "{filter_placeholder}",
+                        }
+                    }
+                }
+
+                div {
+                    class: "el-transfer-panel__body",
+
+                    if left_empty {
+                        p {
+                            class: "el-transfer-panel__empty",
+                            "{empty_text}"
+                        }
+                    } else {
+                        for (key, label, disabled) in left_items.into_iter() {
+                            label {
+                                class: "el-transfer-panel__item",
+                                input {
+                                    r#type: "checkbox",
+                                    disabled: disabled,
+                                    value: "{key}",
+                                }
+                                span {
+                                    class: "el-checkbox__label",
+                                    "{label}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Transfer buttons
+            div {
+                class: "el-transfer__buttons",
+
+                button {
+                    class: "el-button el-transfer__button el-button--primary",
+                    r#type: "button",
+                    onclick: move |_| {
+                        // Move selected items from left to right
+                        // For simplicity, move all non-disabled items
+                        let new_right: Vec<String> = props.data.iter()
+                            .filter(|item| !item.disabled)
+                            .map(|item| item.key.clone())
+                            .collect();
+                        if let Some(handler) = on_change.as_ref() {
+                            handler.call(new_right);
+                        }
+                    },
+                    disabled: left_count == 0,
+                    i { class: "el-icon-arrow-right" }
+                }
+
+                button {
+                    class: "el-button el-transfer__button el-button--primary",
+                    r#type: "button",
+                    onclick: move |_| {
+                        // Move all items back to left (clear right panel)
+                        if let Some(handler) = on_change.as_ref() {
+                            handler.call(vec![]);
+                        }
+                    },
+                    disabled: right_count == 0,
+                    i { class: "el-icon-arrow-left" }
+                }
+            }
+
+            // Right panel
+            div {
+                class: "el-transfer-panel",
+
+                p {
+                    class: "el-transfer-panel__header",
+                    span {
+                        class: "el-checkbox__label",
+                        "{right_title}"
+                    }
+                    span {
+                        class: "el-transfer-panel__header-count",
+                        "{right_count} items"
+                    }
+                }
+
+                if filterable {
+                    div {
+                        class: "el-transfer-panel__filter",
+                        input {
+                            class: "el-input__inner",
+                            r#type: "text",
+                            placeholder: "{filter_placeholder}",
+                        }
+                    }
+                }
+
+                div {
+                    class: "el-transfer-panel__body",
+
+                    if right_empty {
+                        p {
+                            class: "el-transfer-panel__empty",
+                            "{empty_text}"
+                        }
+                    } else {
+                        for (key, label, disabled) in right_items.into_iter() {
+                            label {
+                                class: "el-transfer-panel__item",
+                                input {
+                                    r#type: "checkbox",
+                                    disabled: disabled,
+                                    value: "{key}",
+                                    checked: true,
+                                }
+                                span {
+                                    class: "el-checkbox__label",
+                                    "{label}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

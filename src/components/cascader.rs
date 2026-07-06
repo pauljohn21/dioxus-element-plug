@@ -1,170 +1,328 @@
-//! cascader component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Cascader component classes
-pub mod classes {
-    /// Base cascader class
-    pub const BASE: &str = "el-cascader";
-    
-    /// cascader size variants
-    pub const LARGE: &str = "el-cascader--large";
-    pub const SMALL: &str = "el-cascader--small";
-    
-    /// cascader type variants
-    pub const PRIMARY: &str = "el-cascader--primary";
-    pub const SUCCESS: &str = "el-cascader--success";
-    pub const WARNING: &str = "el-cascader--warning";
-    pub const DANGER: &str = "el-cascader--danger";
-    pub const INFO: &str = "el-cascader--info";
-    
-    /// cascader states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
-
-/// Basic cascader component structure
-#[derive(Debug, Clone)]
-pub struct Cascader {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+/// Cascader option
+#[derive(Clone, PartialEq)]
+pub struct CascaderOption {
+    pub value: String,
+    pub label: String,
+    pub children: Vec<CascaderOption>,
     pub disabled: bool,
 }
 
-impl Default for Cascader {
-    fn default() -> Self {
+impl CascaderOption {
+    pub fn new(value: &str, label: &str) -> Self {
         Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
+            value: value.to_string(),
+            label: label.to_string(),
+            children: vec![],
             disabled: false,
         }
     }
-}
 
-impl Cascader {
-    /// Create a new cascader component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
+    pub fn child(mut self, option: CascaderOption) -> Self {
+        self.children.push(option);
         self
     }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
+
     pub fn disabled(mut self, disabled: bool) -> Self {
         self.disabled = disabled;
         self
     }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "cascader".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
 }
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+/// Cascader props
+#[derive(Props, Clone, PartialEq)]
+pub struct CascaderProps {
+    #[props(default)]
+    pub options: Vec<CascaderOption>,
+
+    #[props(default)]
+    pub model_value: Vec<String>,
+
+    #[props(default = "Select".to_string())]
+    pub placeholder: String,
+
+    #[props(default = false)]
+    pub disabled: bool,
+
+    #[props(default = false)]
+    pub clearable: bool,
+
+    #[props(default = false)]
+    pub filterable: bool,
+
+    #[props(default = true)]
+    pub show_all_levels: bool,
+
+    #[props(default = " / ".to_string())]
+    pub separator: String,
+
+    #[props(default)]
+    pub on_change: Option<EventHandler<Vec<String>>>,
+
+    #[props(default)]
+    pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_cascader_creation() {
-        let component = Cascader::new()
-            .id("test-cascader")
-            .class("custom-cascader-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-cascader");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-cascader-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Cascader node render data: (value, label, disabled, has_children, is_active)
+type NodeRender = (String, String, bool, bool, bool);
+
+/// Cascader component for multi-level selection
+#[component]
+pub fn Cascader(props: CascaderProps) -> Element {
+    let mut class_names = vec!["el-cascader".to_string()];
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-    
-    #[test]
-    fn test_cascader_class_generation() {
-        let component = Cascader::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+    if let Some(ref c) = props.class {
+        class_names.push(c.clone());
     }
-    
-    #[test]
-    fn test_cascader_states() {
-        let active_disabled = Cascader::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+
+    // Build display text from model_value
+    let display_text = if props.model_value.is_empty() {
+        String::new()
+    } else {
+        let labels = resolve_path_labels(&props.options, &props.model_value);
+        if props.show_all_levels {
+            labels.join(&props.separator)
+        } else {
+            labels.last().cloned().unwrap_or_default()
+        }
+    };
+
+    // Pre-compute level 1 nodes: (value, label, disabled, has_children, is_active)
+    let level1_nodes: Vec<NodeRender> = props
+        .options
+        .iter()
+        .map(|opt| {
+            let is_active = props.model_value.first().map_or(false, |v| v == &opt.value);
+            (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active)
+        })
+        .collect();
+
+    // Pre-compute level 2 nodes: (value, label, disabled, has_children, is_active, l1_value)
+    let level2_nodes: Vec<(String, String, bool, bool, bool, String)> = if props.model_value.len() >= 1 {
+        let l1 = &props.model_value[0];
+        props
+            .options
+            .iter()
+            .find(|o| &o.value == l1)
+            .map(|parent| {
+                let l1_val = l1.clone();
+                parent
+                    .children
+                    .iter()
+                    .map(|opt| {
+                        let is_active = props.model_value.get(1).map_or(false, |v| v == &opt.value);
+                        (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active, l1_val.clone())
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    } else {
+        vec![]
+    };
+
+    // Pre-compute level 3 nodes: (value, label, disabled, has_children, is_active, l1_value, l2_value)
+    let level3_nodes: Vec<(String, String, bool, bool, bool, String, String)> = if props.model_value.len() >= 2 {
+        let l1 = &props.model_value[0];
+        let l2 = &props.model_value[1];
+        props
+            .options
+            .iter()
+            .find(|o| &o.value == l1)
+            .and_then(|p1| p1.children.iter().find(|o| &o.value == l2))
+            .map(|p2| {
+                let l1_val = l1.clone();
+                let l2_val = l2.clone();
+                p2
+                    .children
+                    .iter()
+                    .map(|opt| {
+                        let is_active = props.model_value.get(2).map_or(false, |v| v == &opt.value);
+                        (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active, l1_val.clone(), l2_val.clone())
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    } else {
+        vec![]
+    };
+
+    let has_value = !props.model_value.is_empty();
+    let placeholder = props.placeholder.clone();
+    let show_clear = props.clearable && has_value && !props.disabled;
+    let show_l1 = !level1_nodes.is_empty();
+    let show_l2 = !level2_nodes.is_empty();
+    let show_l3 = !level3_nodes.is_empty();
+    let on_change = props.on_change;
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+
+            div {
+                class: "el-cascader__wrapper",
+
+                div {
+                    class: "el-input el-input--suffix el-cascader__input",
+
+                    input {
+                        class: "el-input__inner",
+                        r#type: "text",
+                        placeholder: "{placeholder}",
+                        readonly: true,
+                        disabled: props.disabled,
+                        value: "{display_text}",
+                    }
+
+                    if show_clear {
+                        span {
+                            class: "el-input__suffix el-cascader__clear-icon",
+                            onclick: move |_| {
+                                if let Some(handler) = on_change.as_ref() {
+                                    handler.call(vec![]);
+                                }
+                            },
+                            i { class: "el-icon-circle-close" }
+                        }
+                    } else {
+                        span {
+                            class: "el-input__suffix el-cascader__arrow-icon",
+                            i { class: "el-icon-arrow-down" }
+                        }
+                    }
+                }
+            }
+
+            if has_value {
+                div {
+                    class: "el-cascader__dropdown",
+                    style: "position: absolute; z-index: 2000; margin-top: 4px;",
+
+                    div {
+                        class: "el-cascader-panel",
+                        style: "display: flex;",
+
+                        if show_l1 {
+                            div {
+                                class: "el-cascader-menu",
+
+                                for (value, label, disabled, has_children, is_active) in level1_nodes.into_iter() {
+                                    div {
+                                        class: if is_active {
+                                            "el-cascader-node is-active"
+                                        } else if disabled {
+                                            "el-cascader-node is-disabled"
+                                        } else {
+                                            "el-cascader-node"
+                                        },
+                                        onclick: move |_| {
+                                            if !disabled {
+                                                if let Some(handler) = on_change.as_ref() {
+                                                    handler.call(vec![value.clone()]);
+                                                }
+                                            }
+                                        },
+
+                                        span {
+                                            class: "el-cascader-node__label",
+                                            "{label}"
+                                        }
+                                        if has_children {
+                                            i { class: "el-cascader-node__postfix el-icon-arrow-right" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if show_l2 {
+                            div {
+                                class: "el-cascader-menu",
+
+                                for (value, label, disabled, has_children, is_active, l1_val) in level2_nodes.into_iter() {
+                                    div {
+                                        class: if is_active {
+                                            "el-cascader-node is-active"
+                                        } else if disabled {
+                                            "el-cascader-node is-disabled"
+                                        } else {
+                                            "el-cascader-node"
+                                        },
+                                        onclick: move |_| {
+                                            if !disabled {
+                                                if let Some(handler) = on_change.as_ref() {
+                                                    handler.call(vec![l1_val.clone(), value.clone()]);
+                                                }
+                                            }
+                                        },
+
+                                        span {
+                                            class: "el-cascader-node__label",
+                                            "{label}"
+                                        }
+                                        if has_children {
+                                            i { class: "el-cascader-node__postfix el-icon-arrow-right" }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if show_l3 {
+                            div {
+                                class: "el-cascader-menu",
+
+                                for (value, label, disabled, _has_children, is_active, l1_val, l2_val) in level3_nodes.into_iter() {
+                                    div {
+                                        class: if is_active {
+                                            "el-cascader-node is-active"
+                                        } else if disabled {
+                                            "el-cascader-node is-disabled"
+                                        } else {
+                                            "el-cascader-node"
+                                        },
+                                        onclick: move |_| {
+                                            if !disabled {
+                                                if let Some(handler) = on_change.as_ref() {
+                                                    handler.call(vec![l1_val.clone(), l2_val.clone(), value.clone()]);
+                                                }
+                                            }
+                                        },
+
+                                        span {
+                                            class: "el-cascader-node__label",
+                                            "{label}"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
+}
+
+/// Resolve labels for a path of values
+fn resolve_path_labels(options: &[CascaderOption], path: &[String]) -> Vec<String> {
+    let mut labels = vec![];
+    let mut current_options = options;
+
+    for value in path {
+        if let Some(opt) = current_options.iter().find(|o| &o.value == value) {
+            labels.push(opt.label.clone());
+            current_options = &opt.children;
+        } else {
+            break;
+        }
+    }
+
+    labels
 }

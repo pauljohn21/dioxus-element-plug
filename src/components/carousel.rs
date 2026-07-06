@@ -1,170 +1,75 @@
-//! carousel component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Carousel component classes
-pub mod classes {
-    /// Base carousel class
-    pub const BASE: &str = "el-carousel";
-    
-    /// carousel size variants
-    pub const LARGE: &str = "el-carousel--large";
-    pub const SMALL: &str = "el-carousel--small";
-    
-    /// carousel type variants
-    pub const PRIMARY: &str = "el-carousel--primary";
-    pub const SUCCESS: &str = "el-carousel--success";
-    pub const WARNING: &str = "el-carousel--warning";
-    pub const DANGER: &str = "el-carousel--danger";
-    pub const INFO: &str = "el-carousel--info";
-    
-    /// carousel states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Carousel props
+#[derive(Props, Clone, PartialEq)]
+pub struct CarouselProps {
+    #[props(default)]
+    pub children: Element,
 
-/// Basic carousel component structure
-#[derive(Debug, Clone)]
-pub struct Carousel {
-    pub id: Option<String>,
+    /// Initial slide index
+    #[props(default = 0)]
+    pub initial_index: u32,
+
+    /// Slide height
+    #[props(default = "300px".to_string())]
+    pub height: String,
+
+    /// Trigger type
+    #[props(default = "hover".to_string())]
+    pub trigger: String,
+
+    /// Whether to autoplay
+    #[props(default = true)]
+    pub autoplay: bool,
+
+    /// Autoplay interval in ms
+    #[props(default = 3000)]
+    pub interval: u32,
+
+    /// Indicator position
+    #[props(default = "outside".to_string())]
+    pub indicator_position: String,
+
+    /// Arrow display
+    #[props(default = "hover".to_string())]
+    pub arrow: String,
+
+    /// Carousel type
+    #[props(default = "default".to_string())]
+    pub carousel_type: String,
+
+    #[props(default)]
+    pub on_change: Option<EventHandler<u32>>,
+
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Carousel {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Carousel {
-    /// Create a new carousel component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "carousel".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_carousel_creation() {
-        let component = Carousel::new()
-            .id("test-carousel")
-            .class("custom-carousel-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-carousel");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-carousel-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_carousel_class_generation() {
-        let component = Carousel::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_carousel_states() {
-        let active_disabled = Carousel::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+/// Carousel component for image/content slideshows
+#[component]
+pub fn Carousel(props: CarouselProps) -> Element {
+    let mut class_names = vec!["el-carousel".to_string()];
+    if props.carousel_type == "card" { class_names.push("el-carousel--card".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: "height: {props.height}; {props.style.clone().unwrap_or_default()}",
+            div {
+                class: "el-carousel__container",
+                style: "height: {props.height};",
+                {props.children}
+            }
+            div {
+                class: "el-carousel__indicators--{props.indicator_position}",
+                button {
+                    class: "el-carousel__button",
+                }
+            }
+        }
     }
 }

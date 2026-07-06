@@ -1,170 +1,100 @@
-//! loading component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Loading component classes
-pub mod classes {
-    /// Base loading class
-    pub const BASE: &str = "el-loading";
-    
-    /// loading size variants
-    pub const LARGE: &str = "el-loading--large";
-    pub const SMALL: &str = "el-loading--small";
-    
-    /// loading type variants
-    pub const PRIMARY: &str = "el-loading--primary";
-    pub const SUCCESS: &str = "el-loading--success";
-    pub const WARNING: &str = "el-loading--warning";
-    pub const DANGER: &str = "el-loading--danger";
-    pub const INFO: &str = "el-loading--info";
-    
-    /// loading states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Loading props
+#[derive(Props, Clone, PartialEq)]
+pub struct LoadingProps {
+    #[props(default)]
+    pub children: Option<Element>,
 
-/// Basic loading component structure
-#[derive(Debug, Clone)]
-pub struct Loading {
-    pub id: Option<String>,
+    /// Whether loading is active
+    #[props(default = false)]
+    pub loading: bool,
+
+    /// Loading text
+    #[props(default)]
+    pub text: Option<String>,
+
+    /// Whether to show a fullscreen overlay
+    #[props(default = false)]
+    pub fullscreen: bool,
+
+    /// Background color
+    #[props(default = "rgba(255, 255, 255, 0.9)".to_string())]
+    pub background: String,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Loading {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Loading {
-    /// Create a new loading component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "loading".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_loading_creation() {
-        let component = Loading::new()
-            .id("test-loading")
-            .class("custom-loading-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-loading");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-loading-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Loading component for displaying loading indicators
+#[component]
+pub fn Loading(props: LoadingProps) -> Element {
+    let mut class_names = vec!["el-loading".to_string()];
+    if props.fullscreen { class_names.push("el-loading--fullscreen".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = class_names.join(" ");
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: props.style.clone().unwrap_or_default(),
+            {props.children}
+            if props.loading {
+                div {
+                    class: "el-loading__mask",
+                    style: "background-color: {props.background};",
+                    div {
+                        class: "el-loading__spinner",
+                        i { class: "el-icon-loading" }
+                        if let Some(ref text) = props.text {
+                            p { class: "el-loading__text", "{text}" }
+                        }
+                    }
+                }
+            }
+        }
     }
-    
-    #[test]
-    fn test_loading_class_generation() {
-        let component = Loading::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_loading_states() {
-        let active_disabled = Loading::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+}
+
+/// LoadingDirective - standalone loading indicator
+#[derive(Props, Clone, PartialEq)]
+pub struct LoadingDirectiveProps {
+    #[props(default = false)]
+    pub fullscreen: bool,
+
+    #[props(default)]
+    pub text: Option<String>,
+
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// LoadingDirective - standalone loading spinner
+#[component]
+pub fn LoadingDirective(props: LoadingDirectiveProps) -> Element {
+    let mut class_names = vec!["el-loading".to_string()];
+    if props.fullscreen { class_names.push("el-loading--fullscreen".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: "position: relative;",
+            div {
+                class: "el-loading__mask",
+                div {
+                    class: "el-loading__spinner",
+                    i { class: "el-icon-loading" }
+                    if let Some(ref text) = props.text {
+                        p { class: "el-loading__text", "{text}" }
+                    }
+                }
+            }
+        }
     }
 }

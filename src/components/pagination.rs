@@ -1,170 +1,161 @@
-//! pagination component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Pagination component classes
-pub mod classes {
-    /// Base pagination class
-    pub const BASE: &str = "el-pagination";
-    
-    /// pagination size variants
-    pub const LARGE: &str = "el-pagination--large";
-    pub const SMALL: &str = "el-pagination--small";
-    
-    /// pagination type variants
-    pub const PRIMARY: &str = "el-pagination--primary";
-    pub const SUCCESS: &str = "el-pagination--success";
-    pub const WARNING: &str = "el-pagination--warning";
-    pub const DANGER: &str = "el-pagination--danger";
-    pub const INFO: &str = "el-pagination--info";
-    
-    /// pagination states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Pagination props
+#[derive(Props, Clone, PartialEq)]
+pub struct PaginationProps {
+    /// Total number of items
+    #[props(default = 0)]
+    pub total: u32,
 
-/// Basic pagination component structure
-#[derive(Debug, Clone)]
-pub struct Pagination {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    /// Current page number
+    #[props(default = 1)]
+    pub current_page: u32,
+
+    /// Items per page
+    #[props(default = 10)]
+    pub page_size: u32,
+
+    /// Number of page buttons to show
+    #[props(default = 7)]
+    pub pager_count: u32,
+
+    /// Whether to show the total count
+    #[props(default = false)]
+    pub show_total: bool,
+
+    /// Whether to show the page size selector
+    #[props(default = false)]
+    pub show_size_picker: bool,
+
+    /// Whether to show the "Go to" input
+    #[props(default = false)]
+    pub show_jumper: bool,
+
+    /// Layout sections
+    #[props(default = "prev, pager, next".to_string())]
+    pub layout: String,
+
+    /// Whether the pagination is disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Pagination {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Whether to use small size
+    #[props(default = false)]
+    pub small: bool,
 
-impl Pagination {
-    /// Create a new pagination component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "pagination".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Page size options
+    #[props(default)]
+    pub page_sizes: Vec<u32>,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Change event handler (current page)
+    #[props(default)]
+    pub on_current_change: Option<EventHandler<u32>>,
+
+    /// Change event handler (page size)
+    #[props(default)]
+    pub on_size_change: Option<EventHandler<u32>>,
+
+    #[props(default)]
+    pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_pagination_creation() {
-        let component = Pagination::new()
-            .id("test-pagination")
-            .class("custom-pagination-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-pagination");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-pagination-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_pagination_class_generation() {
-        let component = Pagination::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_pagination_states() {
-        let active_disabled = Pagination::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+/// Pagination component for navigating paged data
+#[component]
+pub fn Pagination(props: PaginationProps) -> Element {
+    let mut class_names = vec!["el-pagination".to_string()];
+    if props.small { class_names.push("el-pagination--small".to_string()); }
+    if props.disabled { class_names.push("is-disabled".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    let total_pages = if props.page_size > 0 {
+        (props.total + props.page_size - 1) / props.page_size
+    } else {
+        1
+    };
+    let total_pages = total_pages.max(1);
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+            role: "pagination",
+
+            if props.show_total {
+                span {
+                    class: "el-pagination__total",
+                    "Total {props.total}"
+                }
+            }
+
+            // Previous button
+            button {
+                class: "btn-prev el-pagination__button",
+                disabled: props.disabled || props.current_page <= 1,
+                onclick: move |_| {
+                    if !props.disabled && props.current_page > 1 {
+                        if let Some(handler) = props.on_current_change {
+                            handler.call(props.current_page - 1);
+                        }
+                    }
+                },
+                "‹"
+            }
+
+            // Page numbers
+            span {
+                class: "el-pager",
+                for page in 1..=total_pages.min(props.pager_count) {
+                    button {
+                        class: {
+                            let mut cls = "el-pager__number".to_string();
+                            if page == props.current_page { cls.push_str(" is-active"); }
+                            cls
+                        },
+                        onclick: move |_| {
+                            if !props.disabled {
+                                if let Some(handler) = props.on_current_change {
+                                    handler.call(page);
+                                }
+                            }
+                        },
+                        "{page}"
+                    }
+                }
+                if total_pages > props.pager_count {
+                    span { class: "el-icon-more", "..." }
+                }
+            }
+
+            // Next button
+            button {
+                class: "btn-next el-pagination__button",
+                disabled: props.disabled || props.current_page >= total_pages,
+                onclick: move |_| {
+                    if !props.disabled && props.current_page < total_pages {
+                        if let Some(handler) = props.on_current_change {
+                            handler.call(props.current_page + 1);
+                        }
+                    }
+                },
+                "›"
+            }
+
+            if props.show_jumper {
+                span {
+                    class: "el-pagination__jump",
+                    "Go to"
+                    input {
+                        r#type: "number",
+                        class: "el-pagination__editor",
+                        value: "{props.current_page}",
+                        disabled: props.disabled,
+                    }
+                    "pages"
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,18 @@
+[application]
+name = "theme-switcher"
+bin_package_name = "theme-switcher"
+
+[web.app]
+base_path = "/"
+
+[web.watcher]
+index_on_404 = true
+debounce_interval = "250ms"
+
+[web.resource]
+style = []
+script = []
+
+[web.resource.dev]
+style = []
+script = []

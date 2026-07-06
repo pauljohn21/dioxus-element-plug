@@ -1,170 +1,107 @@
-//! anchor component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Anchor component classes
-pub mod classes {
-    /// Base anchor class
-    pub const BASE: &str = "el-anchor";
-    
-    /// anchor size variants
-    pub const LARGE: &str = "el-anchor--large";
-    pub const SMALL: &str = "el-anchor--small";
-    
-    /// anchor type variants
-    pub const PRIMARY: &str = "el-anchor--primary";
-    pub const SUCCESS: &str = "el-anchor--success";
-    pub const WARNING: &str = "el-anchor--warning";
-    pub const DANGER: &str = "el-anchor--danger";
-    pub const INFO: &str = "el-anchor--info";
-    
-    /// anchor states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Anchor props
+#[derive(Props, Clone, PartialEq)]
+pub struct AnchorProps {
+    #[props(default)]
+    pub children: Element,
 
-/// Basic anchor component structure
-#[derive(Debug, Clone)]
-pub struct Anchor {
-    pub id: Option<String>,
+    /// Current active anchor
+    #[props(default)]
+    pub current: Option<String>,
+
+    /// Anchor direction
+    #[props(default = "vertical".to_string())]
+    pub direction: String,
+
+    /// Container selector
+    #[props(default)]
+    pub container: Option<String>,
+
+    /// Offset for triggering active state
+    #[props(default = 100)]
+    pub offset: u32,
+
+    /// Scroll offset
+    #[props(default = 0)]
+    pub scroll_offset: u32,
+
+    /// Bound element selector
+    #[props(default)]
+    pub bound: Option<u32>,
+
+    #[props(default)]
+    pub on_click: Option<EventHandler<String>>,
+
+    #[props(default)]
     pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
-    pub active: bool,
+}
+
+/// Anchor component for anchor navigation
+#[component]
+pub fn Anchor(props: AnchorProps) -> Element {
+    let mut class_names = vec!["el-anchor".to_string()];
+    class_names.push(format!("el-anchor--{}", props.direction));
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+            div {
+                class: "el-anchor__wrapper",
+                {props.children}
+            }
+        }
+    }
+}
+
+/// AnchorLink props
+#[derive(Props, Clone, PartialEq)]
+pub struct AnchorLinkProps {
+    /// Link text
+    pub title: String,
+
+    /// Anchor href
+    pub href: String,
+
+    #[props(default)]
+    pub children: Option<Element>,
+
+    #[props(default = false)]
     pub disabled: bool,
+
+    #[props(default)]
+    pub on_click: Option<EventHandler<String>>,
+
+    #[props(default)]
+    pub class: Option<String>,
 }
 
-impl Default for Anchor {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
+/// AnchorLink component for individual anchor links
+#[component]
+pub fn AnchorLink(props: AnchorLinkProps) -> Element {
+    let href_clone = props.href.clone();
+    rsx! {
+        div {
+            class: "el-anchor__link {props.class.clone().unwrap_or_default()}",
+            a {
+                class: "el-anchor__link-title",
+                href: "{props.href}",
+                onclick: move |e| {
+                    e.prevent_default();
+                    if !props.disabled {
+                        if let Some(handler) = props.on_click {
+                            handler.call(href_clone.clone());
+                        }
+                    }
+                },
+                "{props.title}"
+            }
+            {props.children}
         }
-    }
-}
-
-impl Anchor {
-    /// Create a new anchor component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "anchor".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
-    pub style: Option<String>,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_anchor_creation() {
-        let component = Anchor::new()
-            .id("test-anchor")
-            .class("custom-anchor-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-anchor");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-anchor-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_anchor_class_generation() {
-        let component = Anchor::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_anchor_states() {
-        let active_disabled = Anchor::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
     }
 }

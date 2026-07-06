@@ -1,6 +1,8 @@
 //! Component modules for Element Plus Dioxus integration
 //! Auto-generated module declarations
 
+#![allow(unused_imports)] // Glob re-exports may overlap with parent module re-exports
+
 // Layout Components
 pub mod layout;
 

@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use dioxus_element_plug::{
     CompleteStyleManager,
-    Button, ButtonVariant, ButtonSize,
+    Button, ButtonVariant,
     Input, InputType, InputSize,
     Card,
     Row, Col,

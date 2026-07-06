@@ -1,170 +1,113 @@
-//! drawer component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Drawer component classes
-pub mod classes {
-    /// Base drawer class
-    pub const BASE: &str = "el-drawer";
-    
-    /// drawer size variants
-    pub const LARGE: &str = "el-drawer--large";
-    pub const SMALL: &str = "el-drawer--small";
-    
-    /// drawer type variants
-    pub const PRIMARY: &str = "el-drawer--primary";
-    pub const SUCCESS: &str = "el-drawer--success";
-    pub const WARNING: &str = "el-drawer--warning";
-    pub const DANGER: &str = "el-drawer--danger";
-    pub const INFO: &str = "el-drawer--info";
-    
-    /// drawer states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Drawer direction
+#[derive(Clone, PartialEq)]
+pub enum DrawerDirection {
+    Rtl,
+    Ltr,
+    Ttb,
+    Btt,
 }
 
-/// Basic drawer component structure
-#[derive(Debug, Clone)]
-pub struct Drawer {
-    pub id: Option<String>,
+impl DrawerDirection {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            DrawerDirection::Rtl => "rtl",
+            DrawerDirection::Ltr => "ltr",
+            DrawerDirection::Ttb => "ttb",
+            DrawerDirection::Btt => "btt",
+        }
+    }
+}
+
+/// Drawer props
+#[derive(Props, Clone, PartialEq)]
+pub struct DrawerProps {
+    #[props(default)]
+    pub children: Element,
+
+    #[props(default)]
+    pub title: Option<String>,
+
+    #[props(default = false)]
+    pub visible: bool,
+
+    #[props(default = DrawerDirection::Rtl)]
+    pub direction: DrawerDirection,
+
+    #[props(default = "30%".to_string())]
+    pub size: String,
+
+    #[props(default = true)]
+    pub modal: bool,
+
+    #[props(default = true)]
+    pub show_close: bool,
+
+    #[props(default = true)]
+    pub close_on_click_modal: bool,
+
+    #[props(default)]
+    pub on_close: Option<EventHandler<()>>,
+
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Drawer {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Drawer {
-    /// Create a new drawer component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "drawer".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_drawer_creation() {
-        let component = Drawer::new()
-            .id("test-drawer")
-            .class("custom-drawer-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-drawer");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-drawer-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Drawer component for slide-out panels
+#[component]
+pub fn Drawer(props: DrawerProps) -> Element {
+    if !props.visible {
+        return rsx! {};
     }
-    
-    #[test]
-    fn test_drawer_class_generation() {
-        let component = Drawer::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_drawer_states() {
-        let active_disabled = Drawer::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+
+    let drawer_style = match props.direction {
+        DrawerDirection::Rtl => format!("width: {}; right: 0; top: 0; bottom: 0; {}", props.size, props.style.clone().unwrap_or_default()),
+        DrawerDirection::Ltr => format!("width: {}; left: 0; top: 0; bottom: 0; {}", props.size, props.style.clone().unwrap_or_default()),
+        DrawerDirection::Ttb => format!("height: {}; top: 0; left: 0; right: 0; {}", props.size, props.style.clone().unwrap_or_default()),
+        DrawerDirection::Btt => format!("height: {}; bottom: 0; left: 0; right: 0; {}", props.size, props.style.clone().unwrap_or_default()),
+    };
+
+    rsx! {
+        div {
+            class: "el-overlay",
+            style: "position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2000;",
+            onclick: move |_| {
+                if props.close_on_click_modal {
+                    if let Some(handler) = props.on_close {
+                        handler.call(());
+                    }
+                }
+            },
+            div {
+                class: "el-drawer",
+                style: "position: absolute; background: var(--el-bg-color); {drawer_style}",
+                onclick: move |e| e.stop_propagation(),
+                if let Some(ref title) = props.title {
+                    header {
+                        class: "el-drawer__header",
+                        span { class: "el-drawer__title", "{title}" }
+                        if props.show_close {
+                            button {
+                                class: "el-drawer__close-btn",
+                                onclick: move |_| {
+                                    if let Some(handler) = props.on_close {
+                                        handler.call(());
+                                    }
+                                },
+                                "×"
+                            }
+                        }
+                    }
+                }
+                div {
+                    class: "el-drawer__body",
+                    {props.children}
+                }
+            }
+        }
     }
 }

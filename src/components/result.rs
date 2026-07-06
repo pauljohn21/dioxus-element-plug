@@ -1,170 +1,88 @@
-//! result component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Result component classes
-pub mod classes {
-    /// Base result class
-    pub const BASE: &str = "el-result";
-    
-    /// result size variants
-    pub const LARGE: &str = "el-result--large";
-    pub const SMALL: &str = "el-result--small";
-    
-    /// result type variants
-    pub const PRIMARY: &str = "el-result--primary";
-    pub const SUCCESS: &str = "el-result--success";
-    pub const WARNING: &str = "el-result--warning";
-    pub const DANGER: &str = "el-result--danger";
-    pub const INFO: &str = "el-result--info";
-    
-    /// result states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Result icon type
+#[derive(Clone, PartialEq)]
+pub enum ResultType {
+    Success,
+    Warning,
+    Info,
+    Error,
 }
 
-/// Basic result component structure
-#[derive(Debug, Clone)]
-pub struct Result {
-    pub id: Option<String>,
+impl ResultType {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            ResultType::Success => "el-result__icon--success",
+            ResultType::Warning => "el-result__icon--warning",
+            ResultType::Info => "el-result__icon--info",
+            ResultType::Error => "el-result__icon--error",
+        }
+    }
+
+    pub fn as_icon(&self) -> &'static str {
+        match self {
+            ResultType::Success => "✓",
+            ResultType::Warning => "⚠",
+            ResultType::Info => "ℹ",
+            ResultType::Error => "✗",
+        }
+    }
+}
+
+/// Result props
+#[derive(Props, Clone, PartialEq)]
+pub struct ResultProps {
+    #[props(default)]
+    pub children: Option<Element>,
+
+    #[props(default = ResultType::Info)]
+    pub result_type: ResultType,
+
+    #[props(default)]
+    pub title: Option<String>,
+
+    #[props(default)]
+    pub sub_title: Option<String>,
+
+    #[props(default)]
+    pub icon: Option<String>,
+
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Result {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Result {
-    /// Create a new result component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "result".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_result_creation() {
-        let component = Result::new()
-            .id("test-result")
-            .class("custom-result-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-result");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-result-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_result_class_generation() {
-        let component = Result::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_result_states() {
-        let active_disabled = Result::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+/// Result component for feedback pages
+#[component]
+pub fn Result(props: ResultProps) -> Element {
+    let mut class_names = vec!["el-result".to_string()];
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = class_names.join(" ");
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: props.style.clone().unwrap_or_default(),
+            div {
+                class: "el-result__icon {props.result_type.as_class()}",
+                style: "font-size: 64px;",
+                if let Some(ref icon) = props.icon {
+                    i { class: "{icon}" }
+                } else {
+                    "{props.result_type.as_icon()}"
+                }
+            }
+            if let Some(ref title) = props.title {
+                div { class: "el-result__title", h2 { "{title}" } }
+            }
+            if let Some(ref sub) = props.sub_title {
+                div { class: "el-result__subtitle", p { "{sub}" } }
+            }
+            if props.children.is_some() {
+                div { class: "el-result__extra", {props.children} }
+            }
+        }
     }
 }

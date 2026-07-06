@@ -1,170 +1,70 @@
-//! date-picker component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// DatePicker component classes
-pub mod classes {
-    /// Base date-picker class
-    pub const BASE: &str = "el-date-picker";
-    
-    /// date-picker size variants
-    pub const LARGE: &str = "el-date-picker--large";
-    pub const SMALL: &str = "el-date-picker--small";
-    
-    /// date-picker type variants
-    pub const PRIMARY: &str = "el-date-picker--primary";
-    pub const SUCCESS: &str = "el-date-picker--success";
-    pub const WARNING: &str = "el-date-picker--warning";
-    pub const DANGER: &str = "el-date-picker--danger";
-    pub const INFO: &str = "el-date-picker--info";
-    
-    /// date-picker states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// DatePicker props
+#[derive(Props, Clone, PartialEq)]
+pub struct DatePickerProps {
+    #[props(default)]
+    pub model_value: Option<String>,
 
-/// Basic date-picker component structure
-#[derive(Debug, Clone)]
-pub struct DatePicker {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    #[props(default = "Select Date".to_string())]
+    pub placeholder: String,
+
+    #[props(default = "date".to_string())]
+    pub picker_type: String,
+
+    #[props(default = "YYYY-MM-DD".to_string())]
+    pub format: String,
+
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for DatePicker {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    #[props(default = false)]
+    pub clearable: bool,
 
-impl DatePicker {
-    /// Create a new date-picker component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "date-picker".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    #[props(default = false)]
+    pub readonly: bool,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    #[props(default)]
+    pub on_change: Option<EventHandler<String>>,
+
+    #[props(default)]
+    pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_date_picker_creation() {
-        let component = DatePicker::new()
-            .id("test-date-picker")
-            .class("custom-date-picker-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-date-picker");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-date-picker-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_date_picker_class_generation() {
-        let component = DatePicker::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_date_picker_states() {
-        let active_disabled = DatePicker::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+/// DatePicker component for date selection
+#[component]
+pub fn DatePicker(props: DatePickerProps) -> Element {
+    let mut class_names = vec!["el-date-editor".to_string()];
+    if props.disabled { class_names.push("is-disabled".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+            div {
+                class: "el-input el-input--default el-range-editor",
+                input {
+                    class: "el-input__inner",
+                    r#type: "text",
+                    placeholder: "{props.placeholder}",
+                    value: props.model_value.clone().unwrap_or_default(),
+                    disabled: props.disabled,
+                    readonly: props.readonly,
+                    onchange: move |e| {
+                        if let Some(handler) = props.on_change {
+                            handler.call(e.value());
+                        }
+                    },
+                }
+                span {
+                    class: "el-input__prefix",
+                    i { class: "el-icon-date" }
+                }
+            }
+        }
     }
 }

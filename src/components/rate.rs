@@ -1,170 +1,180 @@
-//! rate component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Rate component classes
-pub mod classes {
-    /// Base rate class
-    pub const BASE: &str = "el-rate";
-    
-    /// rate size variants
-    pub const LARGE: &str = "el-rate--large";
-    pub const SMALL: &str = "el-rate--small";
-    
-    /// rate type variants
-    pub const PRIMARY: &str = "el-rate--primary";
-    pub const SUCCESS: &str = "el-rate--success";
-    pub const WARNING: &str = "el-rate--warning";
-    pub const DANGER: &str = "el-rate--danger";
-    pub const INFO: &str = "el-rate--info";
-    
-    /// rate states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Rate size variants
+#[derive(Clone, PartialEq)]
+pub enum RateSize {
+    Large,
+    Default,
+    Small,
 }
 
-/// Basic rate component structure
-#[derive(Debug, Clone)]
-pub struct Rate {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+impl RateSize {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            RateSize::Large => "el-rate--large",
+            RateSize::Default => "",
+            RateSize::Small => "el-rate--small",
+        }
+    }
+}
+
+/// Rate props
+#[derive(Props, Clone, PartialEq)]
+pub struct RateProps {
+    /// Current rating value
+    #[props(default = 0.0)]
+    pub model_value: f64,
+
+    /// Maximum rating value (number of stars)
+    #[props(default = 5)]
+    pub max: u32,
+
+    /// Whether the rate is disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Rate {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Whether to allow half stars
+    #[props(default = false)]
+    pub allow_half: bool,
 
-impl Rate {
-    /// Create a new rate component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "rate".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Whether to allow clearing (click again to clear)
+    #[props(default = false)]
+    pub clearable: bool,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Whether to show text
+    #[props(default = false)]
+    pub show_text: bool,
+
+    /// Whether to show score
+    #[props(default = false)]
+    pub show_score: bool,
+
+    /// Text array for each rating level
+    #[props(default)]
+    pub texts: Vec<String>,
+
+    /// Color for active stars
+    #[props(default = "#F7BA2A".to_string())]
+    pub active_color: String,
+
+    /// Color for inactive stars
+    #[props(default = "#C6D1DE".to_string())]
+    pub inactive_color: String,
+
+    /// Rate size
+    #[props(default = RateSize::Default)]
+    pub size: RateSize,
+
+    /// Change event handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<f64>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_rate_creation() {
-        let component = Rate::new()
-            .id("test-rate")
-            .class("custom-rate-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-rate");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-rate-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Rate component for star ratings
+///
+/// ## Example
+///
+/// ```rust,ignore
+/// rsx! {
+///     Rate {
+///         model_value: 3.5,
+///         allow_half: true,
+///         max: 5,
+///         on_change: move |v| println!("Rating: {}", v),
+///     }
+/// }
+/// ```
+#[component]
+pub fn Rate(props: RateProps) -> Element {
+    let mut class_names = vec!["el-rate".to_string()];
+
+    let size_class = props.size.as_class();
+    if !size_class.is_empty() {
+        class_names.push(size_class.to_string());
     }
-    
-    #[test]
-    fn test_rate_class_generation() {
-        let component = Rate::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-    
-    #[test]
-    fn test_rate_states() {
-        let active_disabled = Rate::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+
+    if let Some(ref custom_class) = props.class {
+        class_names.push(custom_class.clone());
+    }
+
+    let class_string = class_names.join(" ");
+    let style_string = props.style.clone().unwrap_or_default();
+
+    let current_value = props.model_value;
+    let text_index = if current_value > 0.0 {
+        (current_value.ceil() as usize).saturating_sub(1).min(props.texts.len().saturating_sub(1))
+    } else {
+        0
+    };
+
+    let display_text = if props.show_text && !props.texts.is_empty() {
+        props.texts.get(text_index).cloned().unwrap_or_default()
+    } else if props.show_score {
+        format!("{}", current_value)
+    } else {
+        String::new()
+    };
+
+    let stars: Vec<(f64, String, &'static str)> = (1..=props.max)
+        .map(|i| {
+            let star_value = i as f64;
+            let is_active = star_value <= current_value;
+            let is_half = props.allow_half && star_value - 0.5 == current_value;
+            let color = if is_active { props.active_color.clone() } else { props.inactive_color.clone() };
+            let star_char = if is_active { "★" } else if is_half { "⯨" } else { "☆" };
+            (star_value, color, star_char)
+        })
+        .collect();
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+            role: "slider",
+            aria_valuenow: "{current_value}",
+            aria_valuemax: "{props.max}",
+            for (star_value, color, star_char) in stars.into_iter() {
+                span {
+                    class: "el-rate__item",
+                    style: "cursor: pointer;",
+                    onclick: move |_| {
+                        if !props.disabled {
+                            if props.clearable && star_value == current_value {
+                                if let Some(handler) = props.on_change {
+                                    handler.call(0.0);
+                                }
+                            } else {
+                                if let Some(handler) = props.on_change {
+                                    handler.call(star_value);
+                                }
+                            }
+                        }
+                    },
+                    i {
+                        class: "el-rate__icon",
+                        style: "color: {color};",
+                        "{star_char}"
+                    }
+                }
+            }
+            if props.show_text || props.show_score {
+                span {
+                    class: "el-rate__text",
+                    "{display_text}"
+                }
+            }
+        }
     }
 }

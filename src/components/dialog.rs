@@ -1,170 +1,140 @@
-//! dialog component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Dialog component classes
-pub mod classes {
-    /// Base dialog class
-    pub const BASE: &str = "el-dialog";
-    
-    /// dialog size variants
-    pub const LARGE: &str = "el-dialog--large";
-    pub const SMALL: &str = "el-dialog--small";
-    
-    /// dialog type variants
-    pub const PRIMARY: &str = "el-dialog--primary";
-    pub const SUCCESS: &str = "el-dialog--success";
-    pub const WARNING: &str = "el-dialog--warning";
-    pub const DANGER: &str = "el-dialog--danger";
-    pub const INFO: &str = "el-dialog--info";
-    
-    /// dialog states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Dialog props
+#[derive(Props, Clone, PartialEq)]
+pub struct DialogProps {
+    /// Dialog content
+    #[props(default)]
+    pub children: Element,
 
-/// Basic dialog component structure
-#[derive(Debug, Clone)]
-pub struct Dialog {
-    pub id: Option<String>,
+    /// Dialog title
+    #[props(default)]
+    pub title: Option<String>,
+
+    /// Whether the dialog is visible
+    #[props(default = false)]
+    pub visible: bool,
+
+    /// Dialog width (e.g., "50%", "500px")
+    #[props(default = "50%".to_string())]
+    pub width: String,
+
+    /// Whether to show a modal overlay
+    #[props(default = true)]
+    pub modal: bool,
+
+    /// Whether the dialog can be closed by clicking the mask
+    #[props(default = true)]
+    pub close_on_click_modal: bool,
+
+    /// Whether the dialog can be closed by pressing ESC
+    #[props(default = true)]
+    pub close_on_press_escape: bool,
+
+    /// Whether to center the dialog
+    #[props(default = false)]
+    pub align_center: bool,
+
+    /// Whether the dialog is draggable
+    #[props(default = false)]
+    pub draggable: bool,
+
+    /// Whether to show close button
+    #[props(default = true)]
+    pub show_close: bool,
+
+    /// Top margin (e.g., "15vh")
+    #[props(default = "15vh".to_string())]
+    pub top: String,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
+
+    /// Close event handler
+    #[props(default)]
+    pub on_close: Option<EventHandler<()>>,
 }
 
-impl Default for Dialog {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
+/// Dialog component for modal dialogs
+///
+/// ## Example
+///
+/// ```rust,ignore
+/// rsx! {
+///     Dialog {
+///         visible: true,
+///         title: Some("My Dialog".to_string()),
+///         on_close: move |_| println!("Closed"),
+///         "Dialog content here"
+///     }
+/// }
+/// ```
+#[component]
+pub fn Dialog(props: DialogProps) -> Element {
+    if !props.visible {
+        return rsx! {};
     }
-}
 
-impl Dialog {
-    /// Create a new dialog component
-    pub fn new() -> Self {
-        Self::default()
+    let mut overlay_classes = vec!["el-overlay".to_string()];
+    if let Some(ref custom_class) = props.class {
+        overlay_classes.push(custom_class.clone());
     }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "dialog".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
-    pub style: Option<String>,
-}
+    let mut dialog_classes = vec!["el-dialog".to_string()];
+    if props.align_center {
+        dialog_classes.push("el-dialog--center".to_string());
+    }
+    if props.draggable {
+        dialog_classes.push("el-dialog--draggable".to_string());
+    }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_dialog_creation() {
-        let component = Dialog::new()
-            .id("test-dialog")
-            .class("custom-dialog-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-dialog");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-dialog-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_dialog_class_generation() {
-        let component = Dialog::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_dialog_states() {
-        let active_disabled = Dialog::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    let dialog_style = format!("width: {}; margin-top: {}; {}", props.width, props.top, props.style.clone().unwrap_or_default());
+
+    rsx! {
+        div {
+            class: "{overlay_classes.join(\" \")}",
+            style: "position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2000; overflow: auto;",
+            onclick: move |_| {
+                if props.close_on_click_modal {
+                    if let Some(handler) = props.on_close {
+                        handler.call(());
+                    }
+                }
+            },
+            div {
+                class: "{dialog_classes.join(\" \")}",
+                style: "{dialog_style}",
+                onclick: move |e| e.stop_propagation(),
+                if let Some(ref title) = props.title {
+                    header {
+                        class: "el-dialog__header",
+                        span {
+                            class: "el-dialog__title",
+                            "{title}"
+                        }
+                        if props.show_close {
+                            button {
+                                class: "el-dialog__headerbtn",
+                                onclick: move |_| {
+                                    if let Some(handler) = props.on_close {
+                                        handler.call(());
+                                    }
+                                },
+                                "×"
+                            }
+                        }
+                    }
+                }
+                div {
+                    class: "el-dialog__body",
+                    {props.children}
+                }
+            }
+        }
     }
 }

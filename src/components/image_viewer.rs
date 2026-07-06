@@ -1,170 +1,69 @@
-//! image-viewer component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// ImageViewer component classes
-pub mod classes {
-    /// Base image-viewer class
-    pub const BASE: &str = "el-image-viewer";
-    
-    /// image-viewer size variants
-    pub const LARGE: &str = "el-image-viewer--large";
-    pub const SMALL: &str = "el-image-viewer--small";
-    
-    /// image-viewer type variants
-    pub const PRIMARY: &str = "el-image-viewer--primary";
-    pub const SUCCESS: &str = "el-image-viewer--success";
-    pub const WARNING: &str = "el-image-viewer--warning";
-    pub const DANGER: &str = "el-image-viewer--danger";
-    pub const INFO: &str = "el-image-viewer--info";
-    
-    /// image-viewer states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// ImageViewer props
+#[derive(Props, Clone, PartialEq)]
+pub struct ImageViewerProps {
+    /// Whether the viewer is visible
+    #[props(default = false)]
+    pub visible: bool,
 
-/// Basic image-viewer component structure
-#[derive(Debug, Clone)]
-pub struct ImageViewer {
-    pub id: Option<String>,
+    /// List of image URLs
+    #[props(default)]
+    pub url_list: Vec<String>,
+
+    /// Initial image index
+    #[props(default = 0)]
+    pub initial_index: u32,
+
+    /// Whether to show close button
+    #[props(default = true)]
+    pub show_close: bool,
+
+    /// Close event handler
+    #[props(default)]
+    pub on_close: Option<EventHandler<()>>,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
 }
 
-impl Default for ImageViewer {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
+/// ImageViewer component for full-screen image preview
+#[component]
+pub fn ImageViewer(props: ImageViewerProps) -> Element {
+    if !props.visible || props.url_list.is_empty() {
+        return rsx! {};
     }
-}
 
-impl ImageViewer {
-    /// Create a new image-viewer component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "image-viewer".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    let current_img = props.url_list.first().cloned().unwrap_or_default();
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
-    pub style: Option<String>,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_image_viewer_creation() {
-        let component = ImageViewer::new()
-            .id("test-image-viewer")
-            .class("custom-image-viewer-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-image-viewer");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-image-viewer-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_image_viewer_class_generation() {
-        let component = ImageViewer::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_image_viewer_states() {
-        let active_disabled = ImageViewer::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    rsx! {
+        div {
+            class: "el-image-viewer__wrapper",
+            style: "position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2001;",
+            div {
+                class: "el-image-viewer__mask",
+                style: "position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.5);",
+                onclick: move |_| {
+                    if let Some(handler) = props.on_close {
+                        handler.call(());
+                    }
+                },
+            }
+            div {
+                class: "el-image-viewer__btn el-image-viewer__close",
+                onclick: move |_| {
+                    if let Some(handler) = props.on_close {
+                        handler.call(());
+                    }
+                },
+                "×"
+            }
+            img {
+                class: "el-image-viewer__img",
+                src: "{current_img}",
+                style: "position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 100%; max-height: 100%;",
+            }
+        }
     }
 }

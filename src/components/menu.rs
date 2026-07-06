@@ -1,170 +1,217 @@
-//! menu component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Menu component classes
-pub mod classes {
-    /// Base menu class
-    pub const BASE: &str = "el-menu";
-    
-    /// menu size variants
-    pub const LARGE: &str = "el-menu--large";
-    pub const SMALL: &str = "el-menu--small";
-    
-    /// menu type variants
-    pub const PRIMARY: &str = "el-menu--primary";
-    pub const SUCCESS: &str = "el-menu--success";
-    pub const WARNING: &str = "el-menu--warning";
-    pub const DANGER: &str = "el-menu--danger";
-    pub const INFO: &str = "el-menu--info";
-    
-    /// menu states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Menu mode
+#[derive(Clone, PartialEq)]
+pub enum MenuMode {
+    Horizontal,
+    Vertical,
 }
 
-/// Basic menu component structure
-#[derive(Debug, Clone)]
-pub struct Menu {
-    pub id: Option<String>,
+impl MenuMode {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            MenuMode::Horizontal => "horizontal",
+            MenuMode::Vertical => "vertical",
+        }
+    }
+}
+
+/// Menu props
+#[derive(Props, Clone, PartialEq)]
+pub struct MenuProps {
+    #[props(default)]
+    pub children: Element,
+
+    #[props(default = MenuMode::Vertical)]
+    pub mode: MenuMode,
+
+    /// Index of the active menu item
+    #[props(default)]
+    pub default_active: Option<String>,
+
+    /// Whether the menu is collapsed (vertical mode only)
+    #[props(default = false)]
+    pub collapse: bool,
+
+    /// Background color
+    #[props(default)]
+    pub background_color: Option<String>,
+
+    /// Text color
+    #[props(default)]
+    pub text_color: Option<String>,
+
+    /// Active text color
+    #[props(default)]
+    pub active_text_color: Option<String>,
+
+    /// Whether to use unique opened mode
+    #[props(default = false)]
+    pub unique_opened: bool,
+
+    /// Select event handler
+    #[props(default)]
+    pub on_select: Option<EventHandler<String>>,
+
+    #[props(default)]
     pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
-    pub active: bool,
+}
+
+/// Menu component for navigation
+#[component]
+pub fn Menu(props: MenuProps) -> Element {
+    let mut class_names = vec!["el-menu".to_string()];
+    class_names.push(format!("el-menu--{}", props.mode.as_str()));
+    if props.collapse { class_names.push("el-menu--collapse".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    let mut style = props.style.clone().unwrap_or_default();
+    if let Some(ref bg) = props.background_color { style = format!("background-color: {}; {}", bg, style); }
+
+    rsx! {
+        ul {
+            class: "{class_names.join(\" \")}",
+            style: "{style}",
+            role: "menubar",
+            {props.children}
+        }
+    }
+}
+
+/// MenuItem props
+#[derive(Props, Clone, PartialEq)]
+pub struct MenuItemProps {
+    #[props(default)]
+    pub children: Option<Element>,
+
+    /// Unique index for this menu item
+    pub index: String,
+
+    /// Route to navigate to
+    #[props(default)]
+    pub route: Option<String>,
+
+    /// Whether the item is disabled
+    #[props(default = false)]
     pub disabled: bool,
+
+    /// Select event handler
+    #[props(default)]
+    pub on_click: Option<EventHandler<String>>,
+
+    #[props(default)]
+    pub class: Option<String>,
 }
 
-impl Default for Menu {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+/// MenuItem component for individual menu items
+#[component]
+pub fn MenuItem(props: MenuItemProps) -> Element {
+    let mut class_names = vec!["el-menu-item".to_string()];
+    if props.disabled { class_names.push("is-disabled".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
 
-impl Menu {
-    /// Create a new menu component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "menu".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
+    let index_clone = props.index.clone();
+
+    rsx! {
+        li {
+            class: "{class_names.join(\" \")}",
+            role: "menuitem",
+            onclick: move |_| {
+                if !props.disabled {
+                    if let Some(handler) = props.on_click {
+                        handler.call(index_clone.clone());
+                    }
+                }
+            },
+            {props.children}
         }
     }
 }
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
-    pub style: Option<String>,
+/// MenuItemGroup props
+#[derive(Props, Clone, PartialEq)]
+pub struct MenuItemGroupProps {
+    #[props(default)]
+    pub children: Element,
+
+    #[props(default)]
+    pub title: Option<String>,
+
+    #[props(default)]
+    pub class: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_menu_creation() {
-        let component = Menu::new()
-            .id("test-menu")
-            .class("custom-menu-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-menu");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-menu-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// MenuItemGroup component for grouping menu items
+#[component]
+pub fn MenuItemGroup(props: MenuItemGroupProps) -> Element {
+    let mut class_names = vec!["el-menu-item-group".to_string()];
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        li {
+            class: "{class_names.join(\" \")}",
+            role: "menuitemgroup",
+            if let Some(ref title) = props.title {
+                div { class: "el-menu-item-group__title", "{title}" }
+            }
+            ul {
+                class: "el-menu-item-group__content",
+                {props.children}
+            }
+        }
     }
-    
-    #[test]
-    fn test_menu_class_generation() {
-        let component = Menu::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_menu_states() {
-        let active_disabled = Menu::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+}
+
+/// SubMenu props
+#[derive(Props, Clone, PartialEq)]
+pub struct SubMenuProps {
+    #[props(default)]
+    pub children: Element,
+
+    pub index: String,
+
+    #[props(default)]
+    pub title: Option<String>,
+
+    #[props(default)]
+    pub icon: Option<String>,
+
+    #[props(default = false)]
+    pub disabled: bool,
+
+    #[props(default)]
+    pub class: Option<String>,
+}
+
+/// SubMenu component for nested menu items
+#[component]
+pub fn SubMenu(props: SubMenuProps) -> Element {
+    let mut class_names = vec!["el-sub-menu".to_string()];
+    if props.disabled { class_names.push("is-disabled".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        li {
+            class: "{class_names.join(\" \")}",
+            role: "menuitem",
+            div {
+                class: "el-sub-menu__title",
+                if let Some(ref icon) = props.icon {
+                    i { class: "{icon}" }
+                }
+                if let Some(ref title) = props.title {
+                    span { "{title}" }
+                }
+                i { class: "el-sub-menu__icon-arrow el-icon-arrow-down" }
+            }
+            ul {
+                class: "el-menu el-menu--inline",
+                role: "menu",
+                {props.children}
+            }
+        }
     }
 }

@@ -1,170 +1,89 @@
-//! popconfirm component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Popconfirm component classes
-pub mod classes {
-    /// Base popconfirm class
-    pub const BASE: &str = "el-popconfirm";
-    
-    /// popconfirm size variants
-    pub const LARGE: &str = "el-popconfirm--large";
-    pub const SMALL: &str = "el-popconfirm--small";
-    
-    /// popconfirm type variants
-    pub const PRIMARY: &str = "el-popconfirm--primary";
-    pub const SUCCESS: &str = "el-popconfirm--success";
-    pub const WARNING: &str = "el-popconfirm--warning";
-    pub const DANGER: &str = "el-popconfirm--danger";
-    pub const INFO: &str = "el-popconfirm--info";
-    
-    /// popconfirm states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Popconfirm props
+#[derive(Props, Clone, PartialEq)]
+pub struct PopconfirmProps {
+    #[props(default)]
+    pub children: Element,
 
-/// Basic popconfirm component structure
-#[derive(Debug, Clone)]
-pub struct Popconfirm {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    #[props(default = "Are you sure?".to_string())]
+    pub title: String,
+
+    #[props(default = "bottom".to_string())]
+    pub placement: String,
+
+    #[props(default = "Yes".to_string())]
+    pub confirm_button_text: String,
+
+    #[props(default = "No".to_string())]
+    pub cancel_button_text: String,
+
+    #[props(default = false)]
     pub disabled: bool,
+
+    #[props(default = false)]
+    pub visible: bool,
+
+    #[props(default = "#F56C6C".to_string())]
+    pub icon_color: String,
+
+    #[props(default)]
+    pub on_confirm: Option<EventHandler<()>>,
+
+    #[props(default)]
+    pub on_cancel: Option<EventHandler<()>>,
+
+    #[props(default)]
+    pub class: Option<String>,
 }
 
-impl Default for Popconfirm {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
+/// Popconfirm component for confirmation dialogs
+#[component]
+pub fn Popconfirm(props: PopconfirmProps) -> Element {
+    if props.disabled {
+        return rsx! { {props.children} };
     }
-}
 
-impl Popconfirm {
-    /// Create a new popconfirm component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "popconfirm".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    let confirm_text = props.confirm_button_text.clone();
+    let cancel_text = props.cancel_button_text.clone();
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
-    pub style: Option<String>,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_popconfirm_creation() {
-        let component = Popconfirm::new()
-            .id("test-popconfirm")
-            .class("custom-popconfirm-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-popconfirm");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-popconfirm-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_popconfirm_class_generation() {
-        let component = Popconfirm::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_popconfirm_states() {
-        let active_disabled = Popconfirm::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+    rsx! {
+        span {
+            class: "el-popconfirm__trigger",
+            style: "display: inline-block; position: relative;",
+            {props.children}
+            if props.visible {
+                div {
+                    class: "el-popconfirm el-popper",
+                    style: "position: absolute; z-index: 3000;",
+                    div {
+                        class: "el-popconfirm__main",
+                        i { class: "el-icon-question", style: "color: {props.icon_color};" }
+                        span { class: "el-popconfirm__title", "{props.title}" }
+                    }
+                    div {
+                        class: "el-popconfirm__action",
+                        button {
+                            class: "el-button el-button--text el-button--small",
+                            onclick: move |_| {
+                                if let Some(handler) = props.on_cancel {
+                                    handler.call(());
+                                }
+                            },
+                            "{cancel_text}"
+                        }
+                        button {
+                            class: "el-button el-button--primary el-button--small",
+                            onclick: move |_| {
+                                if let Some(handler) = props.on_confirm {
+                                    handler.call(());
+                                }
+                            },
+                            "{confirm_text}"
+                        }
+                    }
+                }
+            }
+        }
     }
 }

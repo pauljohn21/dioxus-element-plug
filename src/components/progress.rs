@@ -1,170 +1,233 @@
-//! progress component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Progress component classes
-pub mod classes {
-    /// Base progress class
-    pub const BASE: &str = "el-progress";
-    
-    /// progress size variants
-    pub const LARGE: &str = "el-progress--large";
-    pub const SMALL: &str = "el-progress--small";
-    
-    /// progress type variants
-    pub const PRIMARY: &str = "el-progress--primary";
-    pub const SUCCESS: &str = "el-progress--success";
-    pub const WARNING: &str = "el-progress--warning";
-    pub const DANGER: &str = "el-progress--danger";
-    pub const INFO: &str = "el-progress--info";
-    
-    /// progress states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Progress type
+#[derive(Clone, PartialEq)]
+pub enum ProgressType {
+    Line,
+    Circle,
+    Dashboard,
 }
 
-/// Basic progress component structure
-#[derive(Debug, Clone)]
-pub struct Progress {
-    pub id: Option<String>,
+impl ProgressType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ProgressType::Line => "line",
+            ProgressType::Circle => "circle",
+            ProgressType::Dashboard => "dashboard",
+        }
+    }
+}
+
+/// Progress status
+#[derive(Clone, PartialEq)]
+pub enum ProgressStatus {
+    Default,
+    Success,
+    Exception,
+    Warning,
+}
+
+impl ProgressStatus {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            ProgressStatus::Default => "",
+            ProgressStatus::Success => "is-success",
+            ProgressStatus::Exception => "is-exception",
+            ProgressStatus::Warning => "is-warning",
+        }
+    }
+}
+
+/// Progress props
+#[derive(Props, Clone, PartialEq)]
+pub struct ProgressProps {
+    /// Progress type
+    #[props(default = ProgressType::Line)]
+    pub progress_type: ProgressType,
+
+    /// Percentage (0-100)
+    #[props(default = 0)]
+    pub percentage: u32,
+
+    /// Current status
+    #[props(default = ProgressStatus::Default)]
+    pub status: ProgressStatus,
+
+    /// Whether to set indeterminate progress
+    #[props(default = false)]
+    pub indeterminate: bool,
+
+    /// Stroke width in pixels
+    #[props(default = 6)]
+    pub stroke_width: u32,
+
+    /// Whether to place percentage inside progress bar
+    #[props(default = false)]
+    pub text_inside: bool,
+
+    /// Canvas width for circle/dashboard type
+    #[props(default = 126)]
+    pub width: u32,
+
+    /// Whether to show percentage text
+    #[props(default = true)]
+    pub show_text: bool,
+
+    /// Background color of progress bar
+    #[props(default)]
+    pub color: Option<String>,
+
+    /// Whether to show stripes
+    #[props(default = false)]
+    pub striped: bool,
+
+    /// Whether stripes flow
+    #[props(default = false)]
+    pub striped_flow: bool,
+
+    /// Additional CSS classes
+    #[props(default)]
     pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
-    pub disabled: bool,
-}
 
-impl Default for Progress {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
-
-impl Progress {
-    /// Create a new progress component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "progress".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
-
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_progress_creation() {
-        let component = Progress::new()
-            .id("test-progress")
-            .class("custom-progress-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-progress");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-progress-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Progress component for showing task completion
+///
+/// ## Example
+///
+/// ```rust,ignore
+/// rsx! {
+///     Progress { percentage: 70, status: ProgressStatus::Success }
+/// }
+/// ```
+#[component]
+pub fn Progress(props: ProgressProps) -> Element {
+    let percentage = props.percentage.min(100);
+
+    let mut class_names = vec!["el-progress".to_string()];
+    class_names.push(format!("el-progress--{}", props.progress_type.as_str()));
+
+    let status_class = props.status.as_class();
+    if !status_class.is_empty() {
+        class_names.push(status_class.to_string());
     }
-    
-    #[test]
-    fn test_progress_class_generation() {
-        let component = Progress::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    if props.indeterminate {
+        class_names.push("el-progress--indeterminate".to_string());
     }
-    
-    #[test]
-    fn test_progress_states() {
-        let active_disabled = Progress::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+
+    if props.striped {
+        class_names.push("el-progress--striped".to_string());
+    }
+
+    if props.striped_flow {
+        class_names.push("el-progress--striped-flow".to_string());
+    }
+
+    if props.text_inside && props.progress_type == ProgressType::Line {
+        class_names.push("el-progress--text-inside".to_string());
+    }
+
+    if let Some(ref custom_class) = props.class {
+        class_names.push(custom_class.clone());
+    }
+
+    let class_string = class_names.join(" ");
+    let style_string = props.style.clone().unwrap_or_default();
+
+    let bar_color = props.color.clone().unwrap_or_else(|| {
+        match props.status {
+            ProgressStatus::Success => "#67C23A".to_string(),
+            ProgressStatus::Exception => "#F56C6C".to_string(),
+            ProgressStatus::Warning => "#E6A23C".to_string(),
+            ProgressStatus::Default => "#409EFF".to_string(),
+        }
+    });
+
+    let display_text = format!("{}%", percentage);
+
+    if props.progress_type == ProgressType::Line {
+        let bar_style = format!("width: {}%; background-color: {};", percentage, bar_color);
+        let height_style = format!("height: {}px;", props.stroke_width);
+
+        rsx! {
+            div {
+                class: "{class_string}",
+                style: "{style_string}",
+                div {
+                    class: "el-progress__outer",
+                    style: "{height_style}",
+                    div {
+                        class: "el-progress__inner",
+                        div {
+                            class: "el-progress__bar",
+                            style: "{bar_style}",
+                            if props.text_inside && props.show_text {
+                                div {
+                                    class: "el-progress__text el-progress__text--inside",
+                                    "{display_text}"
+                                }
+                            }
+                        }
+                    }
+                }
+                if props.show_text && !props.text_inside {
+                    div {
+                        class: "el-progress__text",
+                        if props.status == ProgressStatus::Success {
+                            i { class: "el-icon-circle-check" }
+                        } else if props.status == ProgressStatus::Exception {
+                            i { class: "el-icon-circle-close" }
+                        } else if props.status == ProgressStatus::Warning {
+                            i { class: "el-icon-warning" }
+                        } else {
+                            "{display_text}"
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        // Circle / Dashboard - using CSS conic-gradient
+        let size = props.width;
+        let deg = (percentage as f64 / 100.0) * 360.0;
+        let bg_gradient = if props.progress_type == ProgressType::Dashboard {
+            format!("conic-gradient(from 135deg, {} 0deg, {} {}deg, transparent {}deg)",
+                bar_color, bar_color, deg * 0.75, deg * 0.75)
+        } else {
+            format!("conic-gradient({} {}deg, var(--el-fill-color-light) {}deg)",
+                bar_color, deg, deg)
+        };
+
+        let inner_size = size - props.stroke_width * 2;
+
+        rsx! {
+            div {
+                class: "{class_string}",
+                style: "{style_string}",
+                div {
+                    class: "el-progress-circle",
+                    style: "width: {size}px; height: {size}px; border-radius: 50%; background: {bg_gradient}; display: flex; align-items: center; justify-content: center;",
+                    div {
+                        style: "width: {inner_size}px; height: {inner_size}px; border-radius: 50%; background: var(--el-bg-color); display: flex; align-items: center; justify-content: center;",
+                        if props.show_text {
+                            div {
+                                class: "el-progress__text",
+                                if props.status == ProgressStatus::Success {
+                                    i { class: "el-icon-circle-check" }
+                                } else if props.status == ProgressStatus::Exception {
+                                    i { class: "el-icon-circle-close" }
+                                } else {
+                                    "{display_text}"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

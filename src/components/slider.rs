@@ -1,170 +1,181 @@
-//! slider component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Slider component classes
-pub mod classes {
-    /// Base slider class
-    pub const BASE: &str = "el-slider";
-    
-    /// slider size variants
-    pub const LARGE: &str = "el-slider--large";
-    pub const SMALL: &str = "el-slider--small";
-    
-    /// slider type variants
-    pub const PRIMARY: &str = "el-slider--primary";
-    pub const SUCCESS: &str = "el-slider--success";
-    pub const WARNING: &str = "el-slider--warning";
-    pub const DANGER: &str = "el-slider--danger";
-    pub const INFO: &str = "el-slider--info";
-    
-    /// slider states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
-}
+/// Slider props
+#[derive(Props, Clone, PartialEq)]
+pub struct SliderProps {
+    /// Current value
+    #[props(default = 0.0)]
+    pub model_value: f64,
 
-/// Basic slider component structure
-#[derive(Debug, Clone)]
-pub struct Slider {
-    pub id: Option<String>,
-    pub class: Option<String>,
-    pub style: Option<String>,
-    pub active: bool,
+    /// Minimum value
+    #[props(default = 0.0)]
+    pub min: f64,
+
+    /// Maximum value
+    #[props(default = 100.0)]
+    pub max: f64,
+
+    /// Step size
+    #[props(default = 1.0)]
+    pub step: f64,
+
+    /// Whether the slider is disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Slider {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Whether to show input
+    #[props(default = false)]
+    pub show_input: bool,
 
-impl Slider {
-    /// Create a new slider component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "slider".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Whether to show stops
+    #[props(default = false)]
+    pub show_stops: bool,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    /// Whether to show tooltip
+    #[props(default = true)]
+    pub show_tooltip: bool,
+
+    /// Slider orientation
+    #[props(default = "horizontal".to_string())]
+    pub direction: String,
+
+    /// Whether to allow range selection
+    #[props(default = false)]
+    pub range: bool,
+
+    /// Format tooltip text
+    #[props(default)]
+    pub format_tooltip: Option<String>,
+
+    /// Change event handler
+    #[props(default)]
+    pub on_change: Option<EventHandler<f64>>,
+
+    /// Input event handler
+    #[props(default)]
+    pub on_input: Option<EventHandler<f64>>,
+
+    /// Additional CSS classes
+    #[props(default)]
+    pub class: Option<String>,
+
+    /// Inline styles
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_slider_creation() {
-        let component = Slider::new()
-            .id("test-slider")
-            .class("custom-slider-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-slider");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-slider-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
+/// Slider component for selecting a value from a range
+///
+/// ## Example
+///
+/// ```rust,ignore
+/// rsx! {
+///     Slider {
+///         model_value: 50.0,
+///         min: 0.0,
+///         max: 100.0,
+///         on_change: move |v| println!("Value: {}", v),
+///     }
+/// }
+/// ```
+#[component]
+pub fn Slider(props: SliderProps) -> Element {
+    let mut class_names = vec!["el-slider".to_string()];
+
+    class_names.push(format!("is-{}", props.direction));
+
+    if props.disabled {
+        class_names.push("is-disabled".to_string());
     }
-    
-    #[test]
-    fn test_slider_class_generation() {
-        let component = Slider::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
+
+    if props.show_input {
+        class_names.push("el-slider--with-input".to_string());
     }
-    
-    #[test]
-    fn test_slider_states() {
-        let active_disabled = Slider::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+
+    if let Some(ref custom_class) = props.class {
+        class_names.push(custom_class.clone());
+    }
+
+    let class_string = class_names.join(" ");
+    let style_string = props.style.clone().unwrap_or_default();
+
+    let percentage = if props.max > props.min {
+        ((props.model_value - props.min) / (props.max - props.min) * 100.0).clamp(0.0, 100.0)
+    } else {
+        0.0
+    };
+
+    let bar_style = format!("width: {}%;", percentage);
+    let button_style = format!("left: {}%;", percentage);
+
+    let stops = if props.show_stops && props.step > 0.0 {
+        let mut stops_vec = Vec::new();
+        let mut val = props.min;
+        while val < props.max {
+            let stop_pct = ((val - props.min) / (props.max - props.min) * 100.0).clamp(0.0, 100.0);
+            stops_vec.push(stop_pct);
+            val += props.step;
+        }
+        stops_vec
+    } else {
+        vec![]
+    };
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+            role: "slider",
+            aria_valuemin: "{props.min}",
+            aria_valuemax: "{props.max}",
+            aria_valuenow: "{props.model_value}",
+            aria_disabled: "{props.disabled}",
+            div {
+                class: "el-slider__runway",
+                div {
+                    class: "el-slider__bar",
+                    style: "{bar_style}",
+                }
+                for stop_pct in stops.iter() {
+                    div {
+                        class: "el-slider__stop",
+                        style: "left: {stop_pct}%;",
+                    }
+                }
+                div {
+                    class: "el-slider__button-wrapper",
+                    style: "{button_style}",
+                    div {
+                        class: "el-slider__button",
+                    }
+                    if props.show_tooltip {
+                        div {
+                            class: "el-slider__tooltip",
+                            "{props.model_value}"
+                        }
+                    }
+                }
+            }
+            if props.show_input {
+                div {
+                    class: "el-slider__input",
+                    input {
+                        r#type: "number",
+                        value: "{props.model_value}",
+                        min: "{props.min}",
+                        max: "{props.max}",
+                        step: "{props.step}",
+                        disabled: props.disabled,
+                        onchange: move |e| {
+                            if let Some(handler) = props.on_change {
+                                if let Ok(val) = e.value().parse::<f64>() {
+                                    handler.call(val);
+                                }
+                            }
+                        },
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,0 +1,14 @@
+[package]
+name = "component-showcase"
+version = "0.1.0"
+edition = "2021"
+authors = ["Paul Johnson"]
+
+[dependencies]
+dioxus = { version = "0.7", features = ["web"] }
+dioxus-element-plug = { path = "../.." }
+console_error_panic_hook = "0.1"
+
+[features]
+default = ["web"]
+web = ["dioxus/web"]

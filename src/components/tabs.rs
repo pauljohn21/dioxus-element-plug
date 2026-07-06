@@ -1,170 +1,147 @@
-//! tabs component module
-//! Generated Element Plus component
+use dioxus::prelude::*;
 
-/// Tabs component classes
-pub mod classes {
-    /// Base tabs class
-    pub const BASE: &str = "el-tabs";
-    
-    /// tabs size variants
-    pub const LARGE: &str = "el-tabs--large";
-    pub const SMALL: &str = "el-tabs--small";
-    
-    /// tabs type variants
-    pub const PRIMARY: &str = "el-tabs--primary";
-    pub const SUCCESS: &str = "el-tabs--success";
-    pub const WARNING: &str = "el-tabs--warning";
-    pub const DANGER: &str = "el-tabs--danger";
-    pub const INFO: &str = "el-tabs--info";
-    
-    /// tabs states
-    pub const ACTIVE: &str = "is-active";
-    pub const DISABLED: &str = "is-disabled";
-    pub const FOCUS: &str = "is-focus";
+/// Tab type
+#[derive(Clone, PartialEq)]
+pub enum TabType {
+    Default,
+    Card,
+    BorderCard,
 }
 
-/// Basic tabs component structure
-#[derive(Debug, Clone)]
-pub struct Tabs {
-    pub id: Option<String>,
+impl TabType {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            TabType::Default => "",
+            TabType::Card => "el-tabs--card",
+            TabType::BorderCard => "el-tabs--border-card",
+        }
+    }
+}
+
+/// Tab position
+#[derive(Clone, PartialEq)]
+pub enum TabPosition {
+    Top,
+    Right,
+    Bottom,
+    Left,
+}
+
+impl TabPosition {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            TabPosition::Top => "el-tabs--top",
+            TabPosition::Right => "el-tabs--right",
+            TabPosition::Bottom => "el-tabs--bottom",
+            TabPosition::Left => "el-tabs--left",
+        }
+    }
+}
+
+/// Tabs props
+#[derive(Props, Clone, PartialEq)]
+pub struct TabsProps {
+    #[props(default)]
+    pub children: Element,
+
+    /// Currently active tab name
+    #[props(default)]
+    pub model_value: Option<String>,
+
+    #[props(default = TabType::Default)]
+    pub tab_type: TabType,
+
+    #[props(default = TabPosition::Top)]
+    pub tab_position: TabPosition,
+
+    #[props(default = false)]
+    pub closable: bool,
+
+    #[props(default = false)]
+    pub addable: bool,
+
+    #[props(default = false)]
+    pub editable: bool,
+
+    #[props(default)]
+    pub on_tab_click: Option<EventHandler<String>>,
+
+    #[props(default)]
+    pub on_tab_change: Option<EventHandler<String>>,
+
+    #[props(default)]
+    pub on_tab_remove: Option<EventHandler<String>>,
+
+    #[props(default)]
     pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
-    pub active: bool,
+}
+
+/// Tabs component for tabbed navigation
+#[component]
+pub fn Tabs(props: TabsProps) -> Element {
+    let mut class_names = vec!["el-tabs".to_string()];
+    let type_class = props.tab_type.as_class();
+    if !type_class.is_empty() { class_names.push(type_class.to_string()); }
+    class_names.push(props.tab_position.as_class().to_string());
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+            {props.children}
+        }
+    }
+}
+
+/// TabPane props
+#[derive(Props, Clone, PartialEq)]
+pub struct TabPaneProps {
+    #[props(default)]
+    pub children: Element,
+
+    /// Tab label text
+    pub label: String,
+
+    /// Tab name/identifier
+    #[props(default)]
+    pub name: Option<String>,
+
+    /// Whether the tab is disabled
+    #[props(default = false)]
     pub disabled: bool,
-}
 
-impl Default for Tabs {
-    fn default() -> Self {
-        Self {
-            id: None,
-            class: None,
-            style: None,
-            active: false,
-            disabled: false,
-        }
-    }
-}
+    /// Whether the tab is closable
+    #[props(default = false)]
+    pub closable: bool,
 
-impl Tabs {
-    /// Create a new tabs component
-    pub fn new() -> Self {
-        Self::default()
-    }
-    
-    /// Set the component ID
-    pub fn id(mut self, id: &str) -> Self {
-        self.id = Some(id.to_string());
-        self
-    }
-    
-    /// Set the component class
-    pub fn class(mut self, class_name: &str) -> Self {
-        self.class = Some(class_name.to_string());
-        self
-    }
-    
-    /// Set the component style
-    pub fn style(mut self, style_value: &str) -> Self {
-        self.style = Some(style_value.to_string());
-        self
-    }
-    
-    /// Set active state
-    pub fn active(mut self, active: bool) -> Self {
-        self.active = active;
-        self
-    }
-    
-    /// Set disabled state
-    pub fn disabled(mut self, disabled: bool) -> Self {
-        self.disabled = disabled;
-        self
-    }
-    
-    /// Generate CSS class names for the component
-    pub fn generate_class_names(&self) -> Vec<String> {
-        let mut class_names = Vec::new();
-        
-        // Add base class
-        class_names.push(classes::BASE.to_string());
-        
-        // Add state classes
-        if self.active {
-            class_names.push(classes::ACTIVE.to_string());
-        }
-        
-        if self.disabled {
-            class_names.push(classes::DISABLED.to_string());
-        }
-        
-        // Add custom class if provided
-        if let Some(ref custom_class) = self.class {
-            class_names.push(custom_class.to_string());
-        }
-        
-        class_names
-    }
-    
-    /// Get HTML representation for testing
-    pub fn get_html_info(&self) -> ComponentInfo {
-        ComponentInfo {
-            component_type: "tabs".to_string(),
-            class_names: self.generate_class_names(),
-            id: self.id.clone(),
-            style: self.style.clone(),
-        }
-    }
-}
+    /// Whether the tab is lazy loaded
+    #[props(default = false)]
+    pub lazy: bool,
 
-/// Component information for testing
-#[derive(Debug, Clone)]
-pub struct ComponentInfo {
-    pub component_type: String,
-    pub class_names: Vec<String>,
-    pub id: Option<String>,
+    #[props(default)]
+    pub class: Option<String>,
+
+    #[props(default)]
     pub style: Option<String>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    #[test]
-    fn test_tabs_creation() {
-        let component = Tabs::new()
-            .id("test-tabs")
-            .class("custom-tabs-class");
-            
-        assert_eq!(component.id.as_ref().unwrap(), "test-tabs");
-        assert_eq!(component.class.as_ref().unwrap(), "custom-tabs-class");
-        assert_eq!(component.active, false);
-        assert_eq!(component.disabled, false);
-    }
-    
-    #[test]
-    fn test_tabs_class_generation() {
-        let component = Tabs::new()
-            .active(true)
-            .disabled(false)
-            .class("extra-class");
-            
-        let class_names = component.generate_class_names();
-        
-        assert!(class_names.contains(&classes::BASE.to_string()));
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(!class_names.contains(&classes::DISABLED.to_string()));
-        assert!(class_names.contains(&"extra-class".to_string()));
-    }
-    
-    #[test]
-    fn test_tabs_states() {
-        let active_disabled = Tabs::new()
-            .active(true)
-            .disabled(true);
-            
-        let class_names = active_disabled.generate_class_names();
-        
-        assert!(class_names.contains(&classes::ACTIVE.to_string()));
-        assert!(class_names.contains(&classes::DISABLED.to_string()));
+/// TabPane component for individual tab panels
+#[component]
+pub fn TabPane(props: TabPaneProps) -> Element {
+    let mut class_names = vec!["el-tab-pane".to_string()];
+    if props.disabled { class_names.push("is-disabled".to_string()); }
+    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+
+    rsx! {
+        div {
+            class: "{class_names.join(\" \")}",
+            style: props.style.clone().unwrap_or_default(),
+            role: "tabpanel",
+            {props.children}
+        }
     }
 }
