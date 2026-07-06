@@ -5,7 +5,7 @@ description: Rust library for using Element Plus components with Dioxus 0.7 fram
 
 # Dioxus Element Plug - Skill Documentation
 
-This skill provides comprehensive expertise for the **dioxus-element-plug** library v0.1.5 — a complete Element Plus component system for the Dioxus 0.7 framework, featuring 107+ `#[component]` components with pure Rust CSS generation.
+This skill provides comprehensive expertise for the **dioxus-element-plug** library v0.2.0 — a complete Element Plus component system for the Dioxus 0.7 framework, featuring 107+ `#[component]` components with pure Rust CSS generation.
 
 ## When to Use
 

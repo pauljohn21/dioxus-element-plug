@@ -38,8 +38,10 @@ dioxus-element-plug/
 │   └── lib.rs               # Crate entry point + prelude module
 ├── examples/
 │   ├── component-showcase/  # Verification example covering 13 component categories
-│   ├── modern-pure-rust-example/  # Pure Rust styling example
-│   └── theme-switcher/      # Theme switching example
+│   └── theme-switcher/      # Theme switching example (5 themes)
+├── AGENTS.md                # AI agent guidance (this file)
+├── SKILL.md                 # Skill documentation for AI agents
+├── README.md                # Project README
 └── Cargo.toml
 ```
 
@@ -49,6 +51,7 @@ dioxus-element-plug/
 - Run tests: `cargo test --lib`
 - Type check: `cargo clippy`
 - Run example: `cd examples/component-showcase && cargo check`
+- Run theme example: `cd examples/theme-switcher && cargo check`
 
 ## Architecture & Design Principles
 

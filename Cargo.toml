@@ -1,6 +1,6 @@
 [package]
 name = "dioxus-element-plug"
-version = "0.1.5"
+version = "0.2.0"
 edition = "2021"
 authors = ["Paul Johnson"]
 description = "Element UI components for Dioxus applications with pure Rust styling system"
@@ -29,13 +29,9 @@ exclude = [
 ]
 
 [package.metadata.docs.rs]
-# Enable only the minimal features needed for documentation generation
-features = []
-all-features = false
-# Disable default features to avoid unnecessary dependencies in docs
-no-default-features = true
-# Target platform for documentation generation
-rustc-args = ["--cfg", "docsrs"]
+# Only pass --cfg docsrs to rustdoc (our crate), NOT to rustc (all dependencies).
+# Passing --cfg docsrs to rustc breaks dependencies like generic-array and slotmap
+# which use #![cfg_attr(docsrs, feature(doc_auto_cfg))] — a feature removed on recent nightlies.
 rustdoc-args = ["--cfg", "docsrs"]
 
 [features]

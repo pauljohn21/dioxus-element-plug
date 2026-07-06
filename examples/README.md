@@ -4,72 +4,71 @@ This directory contains example projects demonstrating how to use Dioxus Element
 
 ## Available Examples
 
-### [`modern-pure-rust-example/`](./modern-pure-rust-example/)
+### [`component-showcase/`](./component-showcase/)
 
-**Recommended for beginners!**
-
-A complete example showing the modern way to use Dioxus Element Plus with pure Rust styling.
+A verification example covering 13 component categories, demonstrating the controlled component pattern.
 
 #### What this example demonstrates:
 
 - ✅ Global style injection using `CompleteStyleManager`
-- ✅ All major components (Button, Input, Card, Grid, Alert)
-- ✅ Type-safe component APIs
-- ✅ Best practices and patterns
+- ✅ 13 component categories: Button, Input, Select, Switch, Alert, Tag, Card, Dialog, Table, Tree, Cascader, Transfer, Progress
+- ✅ Controlled component pattern (parent owns state via `use_signal`)
+- ✅ Type-safe component APIs with `EventHandler` callbacks
 - ✅ Production-ready code
 
 #### Quick start:
 
 ```bash
-cd examples/modern-pure-rust-example
-cargo run
-# or
+cd examples/component-showcase
+cargo check
 dx serve
 ```
 
-#### Key features shown:
+### [`theme-switcher/`](./theme-switcher/)
 
-1. **Complete element plus compatibility** - All components styled and ready
-2. **Zero CSS dependencies** - Pure Rust styling system
-3. **Compile-time optimization** - Zero runtime CSS overhead
-4. **Type safety** - Compile-time validation of all props
+A theme switching demo showcasing 5 themes (Default, Dark, Green, Purple, Orange).
 
-#### Running the example:
+#### What this example demonstrates:
+
+- ✅ Custom theme creation with `Theme::new()`
+- ✅ Dynamic style generation with `CompleteStyleManager`
+- ✅ Theme switching at runtime
+- ✅ Multiple components under different themes
+
+#### Quick start:
 
 ```bash
-cd examples/modern-pure-rust-example
-cargo run                   # Run directly
-dx serve                    # Development server
-dx serve --platform desktop # Desktop mode
-dx build --release          # Production build
+cd examples/theme-switcher
+cargo check
+dx serve
 ```
 
 ## Directory Structure
 
 ```
 examples/
-├── modern-pure-rust-example/  # Pure Rust styling demo
-├── component-showcase/        # Component verification demo
-└── theme-switcher/            # Theme switching demo
+├── component-showcase/  # Component verification demo (13 categories)
+└── theme-switcher/      # Theme switching demo (5 themes)
 ```
 
 ## Examples Overview
 
-| Example | Key Features | Complexity | Use Case |
-|---------|--------------|------------|----------|
-| modern-pure-rust-example | All components, clean structure | Beginner | Learning & prototyping |
+| Example | Key Features | Use Case |
+|---------|--------------|----------|
+| component-showcase | 13 component categories, controlled pattern | Component verification |
+| theme-switcher | 5 themes, dynamic style generation | Theme customization |
 
 ## Recommended Learning Path
 
-1. **Start here**: modern-pure-rust-example
+1. **Start here**: `component-showcase`
    - Learn the basics of pure Rust styling
-   - Understand component APIs
-   - See layout patterns in action
+   - Understand the controlled component pattern
+   - See component APIs in action
 
-2. **Explore the main docs**: ../../README.md
-   - Advanced theming
-   - Component reference
-   - Performance optimization
+2. **Explore theming**: `theme-switcher`
+   - Learn how to create custom themes
+   - Understand dynamic style generation
+   - See theme switching at runtime
 
 3. **Integrate into your projects**
    - Use the same patterns shown here
@@ -81,10 +80,9 @@ examples/
 Want to add more examples? Great! Here's how:
 
 1. Create a new directory under `examples/`
-2. Follow the same structure as `modern-pure-rust-example/`
-3. Include a comprehensive README.md
-4. Make sure it compiles and runs
-5. Submit a pull request
+2. Follow the same structure as `component-showcase/`
+3. Make sure it compiles with `cargo check`
+4. Submit a pull request
 
 ## Troubleshooting
 
@@ -102,9 +100,3 @@ Want to add more examples? Great! Here's how:
 - Check the main project documentation: ../../README.md
 - Look at the source code: ../../src/components/
 - Review the theme system: ../../src/style_system.rs
-
----
-
-**Ready to build something amazing?**
-
-Start with the [`modern-pure-rust-example`](./modern-pure-rust-example/) and create your next great UI! 🚀🦀

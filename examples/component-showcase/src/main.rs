@@ -1,4 +1,4 @@
-//! Component Showcase - 验证 dioxus-element-plug v0.1.5 的主要组件功能
+//! Component Showcase - 验证 dioxus-element-plug v0.2.0 的主要组件功能
 //!
 //! 覆盖组件：Button, Input, Select, Switch, Alert, Tag, Card,
 //! Dialog, Table, Tree, Cascader, Transfer, Progress
