@@ -1,13 +1,13 @@
 [package]
 name = "dioxus-element-plug"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 authors = ["Paul Johnson"]
 description = "Element UI components for Dioxus applications with pure Rust styling system"
 license = "MIT"
-repository = "https://github.com/pauljohn21/dioxus-element-plug"
+repository = "https://gitee.com/pauljoihn21/dioxus-element-plug"
 documentation = "https://docs.rs/dioxus-element-plug"
-homepage = "https://github.com/pauljohn21/dioxus-element-plug"
+homepage = "https://gitee.com/pauljoihn21/dioxus-element-plug"
 keywords = ["dioxus", "ui", "components", "element-ui", "styling"]
 categories = ["web-programming", "gui"]
 readme = "README.md"
