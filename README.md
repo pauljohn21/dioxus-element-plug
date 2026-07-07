@@ -75,18 +75,6 @@ let styles = CompleteStyleManager::new()
     .generate_styles_for_components(&["button", "input", "alert"]);
 ```
 
-**Option B: CDN (quick prototyping)**
-
-```rust
-rsx! {
-    document::Link {
-        rel: "stylesheet",
-        href: "//unpkg.com/element-plus@2.4.4/dist/index.css"
-    }
-    Button { variant: ButtonVariant::Primary, "Click me!" }
-}
-```
-
 ### 3. Use components
 
 ```rust

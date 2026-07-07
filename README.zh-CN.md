@@ -77,17 +77,6 @@ let styles = CompleteStyleManager::new()
     .generate_styles_for_components(&["button", "input", "alert"]);
 ```
 
-**方式 B：CDN 引入（快速原型）**
-
-```rust
-rsx! {
-    document::Link {
-        rel: "stylesheet",
-        href: "//unpkg.com/element-plus@2.4.4/dist/index.css"
-    }
-    Button { variant: ButtonVariant::Primary, "点击我" }
-}
-```
 
 ### 3. 使用组件
 
