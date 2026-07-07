@@ -228,10 +228,9 @@ impl InputStyles {
 
 .el-input__inner {{
     appearance: none;
-    background-color: {};
+    background: transparent;
     background-image: none;
-    border-radius: {};
-    border: 1px solid {};
+    border: none;
     box-sizing: border-box;
     color: {};
     display: inline-block;
@@ -239,14 +238,25 @@ impl InputStyles {
     height: 40px;
     line-height: 40px;
     outline: none;
-    padding: 0 15px;
+    padding: 0;
     transition: {};
     width: 100%;
 }}
 
-.el-input__inner:focus {{
-    outline: none;
-    border-color: {};
+.el-input--large .el-input__wrapper {{
+    padding: 1px 15px;
+}}
+
+.el-input--medium .el-input__wrapper {{
+    padding: 1px 11px;
+}}
+
+.el-input--small .el-input__wrapper {{
+    padding: 1px 7px;
+}}
+
+.el-input--mini .el-input__wrapper {{
+    padding: 1px 7px;
 }}
 
 .el-input--large .el-input__inner {{
@@ -270,9 +280,13 @@ impl InputStyles {
 }}
 
 .el-input.is-disabled .el-input__inner {{
+    color: {};
+    cursor: not-allowed;
+}}
+
+.el-input.is-disabled .el-input__wrapper {{
     background-color: {};
     border-color: {};
-    color: {};
     cursor: not-allowed;
 }}
 
@@ -289,6 +303,15 @@ impl InputStyles {
     cursor: text;
     transition: {};
     transform: translateZ(0);
+    box-shadow: 0 0 0 0 transparent inset;
+}}
+
+.el-input__wrapper:hover {{
+    border-color: {};
+}}
+
+.el-input__wrapper.is-focus {{
+    border-color: {};
 }}
 
 .el-input__prefix {{
@@ -304,19 +327,17 @@ impl InputStyles {
 }}
         "#,
         theme.font_size_base,
-        theme.color_white,
-        theme.border_radius_base,
-        theme.border_color_base,
         theme.color_text_regular,
         theme.border_transition_base,
-        theme.color_primary,
+        theme.color_text_placeholder,
         theme.background_color_base,
         theme.border_color_base,
-        theme.color_text_placeholder,
         theme.color_white,
         theme.border_radius_base,
         theme.border_color_base,
         theme.border_transition_base,
+        theme.color_text_placeholder,
+        theme.color_primary,
         theme.color_text_placeholder,
         theme.color_text_placeholder
         )
@@ -473,8 +494,8 @@ impl FormStyles {
     font-size: {};
 }}
 
-.el-form-item.is-error .el-input__inner {{
-    border-color: #f56c6c;
+.el-form-item.is-error .el-input__wrapper {{
+border-color: #f56c6c;
 }}
 
 .el-select {{

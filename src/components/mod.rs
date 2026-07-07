@@ -3,6 +3,9 @@
 
 #![allow(unused_imports)] // Glob re-exports may overlap with parent module re-exports
 
+// Common utilities shared across all components
+pub mod common;
+
 // Layout Components
 pub mod layout;
 

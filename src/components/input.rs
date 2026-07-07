@@ -1,5 +1,5 @@
 use dioxus::prelude::*;
-// Use string literals for CSS classes
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 // Input CSS class constants
 pub const INPUT: &str = "el-input";
@@ -173,7 +173,7 @@ pub struct InputProps {
 /// ## Example
 ///
 /// ```rust,ignore
-/// use dioxus_theme_chalk::components::input::{Input, InputType, InputSize};
+/// use dioxus_element_plug::components::input::{Input, InputType, InputSize};
 ///
 /// rsx! {
 ///     Input {
@@ -186,113 +186,99 @@ pub struct InputProps {
 /// ```
 #[component]
 pub fn Input(props: InputProps) -> Element {
-    let base_class = "el-input";
-    let mut wrapper_classes = vec![base_class];
+    let mut focused = use_signal(|| false);
 
-    if let Some(size) = &props.size {
-        wrapper_classes.push(size.as_class());
+    let mut outer_builder = ClassBuilder::new(INPUT);
+
+    if let Some(ref size) = props.size {
+        outer_builder = outer_builder.add_class(size.as_class());
     }
 
-    if props.disabled {
-        wrapper_classes.push("is-disabled");
-    }
+    let outer_class = outer_builder
+        .add_if("is-disabled", props.disabled)
+        .add_if("is-error", props.error)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    if props.error {
-        wrapper_classes.push("is-error");
-    }
+    let wrapper_class = ClassBuilder::new(INPUT_WRAPPER)
+        .add_if("is-focus", focused())
+        .add_if("is-disabled", props.disabled)
+        .build();
 
-    let wrapper_class_string = wrapper_classes.join(" ");
+    let inner_style = style_str(&props.style);
+    let value = props.value.clone().unwrap_or_default();
+    let placeholder = props.placeholder.clone().unwrap_or_default();
+    let name = props.name.clone().unwrap_or_default();
+    let id = props.id.clone().unwrap_or_default();
+    let maxlength = props.maxlength.map(|n| n.to_string()).unwrap_or_default();
+    let minlength = props.minlength.map(|n| n.to_string()).unwrap_or_default();
 
-    let input_class = "el-input__inner";
+    let on_input = props.on_input;
+    let on_change = props.on_change;
+    let on_focus = props.on_focus;
+    let on_blur = props.on_blur;
+    let on_keydown = props.on_keydown;
 
     let input_element = if props.input_type == InputType::Textarea {
         rsx! {
             textarea {
-                class: "{input_class}",
-                value: props.value.unwrap_or_default(),
-                placeholder: props.placeholder.unwrap_or_default(),
+                class: INPUT_INNER,
+                value: "{value}",
+                placeholder: "{placeholder}",
                 disabled: props.disabled,
                 readonly: props.readonly,
-                maxlength: props.maxlength.map(|n| n.to_string()).unwrap_or_default(),
-                minlength: props.minlength.map(|n| n.to_string()).unwrap_or_default(),
+                maxlength: "{maxlength}",
+                minlength: "{minlength}",
                 autofocus: props.autofocus,
-                name: props.name.unwrap_or_default(),
-                id: props.id.unwrap_or_default(),
-                style: props.style.unwrap_or_default(),
-                oninput: move |event| {
-                    if let Some(handler) = props.on_input {
-                        handler.call(event);
-                    }
-                },
-                onchange: move |event| {
-                    if let Some(handler) = props.on_change {
-                        handler.call(event);
-                    }
-                },
+                name: "{name}",
+                id: "{id}",
+                style: "{inner_style}",
+                oninput: move |event| fire_event(&on_input, event),
+                onchange: move |event| fire_event(&on_change, event),
                 onfocus: move |event| {
-                    if let Some(handler) = props.on_focus {
-                        handler.call(event);
-                    }
+                    focused.set(true);
+                    fire_event(&on_focus, event);
                 },
                 onblur: move |event| {
-                    if let Some(handler) = props.on_blur {
-                        handler.call(event);
-                    }
+                    focused.set(false);
+                    fire_event(&on_blur, event);
                 },
-                onkeydown: move |event| {
-                    if let Some(handler) = props.on_keydown {
-                        handler.call(event);
-                    }
-                },
+                onkeydown: move |event| fire_event(&on_keydown, event),
             }
         }
     } else {
         rsx! {
             input {
-                class: "{input_class}",
+                class: INPUT_INNER,
                 r#type: props.input_type.as_str(),
-                value: props.value.unwrap_or_default(),
-                placeholder: props.placeholder.unwrap_or_default(),
+                value: "{value}",
+                placeholder: "{placeholder}",
                 disabled: props.disabled,
                 readonly: props.readonly,
-                maxlength: props.maxlength.map(|n| n.to_string()).unwrap_or_default(),
-                minlength: props.minlength.map(|n| n.to_string()).unwrap_or_default(),
+                maxlength: "{maxlength}",
+                minlength: "{minlength}",
                 autofocus: props.autofocus,
-                name: props.name.unwrap_or_default(),
-                id: props.id.unwrap_or_default(),
-                style: props.style.unwrap_or_default(),
-                oninput: move |event| {
-                    if let Some(handler) = props.on_input {
-                        handler.call(event);
-                    }
-                },
-                onchange: move |event| {
-                    if let Some(handler) = props.on_change {
-                        handler.call(event);
-                    }
-                },
+                name: "{name}",
+                id: "{id}",
+                style: "{inner_style}",
+                oninput: move |event| fire_event(&on_input, event),
+                onchange: move |event| fire_event(&on_change, event),
                 onfocus: move |event| {
-                    if let Some(handler) = props.on_focus {
-                        handler.call(event);
-                    }
+                    focused.set(true);
+                    fire_event(&on_focus, event);
                 },
                 onblur: move |event| {
-                    if let Some(handler) = props.on_blur {
-                        handler.call(event);
-                    }
+                    focused.set(false);
+                    fire_event(&on_blur, event);
                 },
-                onkeydown: move |event| {
-                    if let Some(handler) = props.on_keydown {
-                        handler.call(event);
-                    }
-                },
+                onkeydown: move |event| fire_event(&on_keydown, event),
             }
         }
     };
 
     rsx! {
         div {
-            class: "{wrapper_class_string}",
+            class: "{outer_class}",
 
             if let Some(ref label) = props.label {
                 label {
@@ -302,14 +288,12 @@ pub fn Input(props: InputProps) -> Element {
             }
 
             div {
-                class: "el-input__wrapper",
+                class: "{wrapper_class}",
 
                 if let Some(ref prefix_icon) = props.prefix_icon {
                     span {
-                        class: "el-input__prefix",
-                        i {
-                            class: "{prefix_icon} el-input__icon"
-                        }
+                        class: INPUT_PREFIX,
+                        i { class: "{prefix_icon} el-input__icon" }
                     }
                 }
 
@@ -317,28 +301,22 @@ pub fn Input(props: InputProps) -> Element {
 
                 if props.clearable {
                     span {
-                        class: "el-input__suffix",
-                        i {
-                            class: "el-input__icon el-icon-circle-close"
-                        }
+                        class: INPUT_SUFFIX,
+                        i { class: "el-input__icon el-icon-circle-close" }
                     }
                 }
 
                 if props.show_password && props.input_type == InputType::Password {
                     span {
-                        class: "el-input__suffix",
-                        i {
-                            class: "el-input__icon el-icon-view"
-                        }
+                        class: INPUT_SUFFIX,
+                        i { class: "el-input__icon el-icon-view" }
                     }
                 }
 
                 if let Some(ref suffix_icon) = props.suffix_icon {
                     span {
-                        class: "el-input__suffix",
-                        i {
-                            class: "{suffix_icon} el-input__icon"
-                        }
+                        class: INPUT_SUFFIX,
+                        i { class: "{suffix_icon} el-input__icon" }
                     }
                 }
             }
