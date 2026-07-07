@@ -4,35 +4,38 @@ Guidance for coding agents working in this repository.
 
 ## Project Overview
 
-**dioxus-element-plug** is a Rust UI component library that brings Element Plus (Vue 3) design and CSS classes to the Dioxus 0.7 framework. It provides 107+ components styled with Element Plus `theme-chalk` CSS classes, rendered via Dioxus `#[component]` and `rsx!` macros.
+**dioxus-element-plug** (v0.2.2) is a Rust UI component library that brings Element Plus (Vue 3) design and CSS classes to the Dioxus 0.7 framework. It provides 107+ components styled with Element Plus `theme-chalk` CSS classes, rendered via Dioxus `#[component]` and `rsx!` macros. All CSS is generated in pure Rust — zero runtime overhead, no CDN or external CSS dependencies.
+
+**Repository**: [gitee.com/pauljoihn21/dioxus-element-plug](https://gitee.com/pauljoihn21/dioxus-element-plug)
 
 ## Repository Map
 
 ```
 dioxus-element-plug/
 ├── src/
-│   ├── components/          # 107+ Element Plus style components (one .rs per component)
+│   ├── components/          # 107+ Element Plus style components (97 .rs files)
 │   │   ├── mod.rs           # Module declarations + glob re-exports
-│   │   ├── button.rs         # Button, ButtonProps, ButtonVariant, ButtonSize
-│   │   ├── input.rs          # Input, InputProps, InputType, InputSize
-│   │   ├── select.rs         # Select, SelectProps, SelectOption, SelectSize
-│   │   ├── switch.rs         # Switch, SwitchProps, SwitchSize
-│   │   ├── checkbox.rs       # Checkbox, CheckboxProps, CheckboxGroup, CheckboxButton
-│   │   ├── radio.rs          # Radio, RadioProps, RadioGroup, RadioButton
-│   │   ├── table.rs          # Table, TableProps, TableColumn, SortOrder
+│   │   ├── common.rs        # Shared utilities: ClassBuilder, style_str, fire_event
+│   │   ├── button.rs        # Button, ButtonProps, ButtonVariant, ButtonSize
+│   │   ├── input.rs         # Input, InputProps, InputType, InputSize (refactored with ClassBuilder)
+│   │   ├── select.rs        # Select, SelectProps, SelectOption, SelectSize
+│   │   ├── switch.rs        # Switch, SwitchProps, SwitchSize
+│   │   ├── checkbox.rs      # Checkbox, CheckboxProps, CheckboxGroup, CheckboxButton
+│   │   ├── radio.rs         # Radio, RadioProps, RadioGroup, RadioButton
+│   │   ├── table.rs         # Table, TableProps, TableColumn, SortOrder
 │   │   ├── tree.rs          # Tree, TreeProps, TreeNodeData
-│   │   ├── cascader.rs       # Cascader, CascaderProps, CascaderOption
-│   │   ├── transfer.rs       # Transfer, TransferProps, TransferItem
-│   │   ├── tag.rs            # Tag, TagProps, TagType, TagSize, TagEffect
-│   │   ├── progress.rs       # Progress, ProgressProps, ProgressType, ProgressStatus
-│   │   ├── dialog.rs         # Dialog, DialogProps
-│   │   ├── drawer.rs         # Drawer, DrawerProps, DrawerDirection
+│   │   ├── cascader.rs      # Cascader, CascaderProps, CascaderOption
+│   │   ├── transfer.rs      # Transfer, TransferProps, TransferItem
+│   │   ├── tag.rs           # Tag, TagProps, TagType, TagSize, TagEffect
+│   │   ├── progress.rs      # Progress, ProgressProps, ProgressType, ProgressStatus
+│   │   ├── dialog.rs        # Dialog, DialogProps
+│   │   ├── drawer.rs        # Drawer, DrawerProps, DrawerDirection
 │   │   ├── menu.rs          # Menu, MenuItem, SubMenu, MenuItemGroup
-│   │   ├── container.rs      # Container, Header, Footer, Main, Aside (all in one file)
+│   │   ├── container.rs     # Container, Header, Footer, Main, Aside (all in one file)
 │   │   ├── row.rs           # Row, Col, RowJustify, RowAlign (both in one file)
 │   │   ├── steps.rs         # Steps, Step, StepStatus (both in one file)
-│   │   ├── dropdown.rs       # Dropdown, DropdownMenu, DropdownItem
-│   │   └── ...               # Other components follow the same pattern
+│   │   ├── dropdown.rs      # Dropdown, DropdownMenu, DropdownItem
+│   │   └── ...              # Other components follow the same pattern
 │   ├── style_system.rs      # Pure Rust CSS generation (Theme, CompleteStyleManager)
 │   ├── styles/              # Modular style constants (colors, spacing, shadows, etc.)
 │   └── lib.rs               # Crate entry point + prelude module
@@ -41,7 +44,8 @@ dioxus-element-plug/
 │   └── theme-switcher/      # Theme switching example (5 themes)
 ├── AGENTS.md                # AI agent guidance (this file)
 ├── SKILL.md                 # Skill documentation for AI agents
-├── README.md                # Project README
+├── README.md                # Project README (English)
+├── README.zh-CN.md          # Project README (简体中文)
 └── Cargo.toml
 ```
 
@@ -78,18 +82,57 @@ rsx! {
 // Components should NOT contain `use_signal` for their primary value
 ```
 
+> **Note**: UI-only state (like focus tracking for visual feedback) is acceptable via `use_signal` inside components. The rule applies to *data* state that the parent should control.
+
 ### 2. CSS Class Naming Convention
 
 All components use Element Plus `theme-chalk` CSS class names:
 
 - **Base class**: `el-{component}` (e.g., `el-button`, `el-input`, `el-table`)
 - **Modifier classes**: `el-{component}--{modifier}` (e.g., `el-button--primary`, `el-input--large`)
-- **State classes**: `is-{state}` (e.g., `is-disabled`, `is-checked`, `is-active`)
-- **Part classes**: `el-{component}__{part}` (e.g., `el-card__header`, `el-input__inner`)
+- **State classes**: `is-{state}` (e.g., `is-disabled`, `is-checked`, `is-active`, `is-focus`)
+- **Part classes**: `el-{component}__{part}` (e.g., `el-card__header`, `el-input__inner`, `el-input__wrapper`)
 
 Every enum variant that maps to a CSS class has an `as_class()` method returning `&'static str`.
 
-### 3. Props Struct Convention
+### 3. Common Utilities (`src/components/common.rs`)
+
+Shared utilities to reduce boilerplate across components. All new and refactored components should use these:
+
+#### `ClassBuilder` — Fluent CSS class builder
+
+Eliminates the repetitive `vec![]` → `push` → `join(" ")` pattern:
+
+```rust
+use crate::components::common::ClassBuilder;
+
+let class = ClassBuilder::new("el-input")
+    .add_class("el-input--large")       // Unconditional (skipped if empty)
+    .add_if("is-disabled", disabled)     // Conditional
+    .add_if("is-error", has_error)       // Conditional
+    .add_opt(props.class.as_ref())       // From Option<&String>
+    .add_opt_str(Some("extra"))          // From Option<&str>
+    .build();                            // → "el-input el-input--large is-disabled extra"
+```
+
+#### `style_str` — Extract style string
+
+```rust
+use crate::components::common::style_str;
+
+let s = style_str(&props.style);  // Returns String, empty if None
+```
+
+#### `fire_event` — Call optional event handler
+
+```rust
+use crate::components::common::fire_event;
+
+// Inside rsx! closure:
+oninput: move |event| fire_event(&on_input, event),
+```
+
+### 4. Props Struct Convention
 
 All component props follow this pattern:
 
@@ -127,10 +170,11 @@ pub struct MyComponentProps {
 - Boolean props use `#[props(default = false)]`
 - String props that have defaults use `#[props(default = "...".to_string())]`
 
-### 4. Component Implementation Template
+### 5. Component Implementation Template (using ClassBuilder)
 
 ```rust
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Type/variant enum
 #[derive(Clone, PartialEq)]
@@ -167,23 +211,14 @@ pub struct MyComponentProps {
 /// Component function
 #[component]
 pub fn MyComponent(props: MyComponentProps) -> Element {
-    let mut class_names = vec!["el-my-component".to_string()];
+    // Build class string using ClassBuilder
+    let class_string = ClassBuilder::new("el-my-component")
+        .add_class(props.my_type.as_class())
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let type_class = props.my_type.as_class();
-    if !type_class.is_empty() {
-        class_names.push(type_class.to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if let Some(ref c) = props.class {
-        class_names.push(c.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.unwrap_or_default();
+    let style_string = style_str(&props.style);
     let on_click = props.on_click;
 
     rsx! {
@@ -191,9 +226,7 @@ pub fn MyComponent(props: MyComponentProps) -> Element {
             class: "{class_string}",
             style: "{style_string}",
             onclick: move |e: MouseEvent| {
-                if let Some(handler) = on_click.as_ref() {
-                    handler.call(e);
-                }
+                fire_event(&on_click, e);
             },
             {props.children}
         }
@@ -246,12 +279,17 @@ for (key, label) in items.into_iter() {
 }
 ```
 
-### Rule 3: Use `as_ref()` for `Option<EventHandler>`
+### Rule 3: Use `fire_event` or `as_ref()` for `Option<EventHandler>`
 
 ```rust
+use crate::components::common::fire_event;
+
 let on_close = props.on_close;
 
-// ✅ Correct pattern
+// ✅ Pattern A: Using fire_event helper (preferred)
+onclick: move |_| fire_event(&on_close, ()),
+
+// ✅ Pattern B: Manual as_ref()
 if let Some(handler) = on_close.as_ref() {
     handler.call(());
 }
@@ -260,10 +298,12 @@ if let Some(handler) = on_close.as_ref() {
 ### Rule 4: Pre-compute style strings outside `rsx!`
 
 ```rust
+use crate::components::common::style_str;
+
 // ✅ Build the style string before rsx!
 let outer_style = format!(
     "position: relative; display: inline-block;{}",
-    props.style.as_ref().map(|s| s.as_str()).unwrap_or("")
+    style_str(&props.style)
 );
 
 rsx! {
@@ -284,7 +324,10 @@ rsx! {
 | size | `Option<ButtonSize>` | `None` | Large, Medium, Small, Mini |
 | disabled | `bool` | `false` | Disable the button |
 | round | `bool` | `false` | Round button |
+| circle | `bool` | `false` | Circle button |
 | loading | `bool` | `false` | Loading state |
+| icon | `Option<String>` | `None` | Icon CSS class |
+| button_type | `String` | `"button"` | Native button type |
 | on_click | `Option<EventHandler<MouseEvent>>` | `None` | Click handler (**not** `onclick`) |
 | class | `Option<String>` | `None` | Extra CSS classes |
 | style | `Option<String>` | `None` | Inline styles |
@@ -299,6 +342,8 @@ Button {
 }
 ```
 
+Also provides: `OutlineButton`, `TextButton`, `LinkButton` variants.
+
 #### Input (`src/components/input.rs`)
 
 | Prop | Type | Default | Description |
@@ -306,11 +351,29 @@ Button {
 | value | `Option<String>` | `None` | Current value |
 | placeholder | `Option<String>` | `None` | Placeholder text |
 | input_type | `InputType` | `Text` | Text, Password, Email, Url, Number, Tel, Search, Textarea |
-| size | `InputSize` | `Medium` | Large, Medium, Small, Mini |
+| size | `Option<InputSize>` | `None` | Large, Medium, Small, Mini |
 | disabled | `bool` | `false` | |
+| readonly | `bool` | `false` | |
 | clearable | `bool` | `false` | |
-| on_change | `Option<EventHandler<Event<FormData>>>` | `None` | Value change on blur |
-| on_input | `Option<EventHandler<Event<FormData>>>` | `None` | Value change on keystroke |
+| show_password | `bool` | `false` | Password toggle (for password inputs) |
+| error | `bool` | `false` | Error state |
+| label | `Option<String>` | `None` | Input label |
+| prefix_icon | `Option<String>` | `None` | Prefix icon CSS class |
+| suffix_icon | `Option<String>` | `None` | Suffix icon CSS class |
+| maxlength | `Option<u32>` | `None` | |
+| minlength | `Option<u32>` | `None` | |
+| autofocus | `bool` | `false` | |
+| name | `Option<String>` | `None` | |
+| id | `Option<String>` | `None` | |
+| on_input | `Option<EventHandler<FormEvent>>` | `None` | Value change on keystroke |
+| on_change | `Option<EventHandler<FormEvent>>` | `None` | Value change on blur |
+| on_focus | `Option<EventHandler<FocusEvent>>` | `None` | Focus handler |
+| on_blur | `Option<EventHandler<FocusEvent>>` | `None` | Blur handler |
+| on_keydown | `Option<EventHandler<KeyboardEvent>>` | `None` | Key down handler |
+
+Also provides: `SearchInput`, `PasswordInput` variants.
+
+**Note**: Input uses `ClassBuilder` for class construction and `fire_event` for event handling. It tracks focus state internally via `use_signal` for `is-focus` CSS class on `el-input__wrapper`.
 
 #### Select (`src/components/select.rs`)
 
@@ -600,16 +663,19 @@ Row {
 ## Adding a New Component
 
 1. Create `src/components/{component_name}.rs`
-2. Define the `#[derive(Props, Clone, PartialEq)]` struct: `{ComponentName}Props`
-3. Implement the `#[component] pub fn {ComponentName}(props: {ComponentName}Props) -> Element` function
-4. Add `pub mod {component_name};` and `pub use {component_name}::*;` to `src/components/mod.rs`
-5. Add `pub use crate::components::{component_name}::*;` to `src/lib.rs` prelude
-6. Run `cargo check` to verify
+2. Import common utilities: `use crate::components::common::{ClassBuilder, style_str, fire_event};`
+3. Define the `#[derive(Props, Clone, PartialEq)]` struct: `{ComponentName}Props`
+4. Implement the `#[component] pub fn {ComponentName}(props: {ComponentName}Props) -> Element` function
+5. Use `ClassBuilder` for CSS class construction, `style_str` for styles, `fire_event` for events
+6. Add `pub mod {component_name};` and `pub use {component_name}::*;` to `src/components/mod.rs`
+7. Add `pub use crate::components::{component_name}::*;` to `src/lib.rs` prelude
+8. Run `cargo check` to verify
 
-### Component File Template
+### Component File Template (with ClassBuilder)
 
 ```rust
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// {ComponentName} type/variant enum
 #[derive(Clone, PartialEq)]
@@ -646,19 +712,13 @@ pub struct {ComponentName}Props {
 /// {ComponentName} component
 #[component]
 pub fn {ComponentName}(props: {ComponentName}Props) -> Element {
-    let mut class_names = vec!["el-{component-name}".to_string()];
-    let type_class = props.my_type.as_class();
-    if !type_class.is_empty() {
-        class_names.push(type_class.to_string());
-    }
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-    if let Some(ref c) = props.class {
-        class_names.push(c.clone());
-    }
-    let class_string = class_names.join(" ");
-    let style_string = props.style.unwrap_or_default();
+    let class_string = ClassBuilder::new("el-{component-name}")
+        .add_class(props.my_type.as_class())
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
+
+    let style_string = style_str(&props.style);
     let on_change = props.on_change;
 
     rsx! {
@@ -666,9 +726,7 @@ pub fn {ComponentName}(props: {ComponentName}Props) -> Element {
             class: "{class_string}",
             style: "{style_string}",
             onclick: move |_| {
-                if let Some(handler) = on_change.as_ref() {
-                    handler.call(());
-                }
+                fire_event(&on_change, ());
             },
             {props.children}
         }
@@ -709,7 +767,9 @@ Different components use different callback signatures. Always check the prop ty
 | Component | Event Prop | Callback Signature |
 |-----------|-----------|-------------------|
 | Button | `on_click` | `EventHandler<MouseEvent>` |
-| Input | `on_change` | `EventHandler<Event<FormData>>` |
+| Input | `on_input` / `on_change` | `EventHandler<FormEvent>` |
+| Input | `on_focus` / `on_blur` | `EventHandler<FocusEvent>` |
+| Input | `on_keydown` | `EventHandler<KeyboardEvent>` |
 | Select | `on_change` | `EventHandler<String>` |
 | Switch | `on_change` | `EventHandler<bool>` |
 | Checkbox | `on_change` | `EventHandler<bool>` |
@@ -731,6 +791,8 @@ Some files define multiple related components:
 - `dropdown.rs` → `Dropdown`, `DropdownMenu`, `DropdownItem`
 - `checkbox.rs` → `Checkbox`, `CheckboxGroup`, `CheckboxButton`
 - `radio.rs` → `Radio`, `RadioGroup`, `RadioButton`
+- `button.rs` → `Button`, `OutlineButton`, `TextButton`, `LinkButton`
+- `input.rs` → `Input`, `SearchInput`, `PasswordInput`
 
 Sub-components in separate files (like `header.rs`, `footer.rs`, `col.rs`, `step.rs`, etc.) simply re-export from the parent file:
 ```rust
@@ -740,40 +802,55 @@ pub use super::container::{Header, HeaderProps};
 
 ### 5. Placeholder components
 
-Some components (38 total) currently use a minimal placeholder implementation with only `children`, `class`, and `style` props. These need to be enhanced with proper Element Plus API when needed:
+Some components currently use a minimal placeholder implementation with only `children`, `class`, and `style` props. These need to be enhanced with proper Element Plus API when needed:
 
 `Anchor`, `AnchorLink`, `Autocomplete`, `Calendar`, `Carousel`, `CarouselItem`, `CascaderPanel`, `Collapse`, `CollapseItem`, `ColorPicker`, `DatePicker`, `Descriptions`, `DescriptionsItem`, `DropdownItem`, `DropdownMenu`, `FormItem`, `Image`, `ImageViewer`, `InfiniteScroll`, `Loading`, `MessageBox`, `Option`, `OptionGroup`, `RadioButton`, `RadioGroup`, `Result`, `SelectV2`, `Spin`, `SubMenu`, `TableColumn`, `TimePicker`, `TimeSelect`, `Timeline`, `TimelineItem`, `TreeSelect`, `Upload`, `Watermark`, `SkeletonItem`
 
 ## CSS Strategy
 
-The library supports two CSS strategies:
-
-1. **CDN (recommended for quick start)**: Add Element Plus CSS via `<link>` tag
-2. **Pure Rust CSS generation**: Use `CompleteStyleManager` to generate styles in Rust
+The library uses **pure Rust CSS generation** exclusively — no CDN or external CSS dependencies.
 
 ```rust
-// CDN approach
-rsx! {
-    document::Link {
-        rel: "stylesheet",
-        href: "//unpkg.com/element-plus@2.4.4/dist/index.css"
-    }
-}
+use dioxus_element_plug::prelude::*;
 
-// Pure Rust approach
+// Generate complete Element Plus styles
 let css = CompleteStyleManager::new().generate_complete_styles();
-rsx! { style { "{css}" } }
+
+rsx! {
+    style { "{css}" }
+    Button { variant: ButtonVariant::Primary, "Click me!" }
+}
+```
+
+Tree-shaking — generate only what you need:
+
+```rust
+let styles = CompleteStyleManager::new()
+    .generate_styles_for_components(&["button", "input", "alert"]);
+```
+
+Custom theme:
+
+```rust
+let custom_theme = Theme::new()
+    .with_primary_color("#1890ff")
+    .with_font_size("16px");
+
+let styles = CompleteStyleManager::new()
+    .with_theme(custom_theme)
+    .generate_complete_styles();
 ```
 
 ## Tests
 
 - Tests use standard Rust `#[cfg(test)]` + `#[test]`
-- Unit tests for enum `as_class()` methods ensure CSS class mapping is correct
+- Unit tests for enum `as_class()` methods and style constants
 - Run with `cargo test --lib`
-- Currently 5 tests, all passing
+- Currently 3 tests, all passing
 
 ## Git & Review Hygiene
 
 - Do not commit, push, or open pull requests unless explicitly asked
 - Before committing: `cargo check` (zero errors/warnings) and `cargo test --lib` (all pass)
 - Use conventional commit messages (e.g., `feat:`, `fix:`, `refactor:`)
+- Repository is hosted on [Gitee](https://gitee.com/pauljoihn21/dioxus-element-plug)

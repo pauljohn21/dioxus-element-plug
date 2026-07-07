@@ -1,11 +1,13 @@
 ---
 name: dioxus-element-plug
-description: Rust library for using Element Plus components with Dioxus 0.7 framework - 107+ components, pure Rust CSS generation, controlled component pattern
+description: Rust library for using Element Plus components with Dioxus 0.7 framework - 107+ components, pure Rust CSS generation, controlled component pattern, ClassBuilder utilities
 ---
 
 # Dioxus Element Plug - Skill Documentation
 
-This skill provides comprehensive expertise for the **dioxus-element-plug** library v0.2.0 — a complete Element Plus component system for the Dioxus 0.7 framework, featuring 107+ `#[component]` components with pure Rust CSS generation.
+This skill provides comprehensive expertise for the **dioxus-element-plug** library v0.2.2 — a complete Element Plus component system for the Dioxus 0.7 framework, featuring 107+ `#[component]` components with pure Rust CSS generation (zero runtime overhead, no CDN or external CSS).
+
+**Repository**: [gitee.com/pauljoihn21/dioxus-element-plug](https://gitee.com/pauljoihn21/dioxus-element-plug)
 
 ## When to Use
 
@@ -13,9 +15,10 @@ Use this skill when you need expert assistance with:
 
 - **Building Dioxus 0.7 applications** with Element Plus styled components
 - **Using 107+ pre-built components** (Button, Input, Select, Table, Form, Dialog, etc.)
-- **Pure Rust CSS generation** via `CompleteStyleManager` and `Theme`
+- **Pure Rust CSS generation** via `CompleteStyleManager` and `Theme` (no CDN)
 - **Controlled component pattern** — parent owns state, passes via props + EventHandler
 - **Element Plus theme-chalk CSS classes** — `el-button`, `el-button--primary`, `is-disabled`, etc.
+- **Shared utilities** — `ClassBuilder`, `style_str`, `fire_event` for reduced boilerplate
 
 ## Core Architecture
 
@@ -25,7 +28,8 @@ ALL interactive components follow the **controlled component pattern**:
 
 - State is owned by the parent and passed via props (`model_value`, `visible`, etc.)
 - Changes are communicated upward via `EventHandler<T>` callbacks (`on_change`, `on_close`, etc.)
-- Components NEVER hold their own state for data the parent should control
+- Components NEVER hold their own state for data that the parent should control
+- UI-only state (e.g., focus tracking) is acceptable via `use_signal`
 
 ```rust
 let mut switch_on = use_signal(|| false);
@@ -37,11 +41,45 @@ rsx! {
 }
 ```
 
+### Common Utilities (`src/components/common.rs`)
+
+All new and refactored components use shared utilities to reduce boilerplate:
+
+#### `ClassBuilder` — Fluent CSS class builder
+
+```rust
+use crate::components::common::ClassBuilder;
+
+let class = ClassBuilder::new("el-input")
+    .add_class("el-input--large")       // Unconditional (skipped if empty)
+    .add_if("is-disabled", disabled)     // Conditional
+    .add_opt(props.class.as_ref())       // From Option<&String>
+    .add_opt_str(Some("extra"))          // From Option<&str>
+    .build();                            // → "el-input el-input--large is-disabled extra"
+```
+
+#### `style_str` — Extract style string from `Option<String>`
+
+```rust
+use crate::components::common::style_str;
+let s = style_str(&props.style);  // Returns String, empty if None
+```
+
+#### `fire_event` — Call optional event handler
+
+```rust
+use crate::components::common::fire_event;
+oninput: move |event| fire_event(&on_input, event),
+```
+
 ### Component Definition Convention
 
 Every component uses `#[derive(Props, Clone, PartialEq)]` + `#[component]`:
 
 ```rust
+use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
+
 #[derive(Props, Clone, PartialEq)]
 pub struct MyProps {
     pub children: Element,
@@ -56,22 +94,39 @@ pub struct MyProps {
 }
 
 #[component]
-pub fn MyComponent(props: MyProps) -> Element { /* ... */ }
+pub fn MyComponent(props: MyProps) -> Element {
+    let class_string = ClassBuilder::new("el-my-component")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
+
+    let style_string = style_str(&props.style);
+    let on_click = props.on_click;
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+            onclick: move |e| fire_event(&on_click, e),
+            {props.children}
+        }
+    }
+}
 ```
 
 ### CSS Class Naming
 
 - Base: `el-{component}` (e.g., `el-button`, `el-input`)
 - Modifier: `el-{component}--{variant}` (e.g., `el-button--primary`)
-- State: `is-{state}` (e.g., `is-disabled`, `is-checked`)
-- Part: `el-{component}__{part}` (e.g., `el-card__header`)
+- State: `is-{state}` (e.g., `is-disabled`, `is-checked`, `is-focus`)
+- Part: `el-{component}__{part}` (e.g., `el-card__header`, `el-input__wrapper`)
 
 ### rsx! Ownership Rules
 
 1. **Pre-extract data from `props` before `rsx!`** — `props` is moved into `rsx!`
 2. **Clone values that closures need to own** — each closure gets its own copy
-3. **Use `as_ref()` for `Option<EventHandler>`** — `handler.as_ref().call(value)`
-4. **Pre-compute style strings outside `rsx!`** — use `format!()` before the macro
+3. **Use `fire_event()` or `as_ref()` for `Option<EventHandler>`** — `fire_event(&handler, value)`
+4. **Pre-compute style strings outside `rsx!`** — use `style_str()` or `format!()` before the macro
 
 ## Component API Quick Reference
 
@@ -80,7 +135,7 @@ pub fn MyComponent(props: MyProps) -> Element { /* ... */ }
 | Component | Key Props | Key Events |
 |-----------|-----------|------------|
 | Button | `variant: ButtonVariant`, `size: Option<ButtonSize>`, `disabled: bool` | `on_click: EventHandler<MouseEvent>` |
-| Input | `value: Option<String>`, `input_type: InputType`, `size: InputSize` | `on_change: EventHandler<Event<FormData>>` |
+| Input | `value: Option<String>`, `input_type: InputType`, `size: Option<InputSize>` | `on_input`/`on_change: EventHandler<FormEvent>`, `on_focus`/`on_blur: EventHandler<FocusEvent>` |
 | Select | `model_value: Option<String>`, `options: Vec<SelectOption>`, `placeholder: String` | `on_change: EventHandler<String>` |
 | Switch | `model_value: bool`, `size: SwitchSize` | `on_change: EventHandler<bool>` |
 | Checkbox | `model_value: bool`, `border: bool` | `on_change: EventHandler<bool>` |
@@ -132,19 +187,25 @@ pub fn MyComponent(props: MyProps) -> Element { /* ... */ }
 
 ## CSS Strategy
 
-Two approaches:
+The library uses **pure Rust CSS generation** exclusively — no CDN or external CSS.
 
-1. **CDN** (quick start):
 ```rust
-rsx! {
-    document::Link { rel: "stylesheet", href: "//unpkg.com/element-plus@2.4.4/dist/index.css" }
-}
-```
+use dioxus_element_plug::prelude::*;
 
-2. **Pure Rust CSS generation**:
-```rust
+// Generate complete styles
 let css = CompleteStyleManager::new().generate_complete_styles();
 rsx! { style { "{css}" } }
+
+// Tree-shaking: generate only what you need
+let styles = CompleteStyleManager::new()
+    .generate_styles_for_components(&["button", "input", "alert"]);
+
+// Custom theme
+let custom_theme = Theme::new()
+    .with_primary_color("#1890ff");
+let styles = CompleteStyleManager::new()
+    .with_theme(custom_theme)
+    .generate_complete_styles();
 ```
 
 ## Import Pattern
@@ -157,11 +218,14 @@ use dioxus_element_plug::prelude::*;
 ## Project Stats
 
 - **107+ components** with `#[component]` macro
-- **96 component files** in `src/components/`
+- **97 files** in `src/components/` (95 component files + `mod.rs` + `common.rs`)
 - Built on **Dioxus 0.7**
+- Version **0.2.2**
 
 ## Common Commands
 
 - `cargo check` — Verify compilation
-- `cargo test --lib` — Run tests
+- `cargo test --lib` — Run tests (3 tests)
 - `cargo clippy` — Lint check
+- `cd examples/component-showcase && cargo check` — Verify example
+- `cd examples/theme-switcher && cargo check` — Verify theme example
