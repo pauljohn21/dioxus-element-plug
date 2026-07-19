@@ -2,6 +2,9 @@ use dioxus::prelude::*;
 
 use crate::components::common::{ClassBuilder, style_str, fire_event};
 
+#[cfg(feature = "icons")]
+use element_icons::element::{ArrowDown, ArrowRight};
+
 // Card CSS class constants
 pub const CARD: &str = "el-card";
 pub const CARD_HEADER: &str = "el-card__header";
@@ -340,6 +343,46 @@ pub struct AccordionProps {
     pub on_change: Option<EventHandler<usize>>,
 }
 
+/// Render accordion icon with conditional compilation (expanded state)
+#[cfg(feature = "icons")]
+fn render_accordion_icon_expanded() -> Element {
+    rsx! {
+        ArrowDown {
+            class: "el-accordion__icon".to_string(),
+        }
+    }
+}
+
+/// Render accordion icon fallback when icons feature is disabled (expanded state)
+#[cfg(not(feature = "icons"))]
+fn render_accordion_icon_expanded() -> Element {
+    rsx! {
+        i {
+            class: "el-icon-arrow-down el-accordion__icon"
+        }
+    }
+}
+
+/// Render accordion icon with conditional compilation (collapsed state)
+#[cfg(feature = "icons")]
+fn render_accordion_icon_collapsed() -> Element {
+    rsx! {
+        ArrowRight {
+            class: "el-accordion__icon".to_string(),
+        }
+    }
+}
+
+/// Render accordion icon fallback when icons feature is disabled (collapsed state)
+#[cfg(not(feature = "icons"))]
+fn render_accordion_icon_collapsed() -> Element {
+    rsx! {
+        i {
+            class: "el-icon-arrow-right el-accordion__icon"
+        }
+    }
+}
+
 /// An accordion component for organizing collapsible content
 ///
 /// This component provides a way to organize content in collapsible sections
@@ -380,9 +423,7 @@ pub fn Accordion(props: AccordionProps) -> Element {
                                     "{item.title}"
                                 }
 
-                                i {
-                                    class: "el-icon-arrow-down el-accordion__icon"
-                                }
+                                {render_accordion_icon_expanded()}
                             }
                         }
 
@@ -411,9 +452,7 @@ pub fn Accordion(props: AccordionProps) -> Element {
                                     "{item.title}"
                                 }
 
-                                i {
-                                    class: "el-icon-arrow-right el-accordion__icon"
-                                }
+                                {render_accordion_icon_collapsed()}
                             }
                         }
                     }

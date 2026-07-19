@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 use crate::components::common::{ClassBuilder, style_str, fire_event};
 
+#[cfg(feature = "icons")]
+use element_icons::element::CircleClose;
+
 /// Autocomplete size variants
 #[derive(Clone, PartialEq, Default)]
 pub enum AutocompleteSize {
@@ -111,6 +114,26 @@ pub struct AutocompleteProps {
     /// Inline styles
     #[props(default)]
     pub style: Option<String>,
+}
+
+/// Render clear icon with conditional compilation
+#[cfg(feature = "icons")]
+fn render_clear_icon() -> Element {
+    rsx! {
+        CircleClose {
+            class: "el-input__clear".to_string(),
+        }
+    }
+}
+
+/// Render clear icon fallback when icons feature is disabled
+#[cfg(not(feature = "icons"))]
+fn render_clear_icon() -> Element {
+    rsx! {
+        i {
+            class: "el-icon-circle-close el-input__clear"
+        }
+    }
 }
 
 /// Autocomplete component for input with suggestions
@@ -316,7 +339,7 @@ pub fn Autocomplete(props: AutocompleteProps) -> Element {
                             fire_event(&on_input, String::new());
                             fire_event(&on_change, String::new());
                         },
-                        i { class: "el-icon-circle-close el-input__clear" }
+                        {render_clear_icon()}
                     }
                 }
 

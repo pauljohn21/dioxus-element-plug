@@ -1,5 +1,8 @@
 use dioxus::prelude::*;
 
+#[cfg(feature = "icons")]
+use element_icons::element::QuestionFilled;
+
 /// Popconfirm props
 #[derive(Props, Clone, PartialEq)]
 pub struct PopconfirmProps {
@@ -37,6 +40,27 @@ pub struct PopconfirmProps {
     pub class: Option<String>,
 }
 
+/// Render question icon with conditional compilation
+#[cfg(feature = "icons")]
+fn render_question_icon(color: &str) -> Element {
+    rsx! {
+        QuestionFilled {
+            style: Some(format!("color: {};", color)),
+        }
+    }
+}
+
+/// Render question icon fallback when icons feature is disabled
+#[cfg(not(feature = "icons"))]
+fn render_question_icon(color: &str) -> Element {
+    rsx! {
+        i {
+            class: "el-icon-question",
+            style: "color: {color};"
+        }
+    }
+}
+
 /// Popconfirm component for confirmation dialogs
 #[component]
 pub fn Popconfirm(props: PopconfirmProps) -> Element {
@@ -58,7 +82,7 @@ pub fn Popconfirm(props: PopconfirmProps) -> Element {
                     style: "position: absolute; z-index: 3000;",
                     div {
                         class: "el-popconfirm__main",
-                        i { class: "el-icon-question", style: "color: {props.icon_color};" }
+                        {render_question_icon(&props.icon_color)}
                         span { class: "el-popconfirm__title", "{props.title}" }
                     }
                     div {

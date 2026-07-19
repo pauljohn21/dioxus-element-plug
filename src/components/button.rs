@@ -1,6 +1,9 @@
 use dioxus::prelude::*;
 use crate::components::common::{ClassBuilder, style_str, fire_event};
 
+#[cfg(feature = "icons")]
+use element_icons::element::Loading;
+
 // Button CSS class constants
 pub const BUTTON: &str = "el-button";
 pub const BUTTON_PRIMARY: &str = "el-button--primary";
@@ -151,14 +154,11 @@ pub fn Button(props: ButtonProps) -> Element {
         });
     }
 
-    let mut loading_element = None;
-    if props.loading {
-        loading_element = Some(rsx! {
-            i {
-                class: "el-icon-loading"
-            }
-        });
-    }
+    let loading_element = if props.loading {
+        Some(render_loading_icon())
+    } else {
+        None
+    };
 
     rsx! {
         button {
@@ -198,6 +198,24 @@ pub fn TextButton(props: ButtonProps) -> Element {
     props.class = Some(class);
 
     Button(props)
+}
+
+/// Render loading icon with conditional compilation
+#[cfg(feature = "icons")]
+fn render_loading_icon() -> Element {
+    rsx! {
+        Loading {}
+    }
+}
+
+/// Render loading icon fallback when icons feature is disabled
+#[cfg(not(feature = "icons"))]
+fn render_loading_icon() -> Element {
+    rsx! {
+        i {
+            class: "el-icon-loading"
+        }
+    }
 }
 
 /// Link button variant

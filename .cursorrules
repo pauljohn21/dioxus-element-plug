@@ -1,0 +1,203 @@
+# Dioxus Element Plug - Cursor IDE Rules
+
+## Project Identity
+
+**dioxus-element-plug** (v0.3.0) is a Rust UI component library that brings Element Plus (Vue 3) design to the Dioxus 0.7 framework.
+
+- **107+ components** with pure Rust CSS generation
+- **Zero runtime overhead** — no CDN, no external CSS dependencies
+- **Element Plus theme-chalk** CSS class naming convention
+- **Repository**: https://gitee.com/pauljoihn21/dioxus-element-plug
+
+## Critical Rules
+
+### 1. Controlled Component Pattern (MANDATORY)
+
+ALL interactive components MUST follow the controlled pattern:
+
+```rust
+// ✅ CORRECT: Parent owns state
+let mut switch_on = use_signal(|| false);
+rsx! {
+    Switch {
+        model_value: switch_on(),
+        on_change: move |v: bool| switch_on.set(v),
+    }
+}
+
+// ❌ WRONG: Never add internal state for controlled data
+// Components should NOT contain `use_signal` for primary values
+```
+
+### 2. CSS Class Naming Convention
+
+- **Base**: `el-{component}` (e.g., `el-button`, `el-input`)
+- **Modifier**: `el-{component}--{variant}` (e.g., `el-button--primary`)
+- **State**: `is-{state}` (e.g., `is-disabled`, `is-checked`)
+- **Part**: `el-{component}__{part}` (e.g., `el-input__inner`)
+
+Every enum variant MUST have an `as_class()` method.
+
+### 3. Use ClassBuilder (MANDATORY for new/refactored components)
+
+```rust
+use crate::components::common::ClassBuilder;
+
+let class = ClassBuilder::new("el-input")
+    .add_class("el-input--large")
+    .add_if("is-disabled", disabled)
+    .add_opt(props.class.as_ref())
+    .build();
+```
+
+### 4. Props Struct Convention
+
+```rust
+#[derive(Props, Clone, PartialEq)]
+pub struct MyComponentProps {
+    pub children: Element,
+    #[props(default = MyType::Default)]
+    pub my_type: MyType,
+    #[props(default = false)]
+    pub disabled: bool,
+    #[props(default)]
+    pub on_change: Option<EventHandler<SomeType>>,
+    #[props(default)]
+    pub class: Option<String>,
+    #[props(default)]
+    pub style: Option<String>,
+}
+```
+
+### 5. rsx! Ownership Rules
+
+1. **Pre-extract data from `props` before `rsx!`** — `props` is moved into `rsx!`
+2. **Clone values that closures need to own**
+3. **Use `fire_event()` for `Option<EventHandler>`**
+4. **Pre-compute style strings outside `rsx!`**
+
+```rust
+use crate::components::common::{style_str, fire_event};
+
+let style_string = style_str(&props.style);
+let on_click = props.on_click;
+
+rsx! {
+    div {
+        style: "{style_string}",
+        onclick: move |e| fire_event(&on_click, e),
+    }
+}
+```
+
+## Component Template
+
+```rust
+use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
+
+#[derive(Clone, PartialEq)]
+pub enum MyType {
+    Default,
+    Primary,
+}
+
+impl MyType {
+    pub fn as_class(&self) -> &'static str {
+        match self {
+            Self::Default => "",
+            Self::Primary => "el-my-component--primary",
+        }
+    }
+}
+
+#[derive(Props, Clone, PartialEq)]
+pub struct MyComponentProps {
+    pub children: Element,
+    #[props(default = MyType::Default)]
+    pub my_type: MyType,
+    #[props(default = false)]
+    pub disabled: bool,
+    #[props(default)]
+    pub on_click: Option<EventHandler<MouseEvent>>,
+    #[props(default)]
+    pub class: Option<String>,
+    #[props(default)]
+    pub style: Option<String>,
+}
+
+#[component]
+pub fn MyComponent(props: MyComponentProps) -> Element {
+    let class_string = ClassBuilder::new("el-my-component")
+        .add_class(props.my_type.as_class())
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
+
+    let style_string = style_str(&props.style);
+    let on_click = props.on_click;
+
+    rsx! {
+        div {
+            class: "{class_string}",
+            style: "{style_string}",
+            onclick: move |e| fire_event(&on_click, e),
+            {props.children}
+        }
+    }
+}
+```
+
+## Event Handler Naming
+
+| Component | Event Prop | Callback Signature |
+|-----------|-----------|-------------------|
+| Button | `on_click` | `EventHandler<MouseEvent>` |
+| Input | `on_input` / `on_change` | `EventHandler<FormEvent>` |
+| Select | `on_change` | `EventHandler<String>` |
+| Switch | `on_change` | `EventHandler<bool>` |
+| Checkbox | `on_change` | `EventHandler<bool>` |
+| Dialog | `on_close` | `EventHandler<()>` |
+
+## Common Pitfalls
+
+1. **Event handler prop naming**: Use `on_click` (snake_case), NOT `onclick` in component props
+2. **String vs Option<String>**: Some props are `String` (with default), others are `Option<String>`
+3. **Placeholder components**: Some files are re-exports only — enhance them when needed
+
+## Commands
+
+```bash
+cargo check              # Verify compilation
+cargo test --lib         # Run tests
+cargo clippy             # Lint check
+cargo clippy --fix       # Auto-fix lint issues
+```
+
+## Icons Feature (v0.3.0+)
+
+```rust
+// With icons feature (default)
+use element_icons::element::{ArrowLeft, ArrowRight};
+
+rsx! {
+    Button {
+        ArrowLeft {}
+        "Back"
+    }
+}
+```
+
+Disable icons in Cargo.toml:
+```toml
+dioxus-element-plug = { version = "0.3", default-features = false, features = ["web"] }
+```
+
+## Dark Mode (v0.3.0+)
+
+```rust
+let dark_theme = Theme::dark();
+let styles = CompleteStyleManager::new()
+    .with_theme(dark_theme)
+    .generate_complete_styles();
+```

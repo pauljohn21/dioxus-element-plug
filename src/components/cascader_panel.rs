@@ -3,6 +3,9 @@ pub use super::cascader::{CascaderOption, CascaderProps};
 
 use crate::components::common::{ClassBuilder, style_str, fire_event};
 
+#[cfg(feature = "icons")]
+use element_icons::element::ArrowRight;
+
 /// CascaderPanel props
 #[derive(Props, Clone, PartialEq)]
 pub struct CascaderPanelProps {
@@ -27,6 +30,27 @@ pub struct CascaderPanelProps {
 
     #[props(default)]
     pub style: Option<String>,
+}
+
+/// Render cascader arrow icon with conditional compilation
+#[cfg(feature = "icons")]
+fn render_cascader_arrow() -> Element {
+    rsx! {
+        ArrowRight {
+            style: Some("margin-left: auto;".to_string()),
+        }
+    }
+}
+
+/// Render cascader arrow icon fallback when icons feature is disabled
+#[cfg(not(feature = "icons"))]
+fn render_cascader_arrow() -> Element {
+    rsx! {
+        i {
+            class: "el-icon-arrow-right",
+            style: "margin-left: auto;"
+        }
+    }
 }
 
 /// CascaderPanel component — core multi-level cascading panel
@@ -123,7 +147,7 @@ pub fn CascaderPanel(props: CascaderPanelProps) -> Element {
                                     },
                                     "{current_lbl}"
                                     if current_has_children {
-                                        i { class: "el-icon-arrow-right", style: "margin-left: auto;" }
+                                        {render_cascader_arrow()}
                                     }
                                 }
                             }
