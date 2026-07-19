@@ -175,40 +175,40 @@ fn generate_all_component_styles() -> String {
     let mut css = String::new();
     
     // Button styles
-    css.push_str(generate_button_styles().as_str());
+    css.push_str(button_styles());
     css.push_str("\n\n");
     
     // Input styles
-    css.push_str(generate_input_styles().as_str());
+    css.push_str(input_styles());
     css.push_str("\n\n");
     
     // Form styles
-    css.push_str(generate_form_styles().as_str());
+    css.push_str(form_styles());
     css.push_str("\n\n");
     
     // Layout styles
-    css.push_str(generate_layout_styles().as_str());
+    css.push_str(layout_styles());
     css.push_str("\n\n");
     
     // Data display styles
-    css.push_str(generate_data_display_styles().as_str());
+    css.push_str(data_display_styles());
     css.push_str("\n\n");
     
     // Feedback styles
-    css.push_str(generate_feedback_styles().as_str());
+    css.push_str(feedback_styles());
     css.push_str("\n\n");
     
     // Navigation styles
-    css.push_str(generate_navigation_styles().as_str());
+    css.push_str(navigation_styles());
     css.push_str("\n\n");
     
     // Other component styles
-    css.push_str(generate_additional_styles().as_str());
+    css.push_str(additional_styles());
     
     css
 }
 
-fn generate_button_styles() -> String {
+pub fn button_styles() -> &'static str {
     r#"/* Button Component Styles */
 .el-button {
     display: inline-block;
@@ -330,10 +330,10 @@ fn generate_button_styles() -> String {
     padding: 9px 15px;
     font-size: var(--el-font-size-extra-small);
 }
-"#.to_string()
+"#
 }
 
-fn generate_input_styles() -> String {
+pub fn input_styles() -> &'static str {
     r#"/* Input Component Styles */
 .el-input {
     position: relative;
@@ -402,10 +402,10 @@ fn generate_input_styles() -> String {
     line-height: 24px;
     font-size: var(--el-font-size-extra-small);
 }
-"#.to_string()
+"#
 }
 
-fn generate_form_styles() -> String {
+pub fn form_styles() -> &'static str {
     r#"/* Form Component Styles */
 .el-form {
     margin: 0;
@@ -459,10 +459,10 @@ fn generate_form_styles() -> String {
     top: 100%;
     left: 0;
 }
-"#.to_string()
+"#
 }
 
-fn generate_layout_styles() -> String {
+pub fn layout_styles() -> &'static str {
     r#"/* Layout Component Styles */
 .el-container {
     display: flex;
@@ -542,10 +542,10 @@ fn generate_layout_styles() -> String {
 .el-col-22 { width: 91.6666666667%; }
 .el-col-23 { width: 95.8333333333%; }
 .el-col-24 { width: 100%; }
-"#.to_string()
+"#
 }
 
-fn generate_data_display_styles() -> String {
+pub fn data_display_styles() -> &'static str {
     r#"/* Data Display Component Styles */
 
 /* Table */
@@ -651,10 +651,10 @@ fn generate_data_display_styles() -> String {
     line-height: 1;
     font-size: var(--el-font-size-extra-small);
 }
-"#.to_string()
+"#
 }
 
-fn generate_feedback_styles() -> String {
+pub fn feedback_styles() -> &'static str {
     r#"/* Feedback Component Styles */
 
 /* Alert */
@@ -792,10 +792,10 @@ fn generate_feedback_styles() -> String {
     left: 0;
     transition: opacity var(--el-transition-duration) ease;
 }
-"#.to_string()
+"#
 }
 
-fn generate_navigation_styles() -> String {
+pub fn navigation_styles() -> &'static str {
     r#"/* Navigation Component Styles */
 
 /* Menu */
@@ -947,10 +947,10 @@ fn generate_navigation_styles() -> String {
     box-sizing: border-box;
     text-align: center;
 }
-"#.to_string()
+"#
 }
 
-fn generate_additional_styles() -> String {
+pub fn additional_styles() -> &'static str {
     r#"/* Additional Component Styles */
 
 /* Badge */
@@ -1210,7 +1210,7 @@ fn generate_additional_styles() -> String {
     position: fixed;
     z-index: 10;
 }
-"#.to_string()
+"#
 }
 
 /// Export complete CSS styles
@@ -1227,5 +1227,17 @@ mod tests {
         assert!(css.contains("el-button"));
         assert!(css.contains("el-input"));
         assert!(css.contains("var(--el-color-primary)"));
+    }
+    
+    /// 重构一致性测试 - 验证输出与基准相同
+    /// 
+    /// 注意：此测试在重构期间标记为 #[ignore]，重构完成后启用
+    #[test]
+    #[ignore = "重构期间禁用，Phase 5.3 启用"]
+    fn test_css_refactor_consistency() {
+        // 此测试在 Phase 5.3 启用，用于验证重构后输出与基准相同
+        // 基准将在 Phase 1 生成
+        let _current = all_styles();
+        // TODO: Phase 5.3 启用实际比较
     }
 }

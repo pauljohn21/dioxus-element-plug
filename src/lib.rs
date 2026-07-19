@@ -92,7 +92,7 @@ pub mod styles;
 /// `Theme` (50 fields), `ThemeBuilder`, `CompleteStyleManager`, and the
 /// deprecated `CompleteCssBuilder` all live here.
 #[allow(deprecated)]
-pub use style_system::{Theme, ThemeBuilder, CompleteStyleManager, CompleteCssBuilder};
+pub use style_system::{Theme, ThemeBuilder, CompleteStyleManager, CompleteCssBuilder, StyleManager, ALL_COMPONENTS};
 
 /// Theme and style re-exports from modular system
 pub use crate::styles::prelude::*;
@@ -185,6 +185,8 @@ pub mod prelude {
     pub use crate::Theme;
     pub use crate::ThemeBuilder;
     pub use crate::CompleteStyleManager;
+    pub use crate::style_system::StyleManager;
+    pub use crate::style_system::ALL_COMPONENTS;
     #[allow(deprecated)]
     pub use crate::CompleteCssBuilder;
 

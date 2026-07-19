@@ -588,23 +588,198 @@ impl CompleteStyleManager {
         css
     }
 
-    /// **Deprecated**:per-component tree-shaking 暂未实现,当前返回与
-    /// [`generate_complete_styles`](Self::generate_complete_styles) 完全相同的全量样式。
+    /// 使用 StyleManager 生成指定组件的 CSS
     ///
-    /// 计划在 0.4.0 通过独立的 change 补全 per-component 生成能力。
-    #[deprecated(
-        note = "per-component tree-shaking will be available in 0.4.0; returns complete styles for now"
-    )]
-    pub fn generate_styles_for_components(&self, _components: &[&str]) -> String {
-        self.generate_complete_styles()
+    /// 现在通过 [`StyleManager`] 实现真正的 per-component tree-shaking。
+    /// 如需全量样式，请使用 [`generate_complete_styles`](Self::generate_complete_styles)。
+    ///
+    /// # 示例
+    ///
+    /// ```rust,ignore
+    /// let css = CompleteStyleManager::new()
+    ///     .generate_styles_for_components(&["button", "input"]);
+    /// ```
+    pub fn generate_styles_for_components(&self, components: &[&str]) -> String {
+        let mut manager = StyleManager::new().with_theme(self.theme.clone());
+        for &component in components {
+            manager = manager.include(component);
+        }
+        manager.generate()
     }
 }
 
-/// **Deprecated**:0.2.x 兼容的 CSS 构建器,请改用 [`CompleteStyleManager`]。
+/// 🎯 组件级 CSS Tree-shaking 管理器
+///
+/// 允许按需选择组件，自动解析依赖并生成最小 CSS 输出。
+///
+/// # 示例
+///
+/// ```rust,ignore
+/// use dioxus_element_plug::{StyleManager, Theme};
+///
+/// let css = StyleManager::new()
+///     .include("button")
+///     .include("input")
+///     .generate();
+/// ```
+pub struct StyleManager {
+    theme: Theme,
+    components: std::collections::HashSet<&'static str>,
+}
+
+/// 组件依赖关系图
+/// 
+/// 键: 组件名称
+/// 值: 该组件依赖的其他组件列表
+static COMPONENT_DEPENDENCIES: std::sync::LazyLock<std::collections::HashMap<&'static str, &[&'static str]>> =
+    std::sync::LazyLock::new(|| {
+        let mut deps = std::collections::HashMap::new();
+        // 依赖 overlay 的组件
+        deps.insert("dialog", &["overlay"] as &[&str]);
+        deps.insert("drawer", &["overlay"]);
+        deps.insert("dropdown", &["overlay"]);
+        deps.insert("popover", &["overlay"]);
+        deps.insert("tooltip", &["overlay"]);
+        deps.insert("loading", &["overlay"]);
+        deps.insert("message", &["overlay"]);
+        deps.insert("notification", &["overlay"]);
+        // 其他依赖关系可以在此添加
+        deps
+    });
+
+/// 所有可用组件列表
+pub const ALL_COMPONENTS: &[&str] = &[
+    // 基础组件
+    "button", "input", "form",
+    // 布局组件
+    "container", "row", "col", "grid",
+    // 数据展示
+    "table", "card", "descriptions", "timeline", "tag", "badge", "progress", "avatar", "empty", "skeleton",
+    // 反馈组件
+    "alert", "message", "dialog", "drawer", "loading", "notification", "popover", "tooltip",
+    // 导航组件
+    "menu", "tabs", "dropdown", "steps", "pagination", "breadcrumb", "anchor", "backtop",
+    // 其他组件
+    "divider", "spin", "result", "overlay",
+];
+
+impl Default for StyleManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl StyleManager {
+    /// 创建新的 StyleManager
+    pub fn new() -> Self {
+        Self {
+            theme: Theme::default(),
+            components: std::collections::HashSet::new(),
+        }
+    }
+
+    /// 设置自定义主题
+    pub fn with_theme(mut self, theme: Theme) -> Self {
+        self.theme = theme;
+        self
+    }
+
+    /// 添加需要包含的组件
+    ///
+    /// 会自动解析并包含该组件的所有依赖。
+    pub fn include(mut self, component: &str) -> Self {
+        self.add_component_with_deps(component);
+        self
+    }
+
+    /// 递归添加组件及其依赖
+    fn add_component_with_deps(&mut self, component: &str) {
+        // 查找对应的静态字符串
+        if let Some(&static_component) = ALL_COMPONENTS.iter().find(|&&c| c == component) {
+            if self.components.insert(static_component) {
+                // 新插入的组件，需要处理其依赖
+                if let Some(deps) = COMPONENT_DEPENDENCIES.get(static_component) {
+                    for dep in *deps {
+                        self.add_component_with_deps(dep);
+                    }
+                }
+            }
+        }
+    }
+
+    /// 生成 CSS 输出
+    ///
+    /// 如果没有选择任何组件，返回空字符串。
+    pub fn generate(&self) -> String {
+        if self.components.is_empty() {
+            return String::new();
+        }
+
+        let mut css = String::new();
+        
+        // 添加 CSS reset
+        css.push_str(self.get_reset_css());
+        css.push('\n');
+        
+        // 添加主题变量
+        css.push_str(&generate_css_variables(&self.theme));
+        css.push('\n');
+
+        // 按类别添加组件样式
+        let components: Vec<_> = self.components.iter().copied().collect();
+        
+        for component in components {
+            if let Some(style) = self.get_component_css(component) {
+                css.push_str(style);
+                css.push('\n');
+            }
+        }
+
+        css
+    }
+
+    /// 获取 CSS reset
+    fn get_reset_css(&self) -> &'static str {
+        r#"/* Element Plus CSS Reset */
+*, *::before, *::after { box-sizing: border-box; }
+html {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #606266;
+    background-color: #fff;
+}"#
+    }
+
+    /// 获取单个组件的 CSS
+    fn get_component_css(&self, component: &str) -> Option<&'static str> {
+        use crate::styles::enhanced_css_system::*;
+        
+        match component {
+            // 基础组件
+            "button" => Some(button_styles()),
+            "input" => Some(input_styles()),
+            "form" => Some(form_styles()),
+            // 布局组件
+            "container" | "row" | "col" | "grid" => Some(layout_styles()),
+            // 数据展示
+            "table" | "card" | "descriptions" | "timeline" | "tag" | "badge" | "progress" | "avatar" | "empty" | "skeleton" => Some(data_display_styles()),
+            // 反馈组件
+            "alert" | "message" | "dialog" | "drawer" | "loading" | "notification" | "popover" | "tooltip" => Some(feedback_styles()),
+            // 导航组件
+            "menu" | "tabs" | "dropdown" | "steps" | "pagination" | "breadcrumb" | "anchor" | "backtop" => Some(navigation_styles()),
+            // 其他组件
+            "divider" | "spin" | "result" | "overlay" => Some(additional_styles()),
+            _ => None,
+        }
+    }
+}
+
+/// **Deprecated**:0.2.x 兼容的 CSS 构建器,请改用 [`CompleteStyleManager`] 或 [`StyleManager`]。
 ///
 /// 0.3.0 将样式系统统一到 [`CompleteStyleManager`] 后,本类型仅作为迁移期的
 /// 兼容入口保留。所有方法委托 [`CompleteStyleManager`],不再持有独立的样式片段列表。
-#[deprecated(note = "use CompleteStyleManager instead")]
+#[deprecated(note = "use CompleteStyleManager or StyleManager instead")]
 pub struct CompleteCssBuilder {
     theme: Theme,
 }
