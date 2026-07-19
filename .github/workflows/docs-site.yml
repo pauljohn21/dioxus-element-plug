@@ -28,11 +28,11 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install Dioxus CLI
-        run: cargo install dioxus-cli --locked
+        run: cargo install dioxus-cli --version 0.7 --locked
 
       - name: Build Documentation Site
         working-directory: ./docs-site
-        run: dioxus build --release --debug-symbols false
+        run: dx build --release --debug-symbols false
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
