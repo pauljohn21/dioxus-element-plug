@@ -1,6 +1,33 @@
 use dioxus::prelude::*;
 
 /// TableColumn props
+///
+/// TableColumn is a **declarative component** — it does not render any DOM.
+/// Instead, it defines column metadata that is consumed by the parent
+/// [`Table`](super::table::Table) component via its `columns: Vec<TableColumn>`
+/// prop.
+///
+/// # Usage
+///
+/// ```rust,ignore
+/// rsx! {
+///     Table {
+///         columns: vec![
+///             TableColumn {
+///                 label: Some("Name".to_string()),
+///                 prop: Some("name".to_string()),
+///                 width: Some("200px".to_string()),
+///                 sortable: true,
+///             },
+///             TableColumn {
+///                 label: Some("Age".to_string()),
+///                 prop: Some("age".to_string()),
+///             },
+///         ],
+///         data: rows,
+///     }
+/// }
+/// ```
 #[derive(Props, Clone, PartialEq)]
 pub struct TableColumnProps {
     /// Column label (header text)
@@ -51,10 +78,15 @@ pub struct TableColumnProps {
     pub class: Option<String>,
 }
 
-/// TableColumn component for defining table columns
+/// TableColumn — declarative column definition for Table.
+///
+/// This component renders nothing. It exists purely to provide a ergonomic
+/// builder API for constructing `TableColumn` structs. Use it in conjunction
+/// with the `Table` component's `columns` prop.
 #[component]
-#[allow(unused_variables)]
 pub fn TableColumn(props: TableColumnProps) -> Element {
-    // TableColumn is a declarative component, it doesn't render directly
+    // TableColumn is a declarative component — it renders no DOM.
+    // Column metadata is passed to Table via the `columns` Vec.
+    let _ = props;
     rsx! {}
 }

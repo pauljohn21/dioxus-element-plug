@@ -5,7 +5,7 @@ description: Rust library for using Element Plus components with Dioxus 0.7 fram
 
 # Dioxus Element Plug - Skill Documentation
 
-This skill provides comprehensive expertise for the **dioxus-element-plug** library v0.2.2 — a complete Element Plus component system for the Dioxus 0.7 framework, featuring 107+ `#[component]` components with pure Rust CSS generation (zero runtime overhead, no CDN or external CSS).
+This skill provides comprehensive expertise for the **dioxus-element-plug** library v0.3.0 — a complete Element Plus component system for the Dioxus 0.7 framework, featuring 107+ `#[component]` components with pure Rust CSS generation (zero runtime overhead, no CDN or external CSS).
 
 **Repository**: [gitee.com/pauljoihn21/dioxus-element-plug](https://gitee.com/pauljoihn21/dioxus-element-plug)
 
@@ -19,6 +19,7 @@ Use this skill when you need expert assistance with:
 - **Controlled component pattern** — parent owns state, passes via props + EventHandler
 - **Element Plus theme-chalk CSS classes** — `el-button`, `el-button--primary`, `is-disabled`, etc.
 - **Shared utilities** — `ClassBuilder`, `style_str`, `fire_event` for reduced boilerplate
+- **Element Plus icons** — 137+ SVG icons via optional `icons` feature (v0.3.0+)
 
 ## Core Architecture
 
@@ -196,13 +197,13 @@ use dioxus_element_plug::prelude::*;
 let css = CompleteStyleManager::new().generate_complete_styles();
 rsx! { style { "{css}" } }
 
-// Tree-shaking: generate only what you need
-let styles = CompleteStyleManager::new()
-    .generate_styles_for_components(&["button", "input", "alert"]);
+// Custom theme via ThemeBuilder
+let custom_theme = ThemeBuilder::new()
+    .primary_color("#1890ff")
+    .build();
 
-// Custom theme
-let custom_theme = Theme::new()
-    .with_primary_color("#1890ff");
+// Dark mode
+let dark_theme = Theme::dark();
 let styles = CompleteStyleManager::new()
     .with_theme(custom_theme)
     .generate_complete_styles();
@@ -219,8 +220,15 @@ use dioxus_element_plug::prelude::*;
 
 - **107+ components** with `#[component]` macro
 - **97 files** in `src/components/` (95 component files + `mod.rs` + `common.rs`)
+- **137+ icons** via `element-icons` crate (optional `icons` feature)
 - Built on **Dioxus 0.7**
-- Version **0.2.2**
+- Version **0.3.0**
+
+## Feature Flags
+
+- `icons` (default) — Enable Element Plus icons support
+- `web` — Web platform support  
+- `server` — Server-side rendering support
 
 ## Common Commands
 

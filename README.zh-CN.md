@@ -33,6 +33,8 @@
 - 🎯 **受控组件模式** — 父组件持有状态，通过 `EventHandler` 回调通信
 - 📱 **响应式设计** — 支持移动端友好的 24 栅格布局系统
 - ⚡ **零依赖样式** — 无需 SCSS 运行时编译
+- 🌙 **内置深色模式** — `Theme::dark()` 和 `Theme::light()` 预设
+- 🔣 **Element Plus 图标** — 可选的 `icons` 特性，提供 137+ SVG 图标
 
 ## 快速开始
 
@@ -50,6 +52,18 @@ dioxus-element-plug = "0.3"
 
 ```toml
 dioxus-element-plug = { git = "https://github.com/pauljohn21/dioxus-element-plug.git" }
+```
+
+#### 特性标志
+
+- `icons`（默认）— 通过 `element-icons` crate 启用 Element Plus 图标支持
+- `web` — Web 平台支持
+- `server` — 服务端渲染支持
+
+如需禁用图标：
+
+```toml
+dioxus-element-plug = { version = "0.3", default-features = false, features = ["web"] }
 ```
 
 ### 2. 生成样式
@@ -327,7 +341,8 @@ let styles = CompleteStyleManager::new()
 **生产就绪** — 107+ 组件已全部实现，采用纯 Rust 样式系统。
 
 - ✅ 107+ 组件，使用 `#[component]` 宏定义
-- ✅ 96 个组件文件，位于 `src/components/`
+- ✅ 97 个组件文件，位于 `src/components/`
+- ✅ 137+ 图标，通过 `element-icons` crate 提供
 - ✅ 完整的 Element Plus 设计系统兼容
 - ✅ 纯 Rust CSS 生成，零运行时开销
 - ✅ 全部采用受控组件模式
@@ -338,10 +353,11 @@ let styles = CompleteStyleManager::new()
 ```
 dioxus-element-plug/
 ├── src/
-│   ├── components/     # 107+ Element Plus 风格组件（96 个文件）
+│   ├── components/     # 107+ Element Plus 风格组件（97 个文件）
 │   ├── styles/          # 模块化 CSS 常量（颜色、间距、阴影等）
 │   ├── style_system.rs  # 纯 Rust CSS 生成（Theme, CompleteStyleManager）
 │   └── lib.rs           # Crate 入口 + prelude 模块
+├── element-icons/       # Element Plus 图标 crate（137+ SVG 图标）
 ├── examples/
 │   ├── component-showcase/  # 组件验证示例（13 个类别）
 │   └── theme-switcher/      # 主题切换示例（5 种主题）

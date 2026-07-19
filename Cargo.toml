@@ -28,20 +28,27 @@ exclude = [
 rustdoc-args = ["--cfg", "docsrs"]
 
 [features]
-default = []
+default = ["icons"]
 server = ["dioxus/server"]
 web = ["dioxus/web"]
 # Feature for documentation generation - minimal dependencies
-docs = []  # Minimal feature set for documentation generation
+docs = []
+# Enable Element Plus icons support
+icons = ["dep:element-icons"]
 
 [build-dependencies]
 
 [dependencies]
 dioxus = { version = "0.7", features = ["web"] }
+element-icons = { path = "element-icons", optional = true }
 # manganis removed - using pure Rust styling
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 js-sys = "0.3"
+gloo-timers = "0.3"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1", features = ["time"] }
 
 [dev-dependencies]
 console_error_panic_hook = "0.1"

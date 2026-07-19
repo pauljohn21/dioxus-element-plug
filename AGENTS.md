@@ -4,7 +4,12 @@ Guidance for coding agents working in this repository.
 
 ## Project Overview
 
-**dioxus-element-plug** (v0.2.2) is a Rust UI component library that brings Element Plus (Vue 3) design and CSS classes to the Dioxus 0.7 framework. It provides 107+ components styled with Element Plus `theme-chalk` CSS classes, rendered via Dioxus `#[component]` and `rsx!` macros. All CSS is generated in pure Rust — zero runtime overhead, no CDN or external CSS dependencies.
+**dioxus-element-plug** (v0.3.0) is a Rust UI component library that brings Element Plus (Vue 3) design and CSS classes to the Dioxus 0.7 framework. It provides 107+ components styled with Element Plus `theme-chalk` CSS classes, rendered via Dioxus `#[component]` and `rsx!` macros. All CSS is generated in pure Rust — zero runtime overhead, no CDN or external CSS dependencies.
+
+**New in v0.3.0:**
+- Built-in dark mode with `Theme::dark()` and `Theme::light()` presets
+- Element Plus icons support via optional `icons` feature (137+ SVG icons)
+- Unified style system with 50 theme fields
 
 **Repository**: [gitee.com/pauljoihn21/dioxus-element-plug](https://gitee.com/pauljoihn21/dioxus-element-plug)
 
@@ -39,6 +44,9 @@ dioxus-element-plug/
 │   ├── style_system.rs      # Pure Rust CSS generation (Theme, CompleteStyleManager)
 │   ├── styles/              # Modular style constants (colors, spacing, shadows, etc.)
 │   └── lib.rs               # Crate entry point + prelude module
+├── element-icons/           # Element Plus icons crate (137+ SVG icons)
+│   ├── src/element/         # Icon components (ArrowLeft, ArrowRight, etc.)
+│   └── Cargo.toml
 ├── examples/
 │   ├── component-showcase/  # Verification example covering 13 component categories
 │   └── theme-switcher/      # Theme switching example (5 themes)
@@ -899,6 +907,36 @@ fn App() -> Element {
     }
 }
 ```
+
+## Icons Support
+
+Since 0.3.0, the library includes optional Element Plus icons support via the `icons` feature flag (enabled by default).
+
+### Usage
+
+```rust
+// With icons feature enabled (default)
+use dioxus_element_plug::prelude::*;
+use element_icons::element::{ArrowLeft, ArrowRight};
+
+rsx! {
+    Button {
+        ArrowLeft {}
+        "Back"
+    }
+}
+```
+
+### Feature Flag
+
+The `icons` feature is optional and can be disabled:
+
+```toml
+[dependencies]
+dioxus-element-plug = { version = "0.3", default-features = false, features = ["web"] }
+```
+
+Components that use icons (like `Transfer`) will fall back to text characters when icons are disabled.
 
 ## Tests
 

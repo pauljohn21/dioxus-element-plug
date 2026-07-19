@@ -34,6 +34,7 @@
 - 📱 **Responsive design** — 24-column grid system
 - ⚡ **Zero SCSS dependencies** — No runtime CSS compilation
 - 🌙 **Built-in dark mode** — `Theme::dark()` and `Theme::light()` presets
+- 🔣 **Element Plus Icons** — Optional `icons` feature with 137+ SVG icons
 
 ## Quick Start
 
@@ -49,6 +50,18 @@ Or from GitHub:
 
 ```toml
 dioxus-element-plug = { git = "https://github.com/pauljohn21/dioxus-element-plug.git" }
+```
+
+#### Feature Flags
+
+- `icons` (default) — Enable Element Plus icons support via `element-icons` crate
+- `web` — Web platform support
+- `server` — Server-side rendering support
+
+To disable icons:
+
+```toml
+dioxus-element-plug = { version = "0.3", default-features = false, features = ["web"] }
 ```
 
 ### 2. Generate styles
@@ -360,7 +373,8 @@ let styles = CompleteStyleManager::new()
 **Production Ready** — 107+ components with pure Rust styling.
 
 - ✅ 107+ components via `#[component]` macro
-- ✅ 96 component files in `src/components/`
+- ✅ 97 component files in `src/components/`
+- ✅ 137+ icons via `element-icons` crate
 - ✅ Full Element Plus design system compatibility
 - ✅ Pure Rust CSS generation (zero runtime overhead)
 - ✅ Controlled component pattern throughout
@@ -371,10 +385,11 @@ let styles = CompleteStyleManager::new()
 ```
 dioxus-element-plug/
 ├── src/
-│   ├── components/     # 107+ Element Plus style components (96 files)
+│   ├── components/     # 107+ Element Plus style components (97 files)
 │   ├── styles/          # Modular CSS constants (colors, spacing, shadows, etc.)
 │   ├── style_system.rs  # Pure Rust CSS generation (Theme, CompleteStyleManager)
 │   └── lib.rs           # Crate entry point + prelude module
+├── element-icons/       # Element Plus icons crate (137+ SVG icons)
 ├── examples/
 │   ├── component-showcase/  # Component verification (13 categories)
 │   └── theme-switcher/      # Theme switching demo (5 themes)
