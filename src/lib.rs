@@ -26,9 +26,9 @@
 //! use dioxus_element_plug::style_system::CompleteStyleManager;
 //!
 //! fn App() -> Element {
-//!     // Generate styles for specific components
+//!     // Generate complete Element Plus styles (114 components)
 //!     let styles = CompleteStyleManager::new()
-//!         .generate_styles_for_components(&["button", "input", "alert"]);
+//!         .generate_complete_styles();
 //!
 //!     rsx! {
 //!         style { "{styles}" }
@@ -86,8 +86,13 @@ pub mod style_system;
 pub mod styles;
 
 /// Pure Rust styling system
-/// This module provides comprehensive styling without SCSS dependencies
-pub use style_system::{Theme, CompleteStyleManager, CompleteCssBuilder};
+/// This module provides comprehensive styling without SCSS dependencies.
+///
+/// Since 0.3.0, this is the single source of truth for the theme system:
+/// `Theme` (50 fields), `ThemeBuilder`, `CompleteStyleManager`, and the
+/// deprecated `CompleteCssBuilder` all live here.
+#[allow(deprecated)]
+pub use style_system::{Theme, ThemeBuilder, CompleteStyleManager, CompleteCssBuilder};
 
 /// Theme and style re-exports from modular system
 pub use crate::styles::prelude::*;
@@ -178,7 +183,9 @@ pub mod prelude {
 
     // Style system
     pub use crate::Theme;
+    pub use crate::ThemeBuilder;
     pub use crate::CompleteStyleManager;
+    #[allow(deprecated)]
     pub use crate::CompleteCssBuilder;
 
     /// Complete Element Plus styling from modular system

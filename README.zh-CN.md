@@ -43,7 +43,7 @@
 ```toml
 [dependencies]
 dioxus = { version = "0.7", features = ["web"] }
-dioxus-element-plug = "0.2.0"
+dioxus-element-plug = "0.3"
 ```
 
 或直接从 GitHub 引用：
@@ -72,9 +72,11 @@ fn App() -> Element {
 
 按需生成样式（减少最终包体积）：
 
+> **注意**：`generate_styles_for_components()` 在 0.3.0 中已**废弃**——当前返回完整样式表
+> （114 个组件）。按组件 tree-shaking 将在 0.4.0 重新提供。目前请使用 `generate_complete_styles()`：
+
 ```rust
-let styles = CompleteStyleManager::new()
-    .generate_styles_for_components(&["button", "input", "alert"]);
+let styles = CompleteStyleManager::new().generate_complete_styles();
 ```
 
 
@@ -286,17 +288,37 @@ rsx! {
 
 ## 主题定制
 
-通过内置主题系统自定义颜色和样式：
+自 0.3.0 起，`Theme` 包含 50 个字段。可使用 `ThemeBuilder` 的 fluent API，
+或使用结构体更新语法 `..Theme::default()` 只覆盖需要修改的字段：
+
+```rust
+use dioxus_element_plug::{ThemeBuilder, CompleteStyleManager};
+
+let custom_theme = ThemeBuilder::new()
+    .primary_color("#1890ff")
+    .font_size_base("16px")
+    .border_radius_base("6px")
+    .build();
+
+let styles = CompleteStyleManager::new()
+    .with_theme(custom_theme)
+    .generate_complete_styles();
+```
+
+或使用结构体更新语法：
 
 ```rust
 use dioxus_element_plug::{Theme, CompleteStyleManager};
 
-let custom_theme = Theme::new()
-    .with_primary_color("#1890ff")
-    .with_font_size("16px");
+let dark = Theme {
+    color_white: "#141414",
+    color_black: "#ffffff",
+    color_text_primary: "#E5EAF3",
+    ..Theme::default()
+};
 
 let styles = CompleteStyleManager::new()
-    .with_theme(custom_theme)
+    .with_theme(dark)
     .generate_complete_styles();
 ```
 

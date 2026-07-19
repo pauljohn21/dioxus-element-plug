@@ -686,7 +686,7 @@ dependencies = [
 
 [[package]]
 name = "dioxus-element-plug"
-version = "0.2.2"
+version = "0.3.0"
 dependencies = [
  "dioxus",
 ]

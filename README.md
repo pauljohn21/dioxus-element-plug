@@ -41,7 +41,7 @@
 ```toml
 [dependencies]
 dioxus = { version = "0.7", features = ["web"] }
-dioxus-element-plug = "0.2.0"
+dioxus-element-plug = "0.3"
 ```
 
 Or from GitHub:
@@ -70,9 +70,12 @@ fn App() -> Element {
 
 Tree-shaking — generate only what you need:
 
+> **Note:** `generate_styles_for_components()` is **deprecated** in 0.3.0 — it currently
+> returns the complete stylesheet (114 components). Per-component tree-shaking will
+> return in 0.4.0. For now, prefer `generate_complete_styles()`:
+
 ```rust
-let styles = CompleteStyleManager::new()
-    .generate_styles_for_components(&["button", "input", "alert"]);
+let styles = CompleteStyleManager::new().generate_complete_styles();
 ```
 
 ### 3. Use components
@@ -283,15 +286,37 @@ rsx! {
 
 ## Theme Customization
 
-```rust
-use dioxus_element_plug::{Theme, CompleteStyleManager};
+Since 0.3.0, `Theme` has 50 fields. Use `ThemeBuilder` for a fluent API, or the
+struct update syntax `..Theme::default()` to override only what you need:
 
-let custom_theme = Theme::new()
-    .with_primary_color("#1890ff")
-    .with_font_size("16px");
+```rust
+use dioxus_element_plug::{ThemeBuilder, CompleteStyleManager};
+
+let custom_theme = ThemeBuilder::new()
+    .primary_color("#1890ff")
+    .font_size_base("16px")
+    .border_radius_base("6px")
+    .build();
 
 let styles = CompleteStyleManager::new()
     .with_theme(custom_theme)
+    .generate_complete_styles();
+```
+
+Or with struct update syntax:
+
+```rust
+use dioxus_element_plug::{Theme, CompleteStyleManager};
+
+let dark = Theme {
+    color_white: "#141414",
+    color_black: "#ffffff",
+    color_text_primary: "#E5EAF3",
+    ..Theme::default()
+};
+
+let styles = CompleteStyleManager::new()
+    .with_theme(dark)
     .generate_complete_styles();
 ```
 

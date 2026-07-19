@@ -25,9 +25,6 @@ pub mod component_classes;
 pub mod simple_css_generation;
 pub mod enhanced_css_system;
 
-// Theme system
-pub mod theme;
-
 // Utility classes
 pub mod utilities;
 
@@ -58,9 +55,6 @@ pub mod prelude {
 
     // CSS generation
     pub use super::simple_css_generation::*;
-
-    // Theme system
-    pub use super::theme::*;
 
     // Utilities
     pub use super::utilities::*;

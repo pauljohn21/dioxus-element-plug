@@ -1,6 +1,6 @@
 [package]
 name = "dioxus-element-plug"
-version = "0.2.2"
+version = "0.3.0"
 edition = "2021"
 authors = ["Paul Johnson"]
 description = "Element UI components for Dioxus applications with pure Rust styling system"

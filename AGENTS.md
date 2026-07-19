@@ -810,35 +810,52 @@ Some components currently use a minimal placeholder implementation with only `ch
 
 The library uses **pure Rust CSS generation** exclusively — no CDN or external CSS dependencies.
 
+Since 0.3.0, the style system is unified: `style_system.rs` is the single source of truth
+for `Theme` (50 fields), `ThemeBuilder`, and `CompleteStyleManager`. Internally,
+`CompleteStyleManager::generate_complete_styles()` delegates to
+`styles::enhanced_css_system::all_styles()` (114 components).
+
 ```rust
 use dioxus_element_plug::prelude::*;
 
-// Generate complete Element Plus styles
+// Generate complete Element Plus styles (114 components)
 let css = CompleteStyleManager::new().generate_complete_styles();
 
 rsx! {
-    style { "{css}" }
-    Button { variant: ButtonVariant::Primary, "Click me!" }
+style { "{css}" }
+Button { variant: ButtonVariant::Primary, "Click me!" }
 }
 ```
 
-Tree-shaking — generate only what you need:
+Per-component tree-shaking via `generate_styles_for_components()` is **deprecated** in
+0.3.0 — it currently returns the complete stylesheet. It will return in 0.4.0.
+
+Custom theme (via `ThemeBuilder`):
 
 ```rust
+use dioxus_element_plug::{ThemeBuilder, CompleteStyleManager};
+
+let custom_theme = ThemeBuilder::new()
+.primary_color("#1890ff")
+.font_size_base("16px")
+.border_radius_base("6px")
+.build();
+
 let styles = CompleteStyleManager::new()
-    .generate_styles_for_components(&["button", "input", "alert"]);
+.with_theme(custom_theme)
+.generate_complete_styles();
 ```
 
-Custom theme:
+Or with struct update syntax (`Theme` has 50 fields since 0.3.0):
 
 ```rust
-let custom_theme = Theme::new()
-    .with_primary_color("#1890ff")
-    .with_font_size("16px");
+use dioxus_element_plug::{Theme, CompleteStyleManager};
 
-let styles = CompleteStyleManager::new()
-    .with_theme(custom_theme)
-    .generate_complete_styles();
+let dark = Theme {
+color_white: "#141414",
+color_black: "#ffffff",
+..Theme::default()
+};
 ```
 
 ## Tests
@@ -846,7 +863,7 @@ let styles = CompleteStyleManager::new()
 - Tests use standard Rust `#[cfg(test)]` + `#[test]`
 - Unit tests for enum `as_class()` methods and style constants
 - Run with `cargo test --lib`
-- Currently 3 tests, all passing
+- Currently 5 tests, all passing
 
 ## Git & Review Hygiene
 

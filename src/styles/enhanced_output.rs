@@ -25,13 +25,13 @@ pub fn complete_element_plus_css() -> String {
 }
 
 /// Generate theme-specific CSS variables
-pub fn theme_css_variables(theme: &super::theme::Theme) -> String {
-    super::theme::generate_css_variables(theme)
+pub fn theme_css_variables(theme: &crate::style_system::Theme) -> String {
+    crate::style_system::generate_css_variables(theme)
 }
 
 /// Generate comprehensive Element Plus setup
 pub fn setup_complete_element_plus() -> String {
-    let theme = super::theme::Theme::default();
+    let theme = crate::style_system::Theme::default();
     let mut setup = String::new();
     
     setup.push_str(&theme_css_variables(&theme));
