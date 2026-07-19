@@ -35,6 +35,14 @@ fn generate_all_component_styles() -> String {
     css.push_str(form_styles());
     css.push_str("\n\n");
 
+    // Steps styles
+    css.push_str(steps_styles());
+    css.push_str("\n\n");
+
+    // Timeline styles
+    css.push_str(timeline_styles());
+    css.push_str("\n\n");
+
     // DatePicker styles
     css.push_str(date_picker_styles());
     css.push_str("\n\n");
@@ -414,6 +422,374 @@ pub fn input_styles() -> &'static str {
 "#
 }
 
+pub fn timeline_styles() -> &'static str {
+    r#"/* Timeline Component Styles */
+.el-timeline {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.el-timeline.is-reverse {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+/* Timeline Item */
+.el-timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+    list-style: none;
+}
+
+.el-timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+/* Timeline Tail (vertical line) */
+.el-timeline-item__tail {
+    position: absolute;
+    left: 7px;
+    height: 100%;
+    border-left: 2px solid var(--el-border-color-light);
+}
+
+.el-timeline-item:last-child .el-timeline-item__tail {
+    display: none;
+}
+
+/* Timeline Node (dot) */
+.el-timeline-item__node {
+    position: absolute;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    background-color: var(--el-border-color-light);
+    border: 2px solid var(--el-color-white);
+    border-radius: 50%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.el-timeline-item__node--normal {
+    width: 16px;
+    height: 16px;
+    left: 0;
+}
+
+.el-timeline-item__node--large {
+    width: 24px;
+    height: 24px;
+    left: -4px;
+}
+
+.el-timeline-item__node--primary {
+    background-color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
+}
+
+.el-timeline-item__node i {
+    color: var(--el-color-white);
+    font-size: 10px;
+}
+
+.el-timeline-item__node--large i {
+    font-size: 14px;
+}
+
+/* Timeline Wrapper */
+.el-timeline-item__wrapper {
+    position: relative;
+    padding-left: 28px;
+    top: -3px;
+}
+
+/* Timeline Timestamp */
+.el-timeline-item__timestamp {
+    margin-bottom: 8px;
+    padding-top: 4px;
+    color: var(--el-text-color-secondary);
+    line-height: 1;
+    font-size: 13px;
+}
+
+.el-timeline-item__timestamp.is-top {
+    margin-bottom: 8px;
+    padding-top: 4px;
+}
+
+.el-timeline-item__timestamp.is-bottom {
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+/* Timeline Content */
+.el-timeline-item__content {
+    color: var(--el-text-color-primary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+"#
+}
+
+pub fn steps_styles() -> &'static str {
+    r#"/* Steps Component Styles */
+.el-steps {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.el-steps.is-horizontal {
+    flex-direction: row;
+    white-space: nowrap;
+}
+
+.el-steps.is-vertical {
+    flex-direction: column;
+    height: 100%;
+}
+
+.el-steps.is-simple {
+    padding: 13px 8%;
+    border-radius: 4px;
+    background: var(--el-fill-color-light);
+}
+
+.el-steps.is-simple .el-step__head {
+    width: auto;
+    font-size: 0;
+    padding-right: 10px;
+}
+
+.el-steps.is-simple .el-step__icon {
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+}
+
+.el-steps.is-simple .el-step__main {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    flex-grow: 1;
+}
+
+.el-steps.is-simple .el-step__title {
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.el-steps.is-center {
+    text-align: center;
+}
+
+/* Individual Step */
+.el-step {
+    position: relative;
+    flex-shrink: 1;
+    flex-basis: 50%;
+}
+
+.el-steps.is-horizontal .el-step {
+    display: inline-block;
+}
+
+.el-steps.is-vertical .el-step {
+    display: flex;
+}
+
+.el-step.is-last {
+    flex-basis: auto !important;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+/* Step Head */
+.el-step__head {
+    position: relative;
+    width: 100%;
+}
+
+.el-steps.is-horizontal .el-step__head {
+    text-align: center;
+}
+
+.el-steps.is-vertical .el-step__head {
+    flex-shrink: 0;
+    width: 28px;
+    height: 100%;
+    text-align: center;
+}
+
+/* Step Line (Connector) */
+.el-step__line {
+    position: absolute;
+    border-color: inherit;
+    background-color: var(--el-text-color-placeholder);
+}
+
+.el-steps.is-horizontal .el-step__line {
+    height: 2px;
+    top: 11px;
+    left: 0;
+    right: 0;
+}
+
+.el-steps.is-vertical .el-step__line {
+    width: 2px;
+    top: 0;
+    bottom: 0;
+    left: 13px;
+}
+
+.el-step.is-finish .el-step__line,
+.el-step.is-success .el-step__line {
+    background-color: var(--el-color-primary);
+}
+
+.el-step.is-error .el-step__line {
+    background-color: var(--el-color-danger);
+}
+
+/* Step Icon */
+.el-step__icon {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background: var(--el-color-white);
+    border: 2px solid;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.el-steps.is-horizontal .el-step__icon {
+    margin-right: 8px;
+}
+
+.el-step.is-wait .el-step__icon {
+    border-color: var(--el-text-color-placeholder);
+    color: var(--el-text-color-placeholder);
+}
+
+.el-step.is-process .el-step__icon {
+    border-color: var(--el-color-primary);
+    color: var(--el-color-primary);
+    font-weight: bold;
+}
+
+.el-step.is-finish .el-step__icon {
+    border-color: var(--el-color-primary);
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+}
+
+.el-step.is-success .el-step__icon {
+    border-color: var(--el-color-success);
+    background-color: var(--el-color-success);
+    color: var(--el-color-white);
+}
+
+.el-step.is-error .el-step__icon {
+    border-color: var(--el-color-danger);
+    background-color: var(--el-color-danger);
+    color: var(--el-color-white);
+}
+
+.el-step__icon-inner {
+    display: inline-block;
+    user-select: none;
+    text-align: center;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Step Main Content */
+.el-step__main {
+    text-align: left;
+}
+
+.el-steps.is-horizontal .el-step__main {
+    white-space: normal;
+    text-align: center;
+}
+
+.el-steps.is-vertical .el-step__main {
+    padding-left: 10px;
+}
+
+/* Step Title */
+.el-step__title {
+    font-size: 16px;
+    line-height: 38px;
+    color: var(--el-text-color-primary);
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.el-step.is-wait .el-step__title {
+    color: var(--el-text-color-placeholder);
+}
+
+.el-step.is-process .el-step__title {
+    color: var(--el-text-color-primary);
+    font-weight: bold;
+}
+
+.el-step.is-finish .el-step__title,
+.el-step.is-success .el-step__title {
+    color: var(--el-color-primary);
+}
+
+.el-step.is-error .el-step__title {
+    color: var(--el-color-danger);
+}
+
+/* Step Description */
+.el-step__description {
+    padding-right: 10%;
+    margin-top: -5px;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: normal;
+    color: var(--el-text-color-regular);
+    transition: all 0.3s;
+}
+
+.el-step.is-wait .el-step__description {
+    color: var(--el-text-color-placeholder);
+}
+
+.el-step.is-process .el-step__description {
+    color: var(--el-text-color-primary);
+}
+
+.el-step.is-finish .el-step__description,
+.el-step.is-success .el-step__description {
+    color: var(--el-color-primary);
+}
+
+.el-step.is-error .el-step__description {
+    color: var(--el-color-danger);
+}
+
+/* Step Content */
+.el-step__content {
+    margin-top: 10px;
+}
+"#
+}
+
 pub fn form_styles() -> &'static str {
     r#"/* Form Component Styles */
 .el-form {
@@ -582,6 +958,212 @@ pub fn form_styles() -> &'static str {
 
 .el-form-item--label-right .el-form-item__label {
     text-align: right;
+}
+"#
+}
+
+pub fn tabs_styles() -> &'static str {
+    r#"/* Tabs Component Styles */
+
+/* Tabs Container */
+.el-tabs {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Tab Type Modifiers */
+.el-tabs--card {
+    border: 1px solid var(--el-border-color-light);
+    border-radius: var(--el-border-radius-base);
+    background-color: var(--el-color-white);
+}
+
+.el-tabs--border-card {
+    border: 1px solid var(--el-border-color);
+    border-radius: var(--el-border-radius-base);
+    background-color: var(--el-fill-color-light);
+    box-shadow: var(--el-box-shadow-light);
+}
+
+/* Tab Position Modifiers */
+.el-tabs--top .el-tabs__header {
+    margin-bottom: 15px;
+}
+
+.el-tabs--bottom {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.el-tabs--bottom .el-tabs__header {
+    margin-top: 15px;
+}
+
+.el-tabs--left {
+    display: flex;
+}
+
+.el-tabs--left .el-tabs__header {
+    flex-shrink: 0;
+    margin-right: 15px;
+}
+
+.el-tabs--right {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.el-tabs--right .el-tabs__header {
+    flex-shrink: 0;
+    margin-left: 15px;
+}
+
+/* Tabs Header */
+.el-tabs__header {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Tabs Nav */
+.el-tabs__nav-wrap {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: -1px;
+}
+
+.el-tabs__nav {
+    position: relative;
+    display: flex;
+    white-space: nowrap;
+    transition: transform 0.3s;
+}
+
+.el-tabs--left .el-tabs__nav,
+.el-tabs--right .el-tabs__nav {
+    flex-direction: column;
+}
+
+/* Tab Item */
+.el-tabs__item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    height: 40px;
+    box-sizing: border-box;
+    font-size: var(--el-font-size-base);
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
+}
+
+.el-tabs__item:hover {
+    color: var(--el-color-primary);
+}
+
+.el-tabs__item.is-active {
+    color: var(--el-color-primary);
+    border-bottom-color: var(--el-color-primary);
+}
+
+.el-tabs__item.is-disabled {
+    color: var(--el-text-color-placeholder);
+    cursor: not-allowed;
+}
+
+.el-tabs__item.is-closable {
+    padding-right: 16px;
+}
+
+/* Close Icon */
+.el-tabs__item .el-icon-close {
+    margin-left: 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    transition: color 0.3s;
+}
+
+.el-tabs__item .el-icon-close:hover {
+    color: var(--el-color-danger);
+}
+
+/* Card Type Tabs */
+.el-tabs--card .el-tabs__item {
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: var(--el-border-radius-base) var(--el-border-radius-base) 0 0;
+}
+
+.el-tabs--card .el-tabs__item.is-active {
+    border-color: var(--el-border-color-light);
+    border-bottom-color: var(--el-color-white);
+    background-color: var(--el-color-white);
+}
+
+/* Border Card Type Tabs */
+.el-tabs--border-card .el-tabs__header {
+    background-color: var(--el-fill-color-light);
+    border-bottom: 1px solid var(--el-border-color);
+}
+
+.el-tabs--border-card .el-tabs__item {
+    border: 1px solid transparent;
+    border-bottom: none;
+}
+
+.el-tabs--border-card .el-tabs__item.is-active {
+    background-color: var(--el-color-white);
+    border-color: var(--el-border-color);
+    border-bottom-color: var(--el-color-white);
+}
+
+/* Tabs Content */
+.el-tabs__content {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Tab Pane */
+.el-tab-pane {
+    display: none;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.el-tab-pane.is-active {
+    display: block;
+}
+
+.el-tab-pane.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Add Tab Button */
+.el-tabs__add-tab {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+/* Vertical Tabs (Left/Right) */
+.el-tabs--left .el-tabs__item,
+.el-tabs--right .el-tabs__item {
+    border-bottom: none;
+    border-right: 2px solid transparent;
+}
+
+.el-tabs--left .el-tabs__item.is-active,
+.el-tabs--right .el-tabs__item.is-active {
+    border-bottom-color: transparent;
+    border-right-color: var(--el-color-primary);
 }
 "#
 }
