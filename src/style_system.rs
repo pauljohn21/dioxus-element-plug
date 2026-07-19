@@ -846,6 +846,12 @@ pub struct CompleteCssBuilder {
     styles: Vec<String>,
 }
 
+impl Default for CompleteCssBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CompleteCssBuilder {
     pub fn new() -> Self {
         Self {
@@ -968,6 +974,12 @@ body {
 /// 🎯 主题管理器 - 提供全局主题管理
 pub struct CompleteStyleManager {
     theme: Theme,
+}
+
+impl Default for CompleteStyleManager {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl CompleteStyleManager {

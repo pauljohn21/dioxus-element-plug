@@ -36,6 +36,31 @@ pub struct TableColumn {
 /// Table row data type
 pub type TableData = Vec<std::collections::HashMap<String, String>>;
 
+/// Pre-computed header column rendering data (file-private).
+///
+/// Fields correspond 1:1 to the former tuple used by `header_cols`:
+/// (title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order).
+struct HeaderColData {
+    title: String,
+    width_style: String,
+    sortable: bool,
+    asc_class: String,
+    desc_class: String,
+    col_key: String,
+    is_active: bool,
+    current_order: SortOrder,
+}
+
+/// Pre-computed row rendering data (file-private).
+///
+/// Fields correspond 1:1 to the former tuple used by `row_render_data`:
+/// (orig_idx, row_class, cells), where `cells` is a Vec of (cell_class, cell_value).
+struct RowRenderData {
+    orig_idx: usize,
+    row_class: String,
+    cells: Vec<(String, String)>,
+}
+
 /// Table props
 #[derive(Props, Clone, PartialEq)]
 pub struct TableProps {
@@ -145,7 +170,7 @@ pub fn Table(props: TableProps) -> Element {
     let style_string = props.style.as_ref().cloned().unwrap_or_default();
 
     let active_sort_key = props.sort_key.clone().unwrap_or_default();
-    let active_sort_order = props.sort_order.clone();
+    let active_sort_order = props.sort_order;
 
     // Pre-compute sorted data
     let sorted_rows: Vec<(usize, std::collections::HashMap<String, String>)> = {
@@ -168,8 +193,8 @@ pub fn Table(props: TableProps) -> Element {
         }
     };
 
-    // Pre-compute header column data: (title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order)
-    let header_cols: Vec<(String, String, bool, String, String, String, bool, SortOrder)> = props
+    // Pre-compute header column data
+    let header_cols: Vec<HeaderColData> = props
         .columns
         .iter()
         .map(|col| {
@@ -196,28 +221,28 @@ pub fn Table(props: TableProps) -> Element {
                 "sort-caret descending"
             };
             let current_order = if is_active { active_sort_order } else { SortOrder::None };
-            (
-                col.title.clone(),
+            HeaderColData {
+                title: col.title.clone(),
                 width_style,
-                col.sortable,
-                asc_class.to_string(),
-                desc_class.to_string(),
-                col.key.clone(),
+                sortable: col.sortable,
+                asc_class: asc_class.to_string(),
+                desc_class: desc_class.to_string(),
+                col_key: col.key.clone(),
                 is_active,
                 current_order,
-            )
+            }
         })
         .collect();
 
-    // Pre-compute row rendering data: (orig_idx, row_class, cells)
-    let row_render_data: Vec<(usize, String, Vec<(String, String)>)> = {
+    // Pre-compute row rendering data
+    let row_render_data: Vec<RowRenderData> = {
         let cur = props.current_row_index;
         let stripe = props.stripe;
         let columns_keys: Vec<String> = props.columns.iter().map(|c| c.key.clone()).collect();
         sorted_rows
             .iter()
             .map(|(orig_idx, row)| {
-                let is_current = cur.map_or(false, |r| r == *orig_idx);
+                let is_current = cur == Some(*orig_idx);
                 let base_class = if *orig_idx % 2 == 1 && stripe {
                     "el-table__row el-table__row--striped"
                 } else {
@@ -237,7 +262,11 @@ pub fn Table(props: TableProps) -> Element {
                         )
                     })
                     .collect();
-                (*orig_idx, row_class, cells)
+                RowRenderData {
+                    orig_idx: *orig_idx,
+                    row_class,
+                    cells,
+                }
             })
             .collect()
     };
@@ -265,7 +294,7 @@ pub fn Table(props: TableProps) -> Element {
                         tr {
                             class: "el-table__row",
 
-                            for (title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order) in header_cols.into_iter() {
+                            for HeaderColData { title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order } in header_cols.into_iter() {
                                 th {
                                     class: "el-table__cell",
                                     style: "{width_style}",
@@ -314,7 +343,7 @@ pub fn Table(props: TableProps) -> Element {
                     tbody {
                         class: "el-table__body",
 
-                        for (orig_idx, row_class, cells) in row_render_data.into_iter() {
+                        for RowRenderData { orig_idx, row_class, cells } in row_render_data.into_iter() {
                             tr {
                                 class: "{row_class}",
 

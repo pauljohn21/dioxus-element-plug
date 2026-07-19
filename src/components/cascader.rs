@@ -98,13 +98,13 @@ pub fn Cascader(props: CascaderProps) -> Element {
         .options
         .iter()
         .map(|opt| {
-            let is_active = props.model_value.first().map_or(false, |v| v == &opt.value);
+            let is_active = props.model_value.first() == Some(&opt.value);
             (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active)
         })
         .collect();
 
     // Pre-compute level 2 nodes: (value, label, disabled, has_children, is_active, l1_value)
-    let level2_nodes: Vec<(String, String, bool, bool, bool, String)> = if props.model_value.len() >= 1 {
+    let level2_nodes: Vec<(String, String, bool, bool, bool, String)> = if !props.model_value.is_empty() {
         let l1 = &props.model_value[0];
         props
             .options
@@ -116,7 +116,7 @@ pub fn Cascader(props: CascaderProps) -> Element {
                     .children
                     .iter()
                     .map(|opt| {
-                        let is_active = props.model_value.get(1).map_or(false, |v| v == &opt.value);
+                        let is_active = props.model_value.get(1) == Some(&opt.value);
                         (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active, l1_val.clone())
                     })
                     .collect()
@@ -142,7 +142,7 @@ pub fn Cascader(props: CascaderProps) -> Element {
                     .children
                     .iter()
                     .map(|opt| {
-                        let is_active = props.model_value.get(2).map_or(false, |v| v == &opt.value);
+                        let is_active = props.model_value.get(2) == Some(&opt.value);
                         (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active, l1_val.clone(), l2_val.clone())
                     })
                     .collect()

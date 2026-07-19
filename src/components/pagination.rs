@@ -71,7 +71,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
     if let Some(ref c) = props.class { class_names.push(c.clone()); }
 
     let total_pages = if props.page_size > 0 {
-        (props.total + props.page_size - 1) / props.page_size
+        props.total.div_ceil(props.page_size)
     } else {
         1
     };

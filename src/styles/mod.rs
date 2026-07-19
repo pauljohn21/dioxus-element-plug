@@ -37,8 +37,9 @@ pub mod enhanced_output;
 // Pre-built CSS snippets
 pub mod css_snippets;
 
-/// Prelude module for easy importing of all style constants and functions
 pub mod prelude {
+    //! Prelude module for easy importing of all style constants and functions
+    //!
     //! Prelude for complete Element Plus style system
     //!
     //! Import everything with: `use dioxus_element_plug::styles::prelude::*;`

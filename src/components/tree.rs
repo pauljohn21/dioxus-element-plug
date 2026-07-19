@@ -168,17 +168,18 @@ fn build_node_render_data(
     checked: &HashSet<String>,
     current: &Option<String>,
     highlight: bool,
-    show_checkbox: bool,
+    // Reserved for future per-node checkbox display toggle
+    _show_checkbox: bool,
 ) -> TreeNodeRenderData {
     let is_expanded = expanded.contains(&node.label);
     let is_checked = checked.contains(&node.label);
-    let is_current = highlight && current.as_ref().map_or(false, |c| c == &node.label);
+    let is_current = highlight && (current.as_ref() == Some(&node.label));
     let has_children = !node.children.is_empty();
 
     let children = if has_children {
         node.children
             .iter()
-            .map(|child| build_node_render_data(child, level + 1, expanded, checked, current, highlight, show_checkbox))
+            .map(|child| build_node_render_data(child, level + 1, expanded, checked, current, highlight, _show_checkbox))
             .collect()
     } else {
         vec![]

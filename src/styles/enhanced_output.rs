@@ -7,15 +7,15 @@ pub fn complete_element_plus_css() -> String {
     let mut css = String::new();
     
     // CSS Reset
-    css.push_str(&super::css_snippets::css_reset());
+    css.push_str(super::css_snippets::css_reset());
     css.push_str("\n\n");
     
     // Utility classes
-    css.push_str(&super::css_snippets::utility_classes());
+    css.push_str(super::css_snippets::utility_classes());
     css.push_str("\n\n");
     
     // Grid system
-    css.push_str(&super::css_snippets::grid_system());
+    css.push_str(super::css_snippets::grid_system());
     css.push_str("\n\n");
     
     // All component styles
