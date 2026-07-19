@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str};
+
 /// Descriptions direction
 #[derive(Clone, PartialEq)]
 pub enum DescriptionsDirection {
@@ -46,15 +48,18 @@ pub struct DescriptionsProps {
 /// Descriptions component for displaying detail information
 #[component]
 pub fn Descriptions(props: DescriptionsProps) -> Element {
-    let mut class_names = vec!["el-descriptions".to_string()];
-    if props.border { class_names.push("is-bordered".to_string()); }
-    class_names.push(format!("el-descriptions--{}", props.size));
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let size_class = format!("el-descriptions--{}", props.size);
+    let class_string = ClassBuilder::new("el-descriptions")
+        .add_if("is-bordered", props.border)
+        .add_class(&size_class)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             if let Some(ref title) = props.title {
                 div {
                     class: "el-descriptions__header",

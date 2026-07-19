@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Rate size variants
 #[derive(Clone, PartialEq)]
@@ -94,23 +95,14 @@ pub struct RateProps {
 /// ```
 #[component]
 pub fn Rate(props: RateProps) -> Element {
-    let mut class_names = vec!["el-rate".to_string()];
+    let class_string = ClassBuilder::new("el-rate")
+        .add_class(props.size.as_class())
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let size_class = props.size.as_class();
-    if !size_class.is_empty() {
-        class_names.push(size_class.to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
+    let on_change = props.on_change;
 
     let current_value = props.model_value;
     let text_index = if current_value > 0.0 {
@@ -152,13 +144,9 @@ pub fn Rate(props: RateProps) -> Element {
                     onclick: move |_| {
                         if !props.disabled {
                             if props.clearable && star_value == current_value {
-                                if let Some(handler) = props.on_change {
-                                    handler.call(0.0);
-                                }
+                                fire_event(&on_change, 0.0);
                             } else {
-                                if let Some(handler) = props.on_change {
-                                    handler.call(star_value);
-                                }
+                                fire_event(&on_change, star_value);
                             }
                         }
                     },

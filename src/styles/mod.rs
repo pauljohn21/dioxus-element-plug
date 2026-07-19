@@ -25,9 +25,6 @@ pub mod component_classes;
 pub mod simple_css_generation;
 pub mod enhanced_css_system;
 
-// Theme system
-pub mod theme;
-
 // Utility classes
 pub mod utilities;
 
@@ -37,8 +34,9 @@ pub mod enhanced_output;
 // Pre-built CSS snippets
 pub mod css_snippets;
 
-/// Prelude module for easy importing of all style constants and functions
 pub mod prelude {
+    //! Prelude module for easy importing of all style constants and functions
+    //!
     //! Prelude for complete Element Plus style system
     //!
     //! Import everything with: `use dioxus_element_plug::styles::prelude::*;`
@@ -57,9 +55,6 @@ pub mod prelude {
 
     // CSS generation
     pub use super::simple_css_generation::*;
-
-    // Theme system
-    pub use super::theme::*;
 
     // Utilities
     pub use super::utilities::*;

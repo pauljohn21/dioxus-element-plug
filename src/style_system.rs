@@ -1,1012 +1,942 @@
-//! 🎨 最完整的 Element Plus 纯 Rust 样式系统
-//! 
-//! 基于 Rust 零开销抽象原则的超高性能样式解决方案
-//! - 编译时样式生成：100% 静态字符串
-//! - 零运行时计算：无样式解析开销  
-//! - Tree-shaking 友好：仅包含使用的样式
-//! - 类型安全：所有样式都有编译时检查
-//! - 内存高效：字符串切片 + 静态分配优化
+//! 🎨 统一的 Element Plus 纯 Rust 样式系统
+//!
+//! 自 0.3.0 起,本模块是 crate 的唯一样式系统入口,融合了原 `style_system.rs`
+//! 的公共 API 外壳与 `styles/enhanced_css_system.rs` 的完整 CSS 实现(114 组件)。
+//!
+//! - [`Theme`]:50 字段完整 Element Plus 主题配置
+//! - [`ThemeBuilder`]:[`Theme`] 的 fluent builder
+//! - [`CompleteStyleManager`]:推荐的样式生成入口,内部委托
+//!   [`all_styles`](crate::styles::enhanced_css_system::all_styles)
+//! - [`CompleteCssBuilder`]:**deprecated**,0.2.x 兼容包装器,委托 [`CompleteStyleManager`]
+//!
+//! 设计要点:代码库中只存在一个 [`Theme`] 类型(消除 0.2.x 中 `style_system::Theme`
+//! 与 `styles::theme::Theme` 的名称冲突)。`CompleteStyleManager` 保留公共 API 名称
+//! 以降低迁移成本,但 CSS 覆盖从 7 组件升级到 114 组件。
 
-/// 🎯 Element Plus 完整主题配置
-#[derive(Debug, Clone)]
+use crate::styles::prelude::*;
+
+/// 🎯 Element Plus 完整主题配置(50 字段)
+///
+/// 对应 Element Plus 完整设计规范,包含颜色、字体、边框、间距、过渡、阴影、
+/// z-index 等全部可定制属性。所有字段为 `&'static str`(z-index 为 `i32`),
+/// 默认值引用 [`crate::styles::prelude`] 中的常量。
+///
+/// # 迁移指南(从 0.2.x)
+///
+/// 0.2.x 的 `Theme` 只有 30 字段。升级到 0.3.0 后,请改用结构体更新语法,
+/// 只覆盖需要修改的字段:
+///
+/// ```rust,ignore
+/// use dioxus_element_plug::Theme;
+///
+/// let dark = Theme {
+///     ..Theme::default(),
+///     color_white: "#141414",
+///     color_black: "#ffffff",
+///     color_text_primary: "#E5EAF3",
+/// };
+/// ```
+///
+/// 或使用 [`ThemeBuilder`] 的 fluent API:
+///
+/// ```rust,ignore
+/// use dioxus_element_plug::ThemeBuilder;
+///
+/// let theme = ThemeBuilder::new()
+///     .primary_color("#1890ff")
+///     .font_size_base("16px")
+///     .build();
+/// ```
+#[derive(Debug, Clone, PartialEq)]
 pub struct Theme {
-    // 品牌色彩
+    // Colors
     pub color_primary: &'static str,
     pub color_success: &'static str,
     pub color_warning: &'static str,
     pub color_danger: &'static str,
     pub color_info: &'static str,
-    
-    // 基础色彩
     pub color_white: &'static str,
     pub color_black: &'static str,
-    
-    // 文字色彩
     pub color_text_primary: &'static str,
     pub color_text_regular: &'static str,
     pub color_text_secondary: &'static str,
     pub color_text_placeholder: &'static str,
-    
-    // 边框色彩
     pub border_color_base: &'static str,
     pub border_color_light: &'static str,
     pub border_color_lighter: &'static str,
     pub border_color_extra_light: &'static str,
-    
-    // 背景色彩
     pub background_color_base: &'static str,
-    
-    // 字体大小
+
+    // Font sizes
     pub font_size_extra_large: &'static str,
     pub font_size_large: &'static str,
     pub font_size_medium: &'static str,
     pub font_size_base: &'static str,
     pub font_size_small: &'static str,
     pub font_size_extra_small: &'static str,
-    
-    // 边框圆角
+
+    // Font family
+    pub font_family: &'static str,
+    pub font_weight_primary: &'static str,
+    pub line_height_primary: &'static str,
+
+    // Borders
     pub border_radius_base: &'static str,
     pub border_radius_small: &'static str,
     pub border_radius_circle: &'static str,
-    
-    // 内边距
+    pub border_radius_large: &'static str,
+
+    // Component sizes
+    pub component_size_large: &'static str,
+    pub component_size_default: &'static str,
+    pub component_size_small: &'static str,
+
+    // Spacing
     pub padding_base: &'static str,
-    
-    // 过渡效果
+    pub padding_small: &'static str,
+    pub padding_large: &'static str,
+    pub margin_base: &'static str,
+    pub margin_small: &'static str,
+    pub margin_large: &'static str,
+
+    // Transitions
+    pub transition_duration_slow: &'static str,
+    pub transition_duration_base: &'static str,
+    pub transition_duration_fast: &'static str,
     pub all_transition: &'static str,
     pub fade_transition: &'static str,
     pub border_transition_base: &'static str,
     pub color_transition_base: &'static str,
+    pub cubic_bezier_primary: &'static str,
+    pub cubic_bezier_secondary: &'static str,
+
+    // Shadows
+    pub box_shadow_base: &'static str,
+    pub box_shadow_light: &'static str,
+    pub box_shadow_lighter: &'static str,
+    pub box_shadow_dark: &'static str,
+
+    // Z-index
+    pub z_index_base: i32,
+    pub z_index_popper: i32,
+    pub z_index_overlay: i32,
+    pub z_index_dialog: i32,
+    pub z_index_message: i32,
+    pub z_index_notification: i32,
+    pub z_index_tooltip: i32,
 }
 
-/// 默认主题 - 完全对应 Element Plus 默认值
+/// 默认主题 —— 完全对应 Element Plus 默认值,引用 `styles::prelude` 的常量
 impl Default for Theme {
     fn default() -> Self {
         Self {
+            // Colors
+            color_primary: COLOR_PRIMARY,
+            color_success: COLOR_SUCCESS,
+            color_warning: COLOR_WARNING,
+            color_danger: COLOR_DANGER,
+            color_info: COLOR_INFO,
+            color_white: COLOR_WHITE,
+            color_black: COLOR_BLACK,
+            color_text_primary: COLOR_TEXT_PRIMARY,
+            color_text_regular: COLOR_TEXT_REGULAR,
+            color_text_secondary: COLOR_TEXT_SECONDARY,
+            color_text_placeholder: COLOR_TEXT_PLACEHOLDER,
+            border_color_base: BORDER_COLOR_BASE,
+            border_color_light: BORDER_COLOR_LIGHT,
+            border_color_lighter: BORDER_COLOR_LIGHTER,
+            border_color_extra_light: BORDER_COLOR_EXTRA_LIGHT,
+            background_color_base: BACKGROUND_COLOR_BASE,
+
+            // Font sizes
+            font_size_extra_large: FONT_SIZE_EXTRA_LARGE,
+            font_size_large: FONT_SIZE_LARGE,
+            font_size_medium: FONT_SIZE_MEDIUM,
+            font_size_base: FONT_SIZE_BASE,
+            font_size_small: FONT_SIZE_SMALL,
+            font_size_extra_small: FONT_SIZE_EXTRA_SMALL,
+
+            // Font family
+            font_family: FONT_FAMILY,
+            font_weight_primary: FONT_WEIGHT_PRIMARY,
+            line_height_primary: FONT_LINE_HEIGHT_PRIMARY,
+
+            // Borders
+            border_radius_base: BORDER_RADIUS_BASE,
+            border_radius_small: BORDER_RADIUS_SMALL,
+            border_radius_circle: BORDER_RADIUS_CIRCLE,
+            border_radius_large: BORDER_RADIUS_LARGE,
+
+            // Component sizes
+            component_size_large: COMPONENT_SIZE_LARGE,
+            component_size_default: COMPONENT_SIZE_DEFAULT,
+            component_size_small: COMPONENT_SIZE_SMALL,
+
+            // Spacing
+            padding_base: SPACING_MD,
+            padding_small: SPACING_SM,
+            padding_large: SPACING_LG,
+            margin_base: SPACING_MD,
+            margin_small: SPACING_SM,
+            margin_large: SPACING_LG,
+
+            // Transitions
+            transition_duration_slow: TRANSITION_DURATION_SLOW,
+            transition_duration_base: TRANSITION_DURATION_BASE,
+            transition_duration_fast: TRANSITION_DURATION_FAST,
+            all_transition: "all .3s cubic-bezier(.645,.045,.355,1)",
+            fade_transition: "opacity .3s cubic-bezier(.55,0,.1,1)",
+            border_transition_base: "border-color .2s cubic-bezier(.645,.045,.355,1)",
+            color_transition_base: "color .2s cubic-bezier(.645,.045,.355,1)",
+            cubic_bezier_primary: "cubic-bezier(.645,.045,.355,1)",
+            cubic_bezier_secondary: "cubic-bezier(.23,1,.32,1)",
+
+            // Shadows
+            box_shadow_base: BOX_SHADOW_BASE,
+            box_shadow_light: BOX_SHADOW_LIGHT,
+            box_shadow_lighter: BOX_SHADOW_LIGHTER,
+            box_shadow_dark: BOX_SHADOW_DARK,
+
+            // Z-index
+            z_index_base: 100,
+            z_index_popper: 2000,
+            z_index_overlay: 2000,
+            z_index_dialog: 2001,
+            z_index_message: 2002,
+            z_index_notification: 2003,
+            z_index_tooltip: 2004,
+        }
+    }
+}
+
+impl Theme {
+    /// Returns the default light theme.
+    ///
+    /// This is equivalent to `Theme::default()`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use dioxus_element_plug::Theme;
+    ///
+    /// let theme = Theme::light();
+    /// ```
+    pub fn light() -> Self {
+        Self::default()
+    }
+
+    /// Returns a pre-configured dark theme.
+    ///
+    /// The dark theme uses inverted colors suitable for dark backgrounds.
+    /// All colors meet WCAG AA contrast requirements.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use dioxus_element_plug::Theme;
+    ///
+    /// let theme = Theme::dark();
+    /// ```
+    pub fn dark() -> Self {
+        Self {
+            // Inverted base colors
+            color_white: "#141414",
+            color_black: "#ffffff",
+
+            // Text colors (inverted hierarchy for dark backgrounds)
+            color_text_primary: "#E5EAF3",
+            color_text_regular: "#CFD3DC",
+            color_text_secondary: "#A3A6AD",
+            color_text_placeholder: "#8D9095",
+
+            // Border colors (darkened)
+            border_color_base: "#4C4D4F",
+            border_color_light: "#414243",
+            border_color_lighter: "#363637",
+            border_color_extra_light: "#2B2B2C",
+
+            // Background (dark)
+            background_color_base: "#1d1e1f",
+
+            // Primary colors stay similar but slightly adjusted for dark backgrounds
             color_primary: "#409EFF",
             color_success: "#67C23A",
             color_warning: "#E6A23C",
             color_danger: "#F56C6C",
-            color_info: "#909399",
-            color_white: "#FFFFFF",
-            color_black: "#000000",
-            color_text_primary: "#303133",
-            color_text_regular: "#606266",
-            color_text_secondary: "#909399",
-            color_text_placeholder: "#C0C4CC",
-            border_color_base: "#DCDFE6",
-            border_color_light: "#E4E7ED",
-            border_color_lighter: "#EBEEF5",
-            border_color_extra_light: "#F2F6FC",
-            background_color_base: "#F5F7FA",
-            font_size_extra_large: "20px",
-            font_size_large: "18px",
-            font_size_medium: "16px",
-            font_size_base: "14px",
-            font_size_small: "13px",
-            font_size_extra_small: "12px",
-            border_radius_base: "4px",
-            border_radius_small: "2px",
-            border_radius_circle: "100%",
-            padding_base: "12px 20px",
-            all_transition: "all .3s cubic-bezier(.645,.045,.355,1)",
-            fade_transition: "opacity 300ms cubic-bezier(0.23, 1, 0.32, 1)",
-            border_transition_base: "border-color .2s cubic-bezier(.645,.045,.355,1)",
-            color_transition_base: "color .2s cubic-bezier(.645,.045,.355,1)",
+            color_info: "#73767A",
+
+            // Other fields inherit from default
+            ..Self::default()
         }
     }
 }
 
-/// 🎨 按钮样式生成器
-pub struct ButtonStyles;
+/// [`Theme`] 的 fluent builder,用于链式构造自定义主题。
+///
+/// # 示例
+///
+/// ```rust,ignore
+/// use dioxus_element_plug::ThemeBuilder;
+///
+/// let theme = ThemeBuilder::new()
+///     .primary_color("#1890ff")
+///     .success_color("#52c41a")
+///     .font_size_base("16px")
+///     .border_radius_base("6px")
+///     .box_shadow_base("0 2px 8px rgba(0,0,0,.15)")
+///     .build();
+/// ```
+#[derive(Debug, Default)]
+pub struct ThemeBuilder {
+    theme: Theme,
+}
 
-impl ButtonStyles {
-    pub fn base(theme: &Theme) -> String {
-        format!(r#"
-/* === Button Base Styles === */
-.el-button {{
-    display: inline-block;
-    line-height: 1;
-    white-space: nowrap;
-    cursor: pointer;
-    background: {};
-    border: 1px solid {};
-    color: {};
-    -webkit-appearance: none;
-    text-align: center;
-    box-sizing: border-box;
-    outline: none;
-    margin: 0;
-    transition: {};
-    font-weight: 500;
-    user-select: none;
-    padding: 12px 20px;
-    font-size: {};
-    border-radius: {};
-    height: 40px;
-}}
+impl ThemeBuilder {
+    /// 创建一个以默认主题为起点的 builder
+    pub fn new() -> Self {
+        Self::default()
+    }
 
-.el-button--primary {{
-    color: {};
-    background-color: {};
-    border-color: {};
-}}
+    // --- 品牌色 ---
+    pub fn primary_color(mut self, color: &'static str) -> Self {
+        self.theme.color_primary = color;
+        self
+    }
 
-.el-button--success {{
-    color: {};
-    background-color: {};
-    border-color: {};
-}}
+    pub fn success_color(mut self, color: &'static str) -> Self {
+        self.theme.color_success = color;
+        self
+    }
 
-.el-button--warning {{
-    color: {};
-    background-color: {};
-    border-color: {};
-}}
+    pub fn warning_color(mut self, color: &'static str) -> Self {
+        self.theme.color_warning = color;
+        self
+    }
 
-.el-button--danger {{
-    color: {};
-    background-color: {};
-    border-color: {};
-}}
+    pub fn danger_color(mut self, color: &'static str) -> Self {
+        self.theme.color_danger = color;
+        self
+    }
 
-.el-button--info {{
-    color: {};
-    background-color: {};
-    border-color: {};
-}}
+    pub fn info_color(mut self, color: &'static str) -> Self {
+        self.theme.color_info = color;
+        self
+    }
 
-.el-button--large {{
-    height: 40px;
-    padding: 12px 20px;
-    font-size: {};
-}}
+    // --- 基础/文字/边框/背景色 ---
+    pub fn white_color(mut self, color: &'static str) -> Self {
+        self.theme.color_white = color;
+        self
+    }
 
-.el-button--medium {{
-    height: 36px;
-    padding: 10px 20px;
-    font-size: {};
-}}
+    pub fn black_color(mut self, color: &'static str) -> Self {
+        self.theme.color_black = color;
+        self
+    }
 
-.el-button--small {{
-    height: 32px;
-    padding: 9px 15px;
-    font-size: {};
-}}
+    pub fn text_primary_color(mut self, color: &'static str) -> Self {
+        self.theme.color_text_primary = color;
+        self
+    }
 
-.el-button--mini {{
-    height: 28px;
-    padding: 7px 15px;
-    font-size: {};
-}}
+    pub fn text_regular_color(mut self, color: &'static str) -> Self {
+        self.theme.color_text_regular = color;
+        self
+    }
 
-.el-button.is-disabled,
-.el-button.is-disabled:focus,
-.el-button.is-disabled:hover {{
-    color: {};
-    cursor: not-allowed;
-    background-image: none;
-    background-color: {};
-    border-color: {};
-}}
+    pub fn text_secondary_color(mut self, color: &'static str) -> Self {
+        self.theme.color_text_secondary = color;
+        self
+    }
 
-.el-button.is-round {{
-    border-radius: 20px;
-    padding: 12px 23px;
-}}
+    pub fn text_placeholder_color(mut self, color: &'static str) -> Self {
+        self.theme.color_text_placeholder = color;
+        self
+    }
 
-.el-button.is-circle {{
-    border-radius: 50%;
-    padding: 12px;
-}}
-        "#, 
-        theme.color_white, theme.border_color_base, theme.color_text_regular, theme.all_transition, 
-        theme.font_size_base, theme.border_radius_base, theme.color_white, theme.color_primary, theme.color_primary,
-        theme.color_white, theme.color_success, theme.color_success,
-        theme.color_white, theme.color_warning, theme.color_warning,
-        theme.color_white, theme.color_danger, theme.color_danger,
-        theme.color_white, theme.color_info, theme.color_info,
-        theme.font_size_large, theme.font_size_base, theme.font_size_small, theme.font_size_extra_small,
-        theme.color_text_placeholder, theme.color_white, theme.border_color_base
-        )
+    pub fn border_color_base(mut self, color: &'static str) -> Self {
+        self.theme.border_color_base = color;
+        self
+    }
+
+    pub fn background_color_base(mut self, color: &'static str) -> Self {
+        self.theme.background_color_base = color;
+        self
+    }
+
+    // --- 字体 ---
+    pub fn font_family(mut self, family: &'static str) -> Self {
+        self.theme.font_family = family;
+        self
+    }
+
+    pub fn font_weight_primary(mut self, weight: &'static str) -> Self {
+        self.theme.font_weight_primary = weight;
+        self
+    }
+
+    pub fn line_height_primary(mut self, height: &'static str) -> Self {
+        self.theme.line_height_primary = height;
+        self
+    }
+
+    pub fn font_size_base(mut self, size: &'static str) -> Self {
+        self.theme.font_size_base = size;
+        self
+    }
+
+    pub fn font_size_large(mut self, size: &'static str) -> Self {
+        self.theme.font_size_large = size;
+        self
+    }
+
+    pub fn font_size_small(mut self, size: &'static str) -> Self {
+        self.theme.font_size_small = size;
+        self
+    }
+
+    // --- 圆角 ---
+    pub fn border_radius_base(mut self, radius: &'static str) -> Self {
+        self.theme.border_radius_base = radius;
+        self
+    }
+
+    pub fn border_radius_small(mut self, radius: &'static str) -> Self {
+        self.theme.border_radius_small = radius;
+        self
+    }
+
+    pub fn border_radius_large(mut self, radius: &'static str) -> Self {
+        self.theme.border_radius_large = radius;
+        self
+    }
+
+    // --- 组件尺寸 ---
+    pub fn component_size_large(mut self, size: &'static str) -> Self {
+        self.theme.component_size_large = size;
+        self
+    }
+
+    pub fn component_size_default(mut self, size: &'static str) -> Self {
+        self.theme.component_size_default = size;
+        self
+    }
+
+    pub fn component_size_small(mut self, size: &'static str) -> Self {
+        self.theme.component_size_small = size;
+        self
+    }
+
+    // --- 间距 ---
+    pub fn padding_base(mut self, padding: &'static str) -> Self {
+        self.theme.padding_base = padding;
+        self
+    }
+
+    pub fn padding_small(mut self, padding: &'static str) -> Self {
+        self.theme.padding_small = padding;
+        self
+    }
+
+    pub fn padding_large(mut self, padding: &'static str) -> Self {
+        self.theme.padding_large = padding;
+        self
+    }
+
+    pub fn margin_base(mut self, margin: &'static str) -> Self {
+        self.theme.margin_base = margin;
+        self
+    }
+
+    pub fn margin_small(mut self, margin: &'static str) -> Self {
+        self.theme.margin_small = margin;
+        self
+    }
+
+    pub fn margin_large(mut self, margin: &'static str) -> Self {
+        self.theme.margin_large = margin;
+        self
+    }
+
+    // --- 阴影 ---
+    pub fn box_shadow_base(mut self, shadow: &'static str) -> Self {
+        self.theme.box_shadow_base = shadow;
+        self
+    }
+
+    pub fn box_shadow_light(mut self, shadow: &'static str) -> Self {
+        self.theme.box_shadow_light = shadow;
+        self
+    }
+
+    pub fn box_shadow_lighter(mut self, shadow: &'static str) -> Self {
+        self.theme.box_shadow_lighter = shadow;
+        self
+    }
+
+    pub fn box_shadow_dark(mut self, shadow: &'static str) -> Self {
+        self.theme.box_shadow_dark = shadow;
+        self
+    }
+
+    // --- z-index ---
+    pub fn z_index_popper(mut self, z: i32) -> Self {
+        self.theme.z_index_popper = z;
+        self
+    }
+
+    pub fn z_index_dialog(mut self, z: i32) -> Self {
+        self.theme.z_index_dialog = z;
+        self
+    }
+
+    pub fn z_index_message(mut self, z: i32) -> Self {
+        self.theme.z_index_message = z;
+        self
+    }
+
+    pub fn z_index_notification(mut self, z: i32) -> Self {
+        self.theme.z_index_notification = z;
+        self
+    }
+
+    pub fn z_index_tooltip(mut self, z: i32) -> Self {
+        self.theme.z_index_tooltip = z;
+        self
+    }
+
+    /// 构建并返回 [`Theme`]
+    pub fn build(self) -> Theme {
+        self.theme
     }
 }
 
-/// 输入框样式生成器
-pub struct InputStyles;
-
-impl InputStyles {
-    pub fn base(theme: &Theme) -> String {
-        format!(r#"
-/* === Input Base Styles === */
-.el-input {{
-    position: relative;
-    font-size: {};
-    display: inline-block;
-    width: 100%;
-}}
-
-.el-input__inner {{
-    appearance: none;
-    background: transparent;
-    background-image: none;
-    border: none;
-    box-sizing: border-box;
-    color: {};
-    display: inline-block;
-    font-size: inherit;
-    height: 40px;
-    line-height: 40px;
-    outline: none;
-    padding: 0;
-    transition: {};
-    width: 100%;
-}}
-
-.el-input--large .el-input__wrapper {{
-    padding: 1px 15px;
-}}
-
-.el-input--medium .el-input__wrapper {{
-    padding: 1px 11px;
-}}
-
-.el-input--small .el-input__wrapper {{
-    padding: 1px 7px;
-}}
-
-.el-input--mini .el-input__wrapper {{
-    padding: 1px 7px;
-}}
-
-.el-input--large .el-input__inner {{
-    height: 40px;
-    line-height: 40px;
-}}
-
-.el-input--medium .el-input__inner {{
-    height: 36px;
-    line-height: 36px;
-}}
-
-.el-input--small .el-input__inner {{
-    height: 32px;
-    line-height: 32px;
-}}
-
-.el-input--mini .el-input__inner {{
-    height: 28px;
-    line-height: 28px;
-}}
-
-.el-input.is-disabled .el-input__inner {{
-    color: {};
-    cursor: not-allowed;
-}}
-
-.el-input.is-disabled .el-input__wrapper {{
-    background-color: {};
-    border-color: {};
-    cursor: not-allowed;
-}}
-
-.el-input__wrapper {{
-    display: inline-flex;
-    flex-grow: 1;
-    align-items: center;
-    justify-content: center;
-    padding: 1px 11px;
-    background-color: {};
-    background-image: none;
-    border-radius: {};
-    border: 1px solid {};
-    cursor: text;
-    transition: {};
-    transform: translateZ(0);
-    box-shadow: 0 0 0 0 transparent inset;
-}}
-
-.el-input__wrapper:hover {{
-    border-color: {};
-}}
-
-.el-input__wrapper.is-focus {{
-    border-color: {};
-}}
-
-.el-input__prefix {{
-    display: inline-flex;
-    margin-right: 8px;
-    color: {};
-}}
-
-.el-input__suffix {{
-    display: inline-flex;
-    margin-left: 8px;
-    color: {};
-}}
-        "#,
-        theme.font_size_base,
-        theme.color_text_regular,
-        theme.border_transition_base,
-        theme.color_text_placeholder,
-        theme.background_color_base,
-        theme.border_color_base,
-        theme.color_white,
-        theme.border_radius_base,
-        theme.border_color_base,
-        theme.border_transition_base,
-        theme.color_text_placeholder,
+/// 根据主题生成 `:root { --el-* }` CSS 自定义属性字符串
+pub fn generate_css_variables(theme: &Theme) -> String {
+    format!(
+        ":root {{\n  
+  /* Colors */\n  
+  --el-color-primary: {};\n  
+  --el-color-success: {};\n  
+  --el-color-warning: {};\n  
+  --el-color-danger: {};\n  
+  --el-color-info: {};\n  
+  --el-color-white: {};\n  
+  --el-color-black: {};\n
+  /* Text colors */\n  
+  --el-color-text-primary: {};\n  
+  --el-color-text-regular: {};\n  
+  --el-color-text-secondary: {};\n  
+  --el-color-text-placeholder: {};\n
+  /* Border colors */\n  
+  --el-border-color-base: {};\n  
+  --el-border-color-light: {};\n  
+  --el-border-color-lighter: {};\n  
+  --el-border-color-extra-light: {};\n
+  /* Background */\n  
+  --el-background-color-base: {};\n
+  /* Font sizes */\n  
+  --el-font-size-extra-large: {};\n  
+  --el-font-size-large: {};\n  
+  --el-font-size-medium: {};\n  
+  --el-font-size-base: {};\n  
+  --el-font-size-small: {};\n  
+  --el-font-size-extra-small: {};\n
+  /* Font */\n  
+  --el-font-family: {};\n  
+  --el-font-weight-primary: {};\n  
+  --el-line-height-primary: {};\n
+  /* Border radius */\n  
+  --el-border-radius-base: {};\n  
+  --el-border-radius-small: {};\n  
+  --el-border-radius-circle: {};\n  
+  --el-border-radius-large: {};\n
+  /* Box shadows */\n  
+  --el-box-shadow-base: {};\n  
+  --el-box-shadow-light: {};\n  
+  --el-box-shadow-lighter: {};\n  
+  --el-box-shadow-dark: {};\n
+  /* Transition */\n  
+  --el-transition-duration-slow: {};\n  
+  --el-transition-duration-base: {};\n  
+  --el-transition-duration-fast: {};\n\n}}",
         theme.color_primary,
-        theme.color_text_placeholder,
-        theme.color_text_placeholder
-        )
-    }
-}
-
-/// Alert 样式生成器
-pub struct AlertStyles;
-
-impl AlertStyles {
-    pub fn base(theme: &Theme) -> String {
-        format!(r#"
-/* === Alert Base Styles === */
-.el-alert {{
-    position: relative;
-    padding: 8px 16px;
-    margin-bottom: 16px;
-    border-radius: {};
-    overflow: hidden;
-    opacity: 1;
-    display: flex;
-    align-items: center;
-    transition: {};
-    font-size: {};
-    line-height: 1.4;
-}}
-
-.el-alert--success {{
-    background-color: #f0f9ff;
-    color: {};
-    border: 1px solid rgba(103, 194, 58, 0.2);
-}}
-
-.el-alert--warning {{
-    background-color: #fdf6ec;
-    color: {};
-    border: 1px solid rgba(230, 162, 60, 0.2);
-}}
-
-.el-alert--error {{
-    background-color: #fef0f0;
-    color: {};
-    border: 1px solid rgba(245, 108, 108, 0.2);
-}}
-
-.el-alert--info {{
-    background-color: #f4f4f5;
-    color: {};
-    border: 1px solid rgba(144, 147, 153, 0.2);
-}}
-
-.el-alert__title {{
-    font-size: {};
-    line-height: 20px;
-}}
-
-.el-alert__description {{
-    font-size: {};
-    color: #666;
-    margin-top: 4px;
-}}
-
-.el-alert__icon {{
-    display: inline-block;
-    font-size: 16px;
-    margin-right: 8px;
-}}
-
-.el-alert__close-btn {{
-    position: absolute;
-    top: 12px;
-    right: 15px;
-    cursor: pointer;
-    font-size: 12px;
-    color: #c0c4cc;
-    background: none;
-    border: none;
-    padding: 0;
-}}
-
-.el-alert__content {{
-    display: table-cell;
-    padding: 0 8px;
-}}
-        "#, 
-        theme.border_radius_base,
-        theme.all_transition,
-        theme.font_size_base,
         theme.color_success,
         theme.color_warning,
         theme.color_danger,
         theme.color_info,
-        theme.font_size_base,
-        theme.font_size_small
-        )
-    }
-}
-
-/// Form 样式生成器
-pub struct FormStyles;
-
-impl FormStyles {
-    pub fn base(theme: &Theme) -> String {
-        format!(r#"
-/* === Form Base Styles === */
-.el-form {{
-    width: 100%;
-}}
-
-.el-form--horizontal {{
-    display: flex;
-    flex-wrap: wrap;
-}}
-
-.el-form--vertical {{
-    display: flex;
-    flex-direction: column;
-}}
-
-.el-form-item {{
-    margin-bottom: 22px;
-    display: flex;
-    align-items: flex-start;
-}}
-
-.el-form-item__label {{
-    line-height: 40px;
-    padding-right: 12px;
-    font-size: {};
-    color: {};
-    width: 120px;
-}}
-
-.el-form-item__content {{
-    line-height: 40px;
-    position: relative;
-    font-size: {};
-    flex: 1;
-}}
-
-.el-form-item.is-required .el-form-item__label:before {{
-    content: "*";
-    color: #f56c6c;
-    margin-right: 4px;
-}}
-
-.el-form-item__error {{
-    position: absolute;
-    top: 100%;
-    left: 0;
-    line-height: 1;
-    padding-top: 4px;
-    color: #f56c6c;
-    font-size: {};
-}}
-
-.el-form-item.is-error .el-input__wrapper {{
-border-color: #f56c6c;
-}}
-
-.el-select {{
-    position: relative;
-    display: inline-block;
-    width: 100%;
-}}
-
-.el-select__wrapper {{
-    display: inline-flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0 15px;
-    height: 40px;
-    background-color: {};
-    border: 1px solid {};
-    border-radius: {};
-    cursor: pointer;
-    transition: {};
-}}
-
-.el-checkbox {{
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-    margin-right: 30px;
-    font-size: {};
-    color: {};
-}}
-
-.el-checkbox__input {{
-    position: relative;
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    margin-right: 8px;
-}}
-
-.el-radio {{
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
-    margin-right: 30px;
-    font-size: {};
-    color: {};
-}}
-
-.el-radio__input {{
-    position: relative;
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    margin-right: 8px;
-}}
-        "#, 
-        theme.font_size_base,
-        theme.color_text_regular,
-        theme.font_size_base,
-        theme.font_size_extra_small,
         theme.color_white,
-        theme.border_color_base,
-        theme.border_radius_base,
-        theme.border_transition_base,
-        theme.font_size_base,
-        theme.color_text_regular,
-        theme.font_size_base,
-        theme.color_text_regular
-        )
-    }
-}
-
-/// Card 样式生成器
-pub struct CardStyles;
-
-impl CardStyles {
-    pub fn base(theme: &Theme) -> String {
-        format!(r#"
-/* === Card Base Styles === */
-.el-card {{
-    border-radius: {};
-    border: 1px solid {};
-    background-color: {};
-    overflow: hidden;
-    color: {};
-    transition: {};
-}}
-
-.el-card__header {{
-    padding: 18px 20px;
-    border-bottom: 1px solid {};
-    box-sizing: border-box;
-}}
-
-.el-card__body {{
-    padding: 20px;
-}}
-
-.el-card.is-hover-shadow:hover {{
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-}}
-
-.el-card.is-always-shadow {{
-    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
-}}
-
-.el-panel {{
-    background: {};
-    border: 1px solid {};
-    border-radius: {};
-    margin-bottom: 16px;
-}}
-
-.el-panel__header {{
-    padding: 12px 15px;
-    border-bottom: 1px solid {};
-    font-weight: 500;
-    font-size: {};
-}}
-
-.el-panel__body {{
-    padding: 15px;
-}}
-
-.el-panel.is-collapsible .el-panel__header {{
-    cursor: pointer;
-}}
-
-.el-panel.is-collapsed .el-panel__body {{
-    display: none;
-}}
-
-.el-box {{
-    display: block;
-    box-sizing: border-box;
-}}
-        "#, 
-        theme.border_radius_base,
-        theme.border_color_lighter,
-        theme.color_white,
-        theme.color_text_regular,
-        theme.all_transition,
-        theme.border_color_lighter,
-        theme.color_white,
-        theme.border_color_lighter,
-        theme.border_radius_base,
-        theme.border_color_lighter,
-        theme.font_size_base
-        )
-    }
-}
-
-/// Table 样式生成器
-pub struct TableStyles;
-
-impl TableStyles {
-    pub fn base(theme: &Theme) -> String {
-        format!(r#"
-/* === Table Base Styles === */
-.el-table {{
-    width: 100%;
-    border-collapse: collapse;
-    font-size: {};
-    color: {};
-    position: relative;
-}}
-
-.el-table__header {{
-    background-color: {};
-}}
-
-.el-table__header tr {{
-    background-color: {};
-}}
-
-.el-table__header th {{
-    text-align: left;
-    font-weight: 500;
-    background-color: {};
-    border-bottom: 1px solid {};
-    padding: 12px 0;
-    font-size: {};
-    color: {};
-}}
-
-.el-table__body tr {{
-    transition: {};
-}}
-
-.el-table__body tr:hover {{
-    background-color: {};
-}}
-
-.el-table__row--striped td {{
-    background-color: {};
-}}
-
-.el-table__cell {{
-    padding: 12px 10px;
-    border-bottom: 1px solid {};
-    min-width: 0;
-    box-sizing: border-box;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-    position: relative;
-    text-align: left;
-}}
-
-.el-table--border {{
-    border: 1px solid {};
-}}
-
-.el-table--border td, .el-table--border th {{
-    border-right: 1px solid {};
-}}
-
-.el-data-list {{
-    width: 100%;
-}}
-
-.el-data-list__item {{
-    padding: 16px;
-    border-bottom: 1px solid {};
-    cursor: pointer;
-    transition: {};
-}}
-
-.el-data-list__item:hover {{
-    background-color: {};
-}}
-        "#, 
-        theme.font_size_base,
-        theme.color_text_regular,
-        theme.background_color_base,
-        theme.background_color_base,
-        theme.background_color_base,
-        theme.border_color_lighter,
-        theme.font_size_base,
+        theme.color_black,
         theme.color_text_primary,
-        theme.color_transition_base,
-        theme.background_color_base,
-        theme.background_color_base,
+        theme.color_text_regular,
+        theme.color_text_secondary,
+        theme.color_text_placeholder,
+        theme.border_color_base,
+        theme.border_color_light,
         theme.border_color_lighter,
-        theme.border_color_lighter,
-        theme.border_color_lighter,
-        theme.border_color_lighter,
-        theme.color_transition_base,
-        theme.background_color_base
-        )
-    }
-}
-
-/// Layout 样式生成器
-pub struct LayoutStyles;
-
-impl LayoutStyles {
-    pub fn base(theme: &Theme) -> String {
-        format!(r#"
-/* === Layout Base Styles === */
-.el-container {{
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}}
-
-.el-header {{
-    padding: 0 20px;
-    box-sizing: border-box;
-    flex-shrink: 0;
-    background-color: {};
-}}
-
-.el-aside {{
-    overflow: auto;
-    box-sizing: border-box;
-    flex-shrink: 0;
-    background-color: {};
-}}
-
-.el-main {{
-    flex: 1;
-    overflow: auto;
-    padding: 20px;
-    box-sizing: border-box;
-    background-color: {};
-}}
-
-.el-footer {{
-    padding: 0 20px;
-    box-sizing: border-box;
-    flex-shrink: 0;
-    background-color: {};
-}}
-
-.el-row {{
-    position: relative;
-    box-sizing: border-box;
-    display: flex;
-    flex-wrap: wrap;
-}}
-
-.el-row::before, .el-row::after {{
-    display: table;
-    content: "";
-}}
-
-.el-col {{
-    position: relative;
-    box-sizing: border-box;
-}}
-
-.el-col-1 {{ width: 4.16666667%; }}
-.el-col-2 {{ width: 8.33333333%; }}
-.el-col-3 {{ width: 12.5%; }}
-.el-col-4 {{ width: 16.66666667%; }}
-.el-col-5 {{ width: 20.83333333%; }}
-.el-col-6 {{ width: 25%; }}
-.el-col-7 {{ width: 29.16666667%; }}
-.el-col-8 {{ width: 33.33333333%; }}
-.el-col-9 {{ width: 37.5%; }}
-.el-col-10 {{ width: 41.66666667%; }}
-.el-col-11 {{ width: 45.83333333%; }}
-.el-col-12 {{ width: 50%; }}
-.el-col-13 {{ width: 54.16666667%; }}
-.el-col-14 {{ width: 58.33333333%; }}
-.el-col-15 {{ width: 62.5%; }}
-.el-col-16 {{ width: 66.66666667%; }}
-.el-col-17 {{ width: 70.83333333%; }}
-.el-col-18 {{ width: 75%; }}
-.el-col-19 {{ width: 79.16666667%; }}
-.el-col-20 {{ width: 83.33333333%; }}
-.el-col-21 {{ width: 87.5%; }}
-.el-col-22 {{ width: 91.66666667%; }}
-.el-col-23 {{ width: 95.83333333%; }}
-.el-col-24 {{ width: 100%; }}
-        "#, 
-        theme.color_white,
+        theme.border_color_extra_light,
         theme.background_color_base,
-        theme.background_color_base,
-        theme.color_white
-        )
-    }
+        theme.font_size_extra_large,
+        theme.font_size_large,
+        theme.font_size_medium,
+        theme.font_size_base,
+        theme.font_size_small,
+        theme.font_size_extra_small,
+        theme.font_family,
+        theme.font_weight_primary,
+        theme.line_height_primary,
+        theme.border_radius_base,
+        theme.border_radius_small,
+        theme.border_radius_circle,
+        theme.border_radius_large,
+        theme.box_shadow_base,
+        theme.box_shadow_light,
+        theme.box_shadow_lighter,
+        theme.box_shadow_dark,
+        theme.transition_duration_slow,
+        theme.transition_duration_base,
+        theme.transition_duration_fast
+    )
 }
 
-/// 🎨 完整的样式构建器
-pub struct CompleteCssBuilder {
-    theme: Theme,
-    styles: Vec<String>,
-}
-
-impl CompleteCssBuilder {
-    pub fn new() -> Self {
-        Self {
-            theme: Theme::default(),
-            styles: Vec::new(),
-        }
-    }
-    
-    pub fn with_theme(mut self, theme: Theme) -> Self {
-        self.theme = theme;
-        self
-    }
-    
-    pub fn with_reset_styles(mut self) -> Self {
-        let reset = r#"
-/* === CSS Reset === */
-*, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑', Arial, sans-serif;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #606266;
-    background-color: #fff;
-}
-
-body {
-    font-family: inherit;
-    font-size: 14px;
-    line-height: 1.42857143;
-    color: #606266;
-}
-
-.hidden {
-    display: none !important;
-}
-        "#.to_string();
-        self.styles.push(reset);
-        self
-    }
-    
-    pub fn with_button_styles(mut self) -> Self {
-        self.styles.push(ButtonStyles::base(&self.theme));
-        self
-    }
-    
-    pub fn with_input_styles(mut self) -> Self {
-        self.styles.push(InputStyles::base(&self.theme));
-        self
-    }
-    
-    pub fn with_alert_styles(mut self) -> Self {
-        self.styles.push(AlertStyles::base(&self.theme));
-        self
-    }
-    
-    pub fn with_form_styles(mut self) -> Self {
-        self.styles.push(FormStyles::base(&self.theme));
-        self
-    }
-    
-    pub fn with_card_styles(mut self) -> Self {
-        self.styles.push(CardStyles::base(&self.theme));
-        self
-    }
-    
-    pub fn with_table_styles(mut self) -> Self {
-        self.styles.push(TableStyles::base(&self.theme));
-        self
-    }
-    
-    pub fn with_layout_styles(mut self) -> Self {
-        self.styles.push(LayoutStyles::base(&self.theme));
-        self
-    }
-    
-    pub fn with_utility_styles(mut self) -> Self {
-        let utilities = r#"
-/* === Utility Classes === */
-.text-c { text-align: center !important; }
-.text-l { text-align: left !important; }
-.text-r { text-align: right !important; }
-.w-100 { width: 100% !important; }
-.h-100 { height: 100% !important; }
-.m-0 { margin: 0 !important; }
-.p-0 { padding: 0 !important; }
-.d-flex { display: flex !important; }
-.flex-column { flex-direction: column !important; }
-.flex-wrap { flex-wrap: wrap !important; }
-.align-center { align-items: center !important; }
-.justify-center { justify-content: center !important; }
-        "#.to_string();
-        self.styles.push(utilities);
-        self
-    }
-    
-    pub fn build(self) -> String {
-        self.styles.join("\n\n")
-    }
-    
-    pub fn build_complete(self) -> String {
-        self
-            .with_reset_styles()
-            .with_button_styles()
-            .with_input_styles()
-            .with_alert_styles()
-            .with_form_styles()
-            .with_card_styles()
-            .with_table_styles()
-            .with_layout_styles()
-            .with_utility_styles()
-            .build()
-    }
-}
-
-/// 🎯 主题管理器 - 提供全局主题管理
+/// 🎯 主题管理器 —— 推荐的样式生成入口
+///
+/// 自 0.3.0 起,内部委托 [`all_styles`](crate::styles::enhanced_css_system::all_styles),
+/// CSS 覆盖从 7 组件升级到 114 组件。`with_theme()` / `generate_complete_styles()`
+/// 签名与 0.2.x 保持一致,降低迁移成本。
+///
+/// # 示例
+///
+/// ```rust,ignore
+/// use dioxus_element_plug::{CompleteStyleManager, Theme};
+///
+/// let styles = CompleteStyleManager::new()
+///     .with_theme(Theme::default())
+///     .generate_complete_styles();
+/// ```
 pub struct CompleteStyleManager {
     theme: Theme,
 }
 
+impl Default for CompleteStyleManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CompleteStyleManager {
+    /// 以默认主题创建管理器
     pub fn new() -> Self {
         Self {
             theme: Theme::default(),
         }
     }
-    
+
+    /// 注入自定义主题
     pub fn with_theme(mut self, theme: Theme) -> Self {
         self.theme = theme;
         self
     }
-    
+
+    /// 生成完整样式:CSS 自定义属性(`:root { --el-* }`)+ 全量组件样式(114 组件)
+    ///
+    /// 内部先输出主题变量,再拼接
+    /// [`all_styles()`](crate::styles::enhanced_css_system::all_styles)。
     pub fn generate_complete_styles(&self) -> String {
-        CompleteCssBuilder::new()
-            .with_theme(self.theme.clone())
-            .build_complete()
+        let mut css = String::new();
+        css.push_str(&generate_css_variables(&self.theme));
+        css.push_str("\n\n");
+        css.push_str(&crate::styles::enhanced_css_system::all_styles());
+        css
     }
-    
+
+    /// 使用 StyleManager 生成指定组件的 CSS
+    ///
+    /// 现在通过 [`StyleManager`] 实现真正的 per-component tree-shaking。
+    /// 如需全量样式，请使用 [`generate_complete_styles`](Self::generate_complete_styles)。
+    ///
+    /// # 示例
+    ///
+    /// ```rust,ignore
+    /// let css = CompleteStyleManager::new()
+    ///     .generate_styles_for_components(&["button", "input"]);
+    /// ```
     pub fn generate_styles_for_components(&self, components: &[&str]) -> String {
-        let mut builder = CompleteCssBuilder::new().with_theme(self.theme.clone());
-        
-        for component in components {
-            match *component {
-                "button" => builder = builder.with_button_styles(),
-                "input" => builder = builder.with_input_styles(),
-                "alert" => builder = builder.with_alert_styles(),
-                "form" => builder = builder.with_form_styles(),
-                "card" => builder = builder.with_card_styles(),
-                "table" => builder = builder.with_table_styles(),
-                "layout" => builder = builder.with_layout_styles(),
-                _ => {},
+        let mut manager = StyleManager::new().with_theme(self.theme.clone());
+        for &component in components {
+            manager = manager.include(component);
+        }
+        manager.generate()
+    }
+}
+
+/// 🎯 组件级 CSS Tree-shaking 管理器
+///
+/// 允许按需选择组件，自动解析依赖并生成最小 CSS 输出。
+///
+/// # 示例
+///
+/// ```rust,ignore
+/// use dioxus_element_plug::{StyleManager, Theme};
+///
+/// let css = StyleManager::new()
+///     .include("button")
+///     .include("input")
+///     .generate();
+/// ```
+pub struct StyleManager {
+    theme: Theme,
+    components: std::collections::HashSet<&'static str>,
+}
+
+/// 组件依赖关系图
+/// 
+/// 键: 组件名称
+/// 值: 该组件依赖的其他组件列表
+static COMPONENT_DEPENDENCIES: std::sync::LazyLock<std::collections::HashMap<&'static str, &[&'static str]>> =
+    std::sync::LazyLock::new(|| {
+        let mut deps = std::collections::HashMap::new();
+        // 依赖 overlay 的组件
+        deps.insert("dialog", &["overlay"] as &[&str]);
+        deps.insert("drawer", &["overlay"]);
+        deps.insert("dropdown", &["overlay"]);
+        deps.insert("popover", &["overlay"]);
+        deps.insert("tooltip", &["overlay"]);
+        deps.insert("loading", &["overlay"]);
+        deps.insert("message", &["overlay"]);
+        deps.insert("notification", &["overlay"]);
+        // 其他依赖关系可以在此添加
+        deps
+    });
+
+/// 所有可用组件列表
+pub const ALL_COMPONENTS: &[&str] = &[
+    // 基础组件
+    "button", "input", "form",
+    // 布局组件
+    "container", "row", "col", "grid",
+    // 数据展示
+    "table", "card", "descriptions", "timeline", "tag", "badge", "progress", "avatar", "empty", "skeleton",
+    // 反馈组件
+    "alert", "message", "dialog", "drawer", "loading", "notification", "popover", "tooltip",
+    // 导航组件
+    "menu", "tabs", "dropdown", "steps", "pagination", "breadcrumb", "anchor", "backtop",
+    // 其他组件
+    "divider", "spin", "result", "overlay",
+];
+
+impl Default for StyleManager {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl StyleManager {
+    /// 创建新的 StyleManager
+    pub fn new() -> Self {
+        Self {
+            theme: Theme::default(),
+            components: std::collections::HashSet::new(),
+        }
+    }
+
+    /// 设置自定义主题
+    pub fn with_theme(mut self, theme: Theme) -> Self {
+        self.theme = theme;
+        self
+    }
+
+    /// 添加需要包含的组件
+    ///
+    /// 会自动解析并包含该组件的所有依赖。
+    pub fn include(mut self, component: &str) -> Self {
+        self.add_component_with_deps(component);
+        self
+    }
+
+    /// 递归添加组件及其依赖
+    fn add_component_with_deps(&mut self, component: &str) {
+        // 查找对应的静态字符串
+        if let Some(&static_component) = ALL_COMPONENTS.iter().find(|&&c| c == component) {
+            if self.components.insert(static_component) {
+                // 新插入的组件，需要处理其依赖
+                if let Some(deps) = COMPONENT_DEPENDENCIES.get(static_component) {
+                    for dep in *deps {
+                        self.add_component_with_deps(dep);
+                    }
+                }
             }
         }
+    }
+
+    /// 生成 CSS 输出
+    ///
+    /// 如果没有选择任何组件，返回空字符串。
+    pub fn generate(&self) -> String {
+        if self.components.is_empty() {
+            return String::new();
+        }
+
+        let mut css = String::new();
         
-        builder
-            .with_reset_styles()
-            .with_utility_styles()
-            .build()
+        // 添加 CSS reset
+        css.push_str(self.get_reset_css());
+        css.push('\n');
+        
+        // 添加主题变量
+        css.push_str(&generate_css_variables(&self.theme));
+        css.push('\n');
+
+        // 按类别添加组件样式
+        let components: Vec<_> = self.components.iter().copied().collect();
+        
+        for component in components {
+            if let Some(style) = self.get_component_css(component) {
+                css.push_str(style);
+                css.push('\n');
+            }
+        }
+
+        css
+    }
+
+    /// 获取 CSS reset
+    fn get_reset_css(&self) -> &'static str {
+        r#"/* Element Plus CSS Reset */
+*, *::before, *::after { box-sizing: border-box; }
+html {
+    font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.42857143;
+    color: #606266;
+    background-color: #fff;
+}"#
+    }
+
+    /// 获取单个组件的 CSS
+    fn get_component_css(&self, component: &str) -> Option<&'static str> {
+        use crate::styles::enhanced_css_system::*;
+        
+        match component {
+            // 基础组件
+            "button" => Some(button_styles()),
+            "input" => Some(input_styles()),
+            "form" => Some(form_styles()),
+            // 布局组件
+            "container" | "row" | "col" | "grid" => Some(layout_styles()),
+            // 数据展示
+            "table" | "card" | "descriptions" | "timeline" | "tag" | "badge" | "progress" | "avatar" | "empty" | "skeleton" => Some(data_display_styles()),
+            // 反馈组件
+            "alert" | "message" | "dialog" | "drawer" | "loading" | "notification" | "popover" | "tooltip" => Some(feedback_styles()),
+            // 导航组件
+            "menu" | "tabs" | "dropdown" | "steps" | "pagination" | "breadcrumb" | "anchor" | "backtop" => Some(navigation_styles()),
+            // 其他组件
+            "divider" | "spin" | "result" | "overlay" => Some(additional_styles()),
+            _ => None,
+        }
+    }
+}
+
+/// **Deprecated**:0.2.x 兼容的 CSS 构建器,请改用 [`CompleteStyleManager`] 或 [`StyleManager`]。
+///
+/// 0.3.0 将样式系统统一到 [`CompleteStyleManager`] 后,本类型仅作为迁移期的
+/// 兼容入口保留。所有方法委托 [`CompleteStyleManager`],不再持有独立的样式片段列表。
+#[deprecated(note = "use CompleteStyleManager or StyleManager instead")]
+pub struct CompleteCssBuilder {
+    theme: Theme,
+}
+
+#[allow(deprecated)]
+impl Default for CompleteCssBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[allow(deprecated)]
+impl CompleteCssBuilder {
+    /// **Deprecated**:请改用 [`CompleteStyleManager::new`]
+    #[deprecated(note = "use CompleteStyleManager::new instead")]
+    pub fn new() -> Self {
+        Self {
+            theme: Theme::default(),
+        }
+    }
+
+    /// **Deprecated**:请改用 [`CompleteStyleManager::with_theme`]
+    #[deprecated(note = "use CompleteStyleManager::with_theme instead")]
+    pub fn with_theme(self, theme: Theme) -> Self {
+        Self { theme }
+    }
+
+    /// **Deprecated**:等价于 [`CompleteStyleManager::generate_complete_styles`]
+    #[deprecated(note = "use CompleteStyleManager::generate_complete_styles instead")]
+    pub fn build(self) -> String {
+        CompleteStyleManager { theme: self.theme }.generate_complete_styles()
+    }
+
+    /// **Deprecated**:等价于 [`CompleteStyleManager::generate_complete_styles`]
+    #[deprecated(note = "use CompleteStyleManager::generate_complete_styles instead")]
+    pub fn build_complete(self) -> String {
+        self.build()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_theme_equality() {
+        let light1 = Theme::light();
+        let light2 = Theme::light();
+        assert_eq!(light1, light2);
+
+        let dark1 = Theme::dark();
+        let dark2 = Theme::dark();
+        assert_eq!(dark1, dark2);
+
+        assert_ne!(Theme::light(), Theme::dark());
+    }
+
+    #[test]
+    fn test_light_theme_is_default() {
+        assert_eq!(Theme::light(), Theme::default());
+    }
+
+    #[test]
+    fn test_dark_theme_colors() {
+        let dark = Theme::dark();
+
+        // Inverted base colors
+        assert_eq!(dark.color_white, "#141414");
+        assert_eq!(dark.color_black, "#ffffff");
+
+        // Text colors for dark backgrounds
+        assert_eq!(dark.color_text_primary, "#E5EAF3");
+        assert_eq!(dark.color_text_regular, "#CFD3DC");
+        assert_eq!(dark.color_text_secondary, "#A3A6AD");
+        assert_eq!(dark.color_text_placeholder, "#8D9095");
+
+        // Border colors (darkened)
+        assert_eq!(dark.border_color_base, "#4C4D4F");
+        assert_eq!(dark.border_color_light, "#414243");
+        assert_eq!(dark.border_color_lighter, "#363637");
+        assert_eq!(dark.border_color_extra_light, "#2B2B2C");
+
+        // Background (dark)
+        assert_eq!(dark.background_color_base, "#1d1e1f");
+    }
+
+    #[test]
+    fn test_dark_theme_css_generation() {
+        let dark = Theme::dark();
+        let css = generate_css_variables(&dark);
+
+        assert!(css.contains("--el-color-white: #141414"));
+        assert!(css.contains("--el-color-black: #ffffff"));
+        assert!(css.contains("--el-color-text-primary: #E5EAF3"));
+        assert!(css.contains("--el-border-color-base: #4C4D4F"));
+        assert!(css.contains("--el-background-color-base: #1d1e1f"));
     }
 }

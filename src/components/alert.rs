@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str, fire_event};
+
 // Alert and message CSS class constants
 pub const ALERT: &str = "el-alert";
 pub const ALERT_SUCCESS: &str = "el-alert--success";
@@ -92,42 +94,29 @@ pub struct AlertProps {
 /// ```
 #[component]
 pub fn Alert(props: AlertProps) -> Element {
-    let mut class_names = vec![ALERT];
-    
-    class_names.push(props.alert_type.as_class());
-    
-    if props.closable {
-        class_names.push("is-closable");
-    }
-    
-    if props.show_icon {
-        class_names.push("with-icon");
-    }
-    
-    if props.center {
-        class_names.push("is-center");
-    }
-    
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class);
-    }
-    
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
-    
+    let class_string = ClassBuilder::new(ALERT)
+        .add_class(props.alert_type.as_class())
+        .add_if("is-closable", props.closable)
+        .add_if("with-icon", props.show_icon)
+        .add_if("is-center", props.center)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+
     let icon_class = match props.alert_type {
         AlertType::Success => "el-icon-success",
         AlertType::Warning => "el-icon-warning",
         AlertType::Info => "el-icon-info",
         AlertType::Error => "el-icon-error",
     };
-    
+    let on_close = props.on_close;
+
     rsx! {
         div {
             class: "{class_string}",
             style: "{style_string}",
             role: "alert",
-            
+
             if props.show_icon {
                 div {
                     class: "el-alert__icon",
@@ -136,15 +125,15 @@ pub fn Alert(props: AlertProps) -> Element {
                     }
                 }
             }
-            
+
             div {
                 class: "el-alert__content",
-                
+
                 h4 {
                     class: "el-alert__title",
                     "{props.title}"
                 }
-                
+
                 if let Some(ref desc) = props.description {
                     p {
                         class: "el-alert__description",
@@ -152,15 +141,13 @@ pub fn Alert(props: AlertProps) -> Element {
                     }
                 }
             }
-            
+
             if props.closable {
                 button {
                     class: "el-alert__close-btn",
                     type: "button",
                     onclick: move |event| {
-                        if let Some(handler) = props.on_close {
-                            handler.call(event);
-                        }
+                        fire_event(&on_close, event);
                     },
                     "×"
                 }
@@ -202,46 +189,38 @@ pub struct CalloutProps {
 /// information with optional title and icon.
 #[component]
 pub fn Callout(props: CalloutProps) -> Element {
-    let mut class_names = vec!["el-callout".to_string()];
-    
-    class_names.push(props.callout_type.as_class().to_string());
-    
-    if props.show_icon {
-        class_names.push("with-icon".to_string());
-    }
-    
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-    
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
-    
+    let class_string = ClassBuilder::new("el-callout")
+        .add_class(props.callout_type.as_class())
+        .add_if("with-icon", props.show_icon)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+
     let icon_class = match props.callout_type {
         AlertType::Success => "el-icon-check-circle",
         AlertType::Warning => "el-icon-warning-outline",
         AlertType::Info => "el-icon-info-circle",
         AlertType::Error => "el-icon-error-circle",
     };
-    
+
     rsx! {
         div {
             class: "{class_string}",
             style: "{style_string}",
-            
+
             if props.show_icon {
                 i {
                     class: "{icon_class} el-callout__icon"
                 }
             }
-            
+
             if let Some(ref title_text) = props.title {
                 h4 {
                     class: "el-callout__title",
                     "{title_text}"
                 }
             }
-            
+
             div {
                 class: "el-callout__content",
                 {props.children}

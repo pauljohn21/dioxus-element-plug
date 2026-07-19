@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// PageHeader props
 #[derive(Props, Clone, PartialEq)]
@@ -34,20 +35,21 @@ pub struct PageHeaderProps {
 /// PageHeader component for page header navigation
 #[component]
 pub fn PageHeader(props: PageHeaderProps) -> Element {
-    let mut class_names = vec!["el-page-header".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-page-header")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+    let on_back = props.on_back;
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             if props.show_back {
                 div {
                     class: "el-page-header__back",
                     onclick: move |_| {
-                        if let Some(handler) = props.on_back {
-                            handler.call(());
-                        }
+                        fire_event(&on_back, ());
                     },
                     i { class: "el-icon-arrow-left" }
                     span { class: "el-page-header__icon", "Back" }

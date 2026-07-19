@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Breadcrumb separator
 #[derive(Clone, PartialEq)]
@@ -37,13 +38,15 @@ pub struct BreadcrumbProps {
 /// Breadcrumb component for navigation paths
 #[component]
 pub fn Breadcrumb(props: BreadcrumbProps) -> Element {
-    let mut class_names = vec!["el-breadcrumb".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-breadcrumb")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             role: "navigation",
             aria_label: "Breadcrumb",
             {props.children}
@@ -76,6 +79,7 @@ pub struct BreadcrumbItemProps {
 /// BreadcrumbItem component for individual breadcrumb items
 #[component]
 pub fn BreadcrumbItem(props: BreadcrumbItemProps) -> Element {
+    let on_click = props.on_click;
     rsx! {
         span {
             class: "el-breadcrumb__item",
@@ -84,9 +88,7 @@ pub fn BreadcrumbItem(props: BreadcrumbItemProps) -> Element {
                     class: "el-breadcrumb__inner is-link",
                     href: "{to}",
                     onclick: move |e| {
-                        if let Some(handler) = props.on_click {
-                            handler.call(e);
-                        }
+                        fire_event(&on_click, e);
                     },
                     {props.children}
                 }

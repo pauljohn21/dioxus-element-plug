@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// ButtonGroup size variants
 #[derive(Clone, PartialEq)]
@@ -63,24 +64,14 @@ pub struct ButtonGroupProps {
 /// ```
 #[component]
 pub fn ButtonGroup(props: ButtonGroupProps) -> Element {
-    let mut class_names = vec!["el-button-group".to_string()];
+    let is_vertical = props.direction == ButtonGroupDirection::Vertical;
+    let class_string = ClassBuilder::new("el-button-group")
+        .add_class(props.size.as_class())
+        .add_if("is-vertical", is_vertical)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let size_class = props.size.as_class();
-    if !size_class.is_empty() {
-        class_names.push(size_class.to_string());
-    }
-
-    match props.direction {
-        ButtonGroupDirection::Horizontal => {}
-        ButtonGroupDirection::Vertical => class_names.push("is-vertical".to_string()),
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {

@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::ClassBuilder;
 
 /// OptionGroup props
 #[derive(Props, Clone, PartialEq)]
@@ -22,17 +23,10 @@ pub struct OptionGroupProps {
 /// OptionGroup component for grouping options in a Select
 #[component]
 pub fn OptionGroup(props: OptionGroupProps) -> Element {
-    let mut class_names = vec!["el-select-group".to_string()];
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
+    let class_string = ClassBuilder::new("el-select-group")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
     rsx! {
         div {

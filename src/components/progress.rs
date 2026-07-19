@@ -1,4 +1,8 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
+
+#[cfg(feature = "icons")]
+use element_icons::element::{CircleCheck, CircleClose, Warning};
 
 /// Progress type
 #[derive(Clone, PartialEq)]
@@ -94,6 +98,33 @@ pub struct ProgressProps {
     pub style: Option<String>,
 }
 
+/// Render status icon with conditional compilation
+#[cfg(feature = "icons")]
+fn render_status_icon(status: &ProgressStatus) -> Option<Element> {
+    match status {
+        ProgressStatus::Success => Some(rsx! { CircleCheck {} }),
+        ProgressStatus::Exception => Some(rsx! { CircleClose {} }),
+        ProgressStatus::Warning => Some(rsx! { Warning {} }),
+        ProgressStatus::Default => None,
+    }
+}
+
+/// Render status icon fallback when icons feature is disabled
+#[cfg(not(feature = "icons"))]
+fn render_status_icon(status: &ProgressStatus) -> Option<Element> {
+    let class = match status {
+        ProgressStatus::Success => "el-icon-circle-check",
+        ProgressStatus::Exception => "el-icon-circle-close",
+        ProgressStatus::Warning => "el-icon-warning",
+        ProgressStatus::Default => "",
+    };
+    if class.is_empty() {
+        None
+    } else {
+        Some(rsx! { i { class: "{class}" } })
+    }
+}
+
 /// Progress component for showing task completion
 ///
 /// ## Example
@@ -107,36 +138,18 @@ pub struct ProgressProps {
 pub fn Progress(props: ProgressProps) -> Element {
     let percentage = props.percentage.min(100);
 
-    let mut class_names = vec!["el-progress".to_string()];
-    class_names.push(format!("el-progress--{}", props.progress_type.as_str()));
+    let type_class = format!("el-progress--{}", props.progress_type.as_str());
+    let class_string = ClassBuilder::new("el-progress")
+        .add_class(&type_class)
+        .add_class(props.status.as_class())
+        .add_if("el-progress--indeterminate", props.indeterminate)
+        .add_if("el-progress--striped", props.striped)
+        .add_if("el-progress--striped-flow", props.striped_flow)
+        .add_if("el-progress--text-inside", props.text_inside && props.progress_type == ProgressType::Line)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let status_class = props.status.as_class();
-    if !status_class.is_empty() {
-        class_names.push(status_class.to_string());
-    }
-
-    if props.indeterminate {
-        class_names.push("el-progress--indeterminate".to_string());
-    }
-
-    if props.striped {
-        class_names.push("el-progress--striped".to_string());
-    }
-
-    if props.striped_flow {
-        class_names.push("el-progress--striped-flow".to_string());
-    }
-
-    if props.text_inside && props.progress_type == ProgressType::Line {
-        class_names.push("el-progress--text-inside".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     let bar_color = props.color.clone().unwrap_or_else(|| {
         match props.status {
@@ -177,12 +190,8 @@ pub fn Progress(props: ProgressProps) -> Element {
                 if props.show_text && !props.text_inside {
                     div {
                         class: "el-progress__text",
-                        if props.status == ProgressStatus::Success {
-                            i { class: "el-icon-circle-check" }
-                        } else if props.status == ProgressStatus::Exception {
-                            i { class: "el-icon-circle-close" }
-                        } else if props.status == ProgressStatus::Warning {
-                            i { class: "el-icon-warning" }
+                        if let Some(icon) = render_status_icon(&props.status) {
+                            {icon}
                         } else {
                             "{display_text}"
                         }
@@ -216,10 +225,8 @@ pub fn Progress(props: ProgressProps) -> Element {
                         if props.show_text {
                             div {
                                 class: "el-progress__text",
-                                if props.status == ProgressStatus::Success {
-                                    i { class: "el-icon-circle-check" }
-                                } else if props.status == ProgressStatus::Exception {
-                                    i { class: "el-icon-circle-close" }
+                                if let Some(icon) = render_status_icon(&props.status) {
+                                    {icon}
                                 } else {
                                     "{display_text}"
                                 }

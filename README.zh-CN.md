@@ -33,6 +33,8 @@
 - 🎯 **受控组件模式** — 父组件持有状态，通过 `EventHandler` 回调通信
 - 📱 **响应式设计** — 支持移动端友好的 24 栅格布局系统
 - ⚡ **零依赖样式** — 无需 SCSS 运行时编译
+- 🌙 **内置深色模式** — `Theme::dark()` 和 `Theme::light()` 预设
+- 🔣 **Element Plus 图标** — 可选的 `icons` 特性，提供 137+ SVG 图标
 
 ## 快速开始
 
@@ -43,13 +45,25 @@
 ```toml
 [dependencies]
 dioxus = { version = "0.7", features = ["web"] }
-dioxus-element-plug = "0.2.0"
+dioxus-element-plug = "0.3"
 ```
 
 或直接从 GitHub 引用：
 
 ```toml
 dioxus-element-plug = { git = "https://github.com/pauljohn21/dioxus-element-plug.git" }
+```
+
+#### 特性标志
+
+- `icons`（默认）— 通过 `element-icons` crate 启用 Element Plus 图标支持
+- `web` — Web 平台支持
+- `server` — 服务端渲染支持
+
+如需禁用图标：
+
+```toml
+dioxus-element-plug = { version = "0.3", default-features = false, features = ["web"] }
 ```
 
 ### 2. 生成样式
@@ -72,22 +86,13 @@ fn App() -> Element {
 
 按需生成样式（减少最终包体积）：
 
-```rust
-let styles = CompleteStyleManager::new()
-    .generate_styles_for_components(&["button", "input", "alert"]);
-```
-
-**方式 B：CDN 引入（快速原型）**
+> **注意**：`generate_styles_for_components()` 在 0.3.0 中已**废弃**——当前返回完整样式表
+> （114 个组件）。按组件 tree-shaking 将在 0.4.0 重新提供。目前请使用 `generate_complete_styles()`：
 
 ```rust
-rsx! {
-    document::Link {
-        rel: "stylesheet",
-        href: "//unpkg.com/element-plus@2.4.4/dist/index.css"
-    }
-    Button { variant: ButtonVariant::Primary, "点击我" }
-}
+let styles = CompleteStyleManager::new().generate_complete_styles();
 ```
+
 
 ### 3. 使用组件
 
@@ -297,17 +302,37 @@ rsx! {
 
 ## 主题定制
 
-通过内置主题系统自定义颜色和样式：
+自 0.3.0 起，`Theme` 包含 50 个字段。可使用 `ThemeBuilder` 的 fluent API，
+或使用结构体更新语法 `..Theme::default()` 只覆盖需要修改的字段：
+
+```rust
+use dioxus_element_plug::{ThemeBuilder, CompleteStyleManager};
+
+let custom_theme = ThemeBuilder::new()
+    .primary_color("#1890ff")
+    .font_size_base("16px")
+    .border_radius_base("6px")
+    .build();
+
+let styles = CompleteStyleManager::new()
+    .with_theme(custom_theme)
+    .generate_complete_styles();
+```
+
+或使用结构体更新语法：
 
 ```rust
 use dioxus_element_plug::{Theme, CompleteStyleManager};
 
-let custom_theme = Theme::new()
-    .with_primary_color("#1890ff")
-    .with_font_size("16px");
+let dark = Theme {
+    color_white: "#141414",
+    color_black: "#ffffff",
+    color_text_primary: "#E5EAF3",
+    ..Theme::default()
+};
 
 let styles = CompleteStyleManager::new()
-    .with_theme(custom_theme)
+    .with_theme(dark)
     .generate_complete_styles();
 ```
 
@@ -316,7 +341,8 @@ let styles = CompleteStyleManager::new()
 **生产就绪** — 107+ 组件已全部实现，采用纯 Rust 样式系统。
 
 - ✅ 107+ 组件，使用 `#[component]` 宏定义
-- ✅ 96 个组件文件，位于 `src/components/`
+- ✅ 97 个组件文件，位于 `src/components/`
+- ✅ 137+ 图标，通过 `element-icons` crate 提供
 - ✅ 完整的 Element Plus 设计系统兼容
 - ✅ 纯 Rust CSS 生成，零运行时开销
 - ✅ 全部采用受控组件模式
@@ -327,10 +353,11 @@ let styles = CompleteStyleManager::new()
 ```
 dioxus-element-plug/
 ├── src/
-│   ├── components/     # 107+ Element Plus 风格组件（96 个文件）
+│   ├── components/     # 107+ Element Plus 风格组件（97 个文件）
 │   ├── styles/          # 模块化 CSS 常量（颜色、间距、阴影等）
 │   ├── style_system.rs  # 纯 Rust CSS 生成（Theme, CompleteStyleManager）
 │   └── lib.rs           # Crate 入口 + prelude 模块
+├── element-icons/       # Element Plus 图标 crate（137+ SVG 图标）
 ├── examples/
 │   ├── component-showcase/  # 组件验证示例（13 个类别）
 │   └── theme-switcher/      # 主题切换示例（5 种主题）

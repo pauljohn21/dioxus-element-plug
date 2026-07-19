@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Select option data
 #[derive(Clone, PartialEq)]
@@ -119,23 +120,13 @@ pub struct SelectProps {
 /// ```
 #[component]
 pub fn Select(props: SelectProps) -> Element {
-    let mut class_names = vec!["el-select".to_string()];
+    let class_string = ClassBuilder::new("el-select")
+        .add_class(props.size.as_class())
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let size_class = props.size.as_class();
-    if !size_class.is_empty() {
-        class_names.push(size_class.to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     // Find selected label
     let selected_label = props
@@ -149,11 +140,14 @@ pub fn Select(props: SelectProps) -> Element {
     let model_value_clone = props.model_value.clone();
     let option_data: Vec<(String, String, bool, String)> = props.options.iter().map(|opt| {
         let is_selected = Some(&opt.value) == model_value_clone.as_ref();
-        let mut cls = vec!["el-select-dropdown__item".to_string()];
-        if is_selected { cls.push("selected".to_string()); }
-        if opt.disabled { cls.push("is-disabled".to_string()); }
-        (opt.value.clone(), opt.label.clone(), opt.disabled, cls.join(" "))
+        let cls = ClassBuilder::new("el-select-dropdown__item")
+            .add_if("selected", is_selected)
+            .add_if("is-disabled", opt.disabled)
+            .build();
+        (opt.value.clone(), opt.label.clone(), opt.disabled, cls)
     }).collect();
+
+    let on_change = props.on_change;
 
     rsx! {
         div {
@@ -199,9 +193,7 @@ pub fn Select(props: SelectProps) -> Element {
                             class: "{opt_class}",
                             onclick: move |_| {
                                 if !opt_disabled {
-                                    if let Some(handler) = props.on_change {
-                                        handler.call(opt_value.clone());
-                                    }
+                                    fire_event(&on_change, opt_value.clone());
                                 }
                             },
                             "{opt_label}"

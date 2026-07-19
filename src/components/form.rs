@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 // Form CSS class constants
 pub const FORM: &str = "el-form";
@@ -74,24 +75,16 @@ pub struct FormProps {
 /// ```
 #[component]
 pub fn Form(props: FormProps) -> Element {
-    let mut class_names = vec![FORM.to_string()];
+    let layout_class = format!("el-form--{}", props.layout);
+    let size_class = props.size.as_ref().map(|s| format!("el-form--{}", s));
+    let class_string = ClassBuilder::new("el-form")
+        .add_class(&layout_class)
+        .add_opt_str(size_class.as_deref())
+        .add_if("el-form--show-asterisk", props.show_asterisk)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    class_names.push(format!("el-form--{}", props.layout));
-
-    if let Some(ref size) = props.size {
-        class_names.push(format!("el-form--{}", size));
-    }
-
-    if props.show_asterisk {
-        class_names.push("el-form--show-asterisk".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     let form_style = format!(
         "--el-form-label-width: {}px; {}",
@@ -99,15 +92,15 @@ pub fn Form(props: FormProps) -> Element {
         style_string
     );
 
+    let on_submit = props.on_submit;
+
     rsx! {
         form {
             class: "{class_string}",
             style: "{form_style}",
             onsubmit: move |event| {
                 event.prevent_default();
-                if let Some(handler) = props.on_submit {
-                    handler.call(event);
-                }
+                fire_event(&on_submit, event);
             },
             {props.children}
         }

@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Divider direction
 #[derive(Clone, PartialEq)]
@@ -74,27 +75,21 @@ pub struct DividerProps {
 /// ```
 #[component]
 pub fn Divider(props: DividerProps) -> Element {
-    let mut class_names = vec!["el-divider".to_string()];
-    class_names.push(format!("el-divider--{}", props.direction.as_str()));
-
+    let dir_class = format!("el-divider--{}", props.direction.as_str());
     let has_content = props.children.is_some();
-    if has_content && props.direction == DividerDirection::Horizontal {
-        let pos_class = props.content_position.as_class();
-        if !pos_class.is_empty() {
-            class_names.push(pos_class.to_string());
-        }
-        class_names.push("el-divider--text".to_string());
-    }
+    let has_text = has_content && props.direction == DividerDirection::Horizontal;
 
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
+    let class_string = ClassBuilder::new("el-divider")
+        .add_class(&dir_class)
+        .add_if(props.content_position.as_class(), has_text)
+        .add_if("el-divider--text", has_text)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let class_string = class_names.join(" ");
     let style_string = format!(
         "border-top-style: {}; {}",
         props.border_style,
-        props.style.clone().unwrap_or_default()
+        style_str(&props.style)
     );
 
     if has_content && props.direction == DividerDirection::Horizontal {

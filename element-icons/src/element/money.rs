@@ -1,0 +1,18 @@
+// @generated from Element Plus SVG. Do not edit.
+
+use dioxus::core::{Element, Template, TemplateNode};
+
+use crate::IconProps;
+use crate::vdom::{attr, icon_element, icon_template, path, svg};
+
+#[allow(non_snake_case)]
+pub fn Money(props: IconProps) -> Element {
+    static TEMPLATE_ROOTS: &[TemplateNode] = &[svg(&[
+        path(&[attr("fill", "currentColor"), attr("d", "M256 640v192h640V384H768v-64h151c14.2 0 19.4 1.5 24.6 4.3a29 29 0 0 1 12.2 12c2.7 5.3 4.2 10.5 4.2 24.7v494c0 14.2-1.5 19.4-4.3 24.6a29 29 0 0 1-12 12.2c-5.3 2.7-10.5 4.2-24.7 4.2H233c-14.2 0-19.4-1.5-24.6-4.3a29 29 0 0 1-12.2-12c-2.7-5.3-4.2-10.5-4.2-24.7V640z")]),
+        path(&[attr("fill", "currentColor"), attr("d", "M768 192H128v448h640zm64-23v494c0 14.2-1.5 19.4-4.3 24.6a29 29 0 0 1-12 12.2c-5.3 2.7-10.5 4.2-24.7 4.2H105c-14.2 0-19.4-1.5-24.6-4.3a29 29 0 0 1-12.2-12c-2.7-5.3-4.2-10.5-4.2-24.7V169c0-14.2 1.5-19.4 4.3-24.6a29 29 0 0 1 12-12.2c5.3-2.7 10.5-4.2 24.7-4.2h686c14.2 0 19.4 1.5 24.6 4.3a29 29 0 0 1 12.1 12c2.8 5.3 4.2 10.5 4.2 24.7z")]),
+        path(&[attr("fill", "currentColor"), attr("d", "M448 576a160 160 0 1 1 0-320 160 160 0 0 1 0 320m0-64a96 96 0 1 0 0-192 96 96 0 0 0 0 192")]),
+    ])];
+    static TEMPLATE: Template = icon_template(TEMPLATE_ROOTS);
+
+    icon_element(TEMPLATE, "0 0 1024 1024", props)
+}

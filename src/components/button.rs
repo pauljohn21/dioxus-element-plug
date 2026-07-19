@@ -1,4 +1,8 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
+
+#[cfg(feature = "icons")]
+use element_icons::element::Loading;
 
 // Button CSS class constants
 pub const BUTTON: &str = "el-button";
@@ -25,7 +29,7 @@ pub enum ButtonVariant {
 impl ButtonVariant {
     pub fn as_class(&self) -> &'static str {
         match self {
-            ButtonVariant::Default => BUTTON,
+            ButtonVariant::Default => "",
             ButtonVariant::Primary => BUTTON_PRIMARY,
             ButtonVariant::Success => BUTTON_SUCCESS,
             ButtonVariant::Warning => BUTTON_WARNING,
@@ -128,36 +132,18 @@ pub struct ButtonProps {
 /// ```
 #[component]
 pub fn Button(props: ButtonProps) -> Element {
-    let base_class = BUTTON;
-    let variant_class = props.variant.as_class();
+    let class_string = ClassBuilder::new("el-button")
+        .add_class(props.variant.as_class())
+        .add_opt_str(props.size.as_ref().map(|s| s.as_class()))
+        .add_if("is-disabled", props.disabled)
+        .add_if("is-round", props.round)
+        .add_if("is-circle", props.circle)
+        .add_if("is-loading", props.loading)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let mut classes = vec![base_class, variant_class];
-
-    if let Some(size) = &props.size {
-        classes.push(size.as_class());
-    }
-
-    if props.disabled {
-        classes.push("is-disabled");
-    }
-
-    if props.round {
-        classes.push("is-round");
-    }
-
-    if props.circle {
-        classes.push("is-circle");
-    }
-
-    if props.loading {
-        classes.push("is-loading");
-    }
-
-    if let Some(ref custom_class) = props.class {
-        classes.push(custom_class);
-    }
-
-    let class_string = classes.join(" ");
+    let style_string = style_str(&props.style);
+    let on_click = props.on_click;
 
     let mut icon_element = None;
     if let Some(ref icon) = props.icon {
@@ -168,25 +154,20 @@ pub fn Button(props: ButtonProps) -> Element {
         });
     }
 
-    let mut loading_element = None;
-    if props.loading {
-        loading_element = Some(rsx! {
-            i {
-                class: "el-icon-loading"
-            }
-        });
-    }
+    let loading_element = if props.loading {
+        Some(render_loading_icon())
+    } else {
+        None
+    };
 
     rsx! {
         button {
             class: "{class_string}",
             r#type: props.button_type,
             disabled: props.disabled,
-            style: props.style.unwrap_or_default(),
+            style: "{style_string}",
             onclick: move |event| {
-                if let Some(handler) = props.on_click {
-                    handler.call(event);
-                }
+                fire_event(&on_click, event);
             },
 
             {loading_element},
@@ -219,17 +200,34 @@ pub fn TextButton(props: ButtonProps) -> Element {
     Button(props)
 }
 
+/// Render loading icon with conditional compilation
+#[cfg(feature = "icons")]
+fn render_loading_icon() -> Element {
+    rsx! {
+        Loading {}
+    }
+}
+
+/// Render loading icon fallback when icons feature is disabled
+#[cfg(not(feature = "icons"))]
+fn render_loading_icon() -> Element {
+    rsx! {
+        i {
+            class: "el-icon-loading"
+        }
+    }
+}
+
 /// Link button variant
 #[component]
 pub fn LinkButton(props: ButtonProps) -> Element {
+    let on_click = props.on_click;
     rsx! {
         a {
             class: "el-button el-button--text",
             href: "javascript:void(0)",
             onclick: move |event| {
-                if let Some(handler) = props.on_click {
-                    handler.call(event);
-                }
+                fire_event(&on_click, event);
             },
             {props.children}
         }

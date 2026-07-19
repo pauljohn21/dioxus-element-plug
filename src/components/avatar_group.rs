@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// AvatarGroup props
 #[derive(Props, Clone, PartialEq)]
@@ -39,14 +40,11 @@ pub struct AvatarGroupProps {
 /// ```
 #[component]
 pub fn AvatarGroup(props: AvatarGroupProps) -> Element {
-    let mut class_names = vec!["el-avatar-group".to_string()];
+    let class_string = ClassBuilder::new("el-avatar-group")
+        .add_opt(props.class.as_ref())
+        .build();
 
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {

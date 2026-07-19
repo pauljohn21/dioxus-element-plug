@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Checkbox size variants
 #[derive(Clone, PartialEq)]
@@ -81,31 +82,16 @@ pub struct CheckboxProps {
 /// ```
 #[component]
 pub fn Checkbox(props: CheckboxProps) -> Element {
-    let mut class_names = vec!["el-checkbox".to_string()];
+    let class_string = ClassBuilder::new("el-checkbox")
+        .add_class(props.size.as_class())
+        .add_if("is-checked", props.model_value)
+        .add_if("is-disabled", props.disabled)
+        .add_if("is-indeterminate", props.indeterminate)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let size_class = props.size.as_class();
-    if !size_class.is_empty() {
-        class_names.push(size_class.to_string());
-    }
-
-    if props.model_value {
-        class_names.push("is-checked".to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if props.indeterminate {
-        class_names.push("is-indeterminate".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
+    let on_change = props.on_change;
 
     rsx! {
         label {
@@ -133,9 +119,7 @@ pub fn Checkbox(props: CheckboxProps) -> Element {
                         checked: props.model_value,
                         onchange: move |_| {
                             if !props.disabled {
-                                if let Some(handler) = props.on_change {
-                                    handler.call(!props.model_value);
-                                }
+                                fire_event(&on_change, !props.model_value);
                             }
                         },
                     }
@@ -145,9 +129,7 @@ pub fn Checkbox(props: CheckboxProps) -> Element {
                 class: "el-checkbox__label",
                 onclick: move |_| {
                     if !props.disabled {
-                        if let Some(handler) = props.on_change {
-                            handler.call(!props.model_value);
-                        }
+                        fire_event(&on_change, !props.model_value);
                     }
                 },
                 if let Some(ref label) = props.label {
@@ -198,18 +180,12 @@ pub struct CheckboxGroupProps {
 /// CheckboxGroup component for grouping multiple checkboxes
 #[component]
 pub fn CheckboxGroup(props: CheckboxGroupProps) -> Element {
-    let mut class_names = vec!["el-checkbox-group".to_string()];
+    let class_string = ClassBuilder::new("el-checkbox-group")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
@@ -256,22 +232,14 @@ pub struct CheckboxButtonProps {
 /// CheckboxButton component - checkbox styled as a button
 #[component]
 pub fn CheckboxButton(props: CheckboxButtonProps) -> Element {
-    let mut class_names = vec!["el-checkbox-button".to_string()];
+    let class_string = ClassBuilder::new("el-checkbox-button")
+        .add_if("is-checked", props.model_value)
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    if props.model_value {
-        class_names.push("is-checked".to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
+    let on_change = props.on_change;
 
     rsx! {
         label {
@@ -281,9 +249,7 @@ pub fn CheckboxButton(props: CheckboxButtonProps) -> Element {
                 class: "el-checkbox-button__inner",
                 onclick: move |_| {
                     if !props.disabled {
-                        if let Some(handler) = props.on_change {
-                            handler.call(!props.model_value);
-                        }
+                        fire_event(&on_change, !props.model_value);
                     }
                 },
                 if let Some(ref label) = props.label {

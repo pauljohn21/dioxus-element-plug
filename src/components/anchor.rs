@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str, fire_event};
+
 /// Anchor props
 #[derive(Props, Clone, PartialEq)]
 pub struct AnchorProps {
@@ -43,14 +45,17 @@ pub struct AnchorProps {
 /// Anchor component for anchor navigation
 #[component]
 pub fn Anchor(props: AnchorProps) -> Element {
-    let mut class_names = vec!["el-anchor".to_string()];
-    class_names.push(format!("el-anchor--{}", props.direction));
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let direction_class = format!("el-anchor--{}", props.direction);
+    let class_string = ClassBuilder::new("el-anchor")
+        .add_class(&direction_class)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             div {
                 class: "el-anchor__wrapper",
                 {props.children}
@@ -84,19 +89,23 @@ pub struct AnchorLinkProps {
 /// AnchorLink component for individual anchor links
 #[component]
 pub fn AnchorLink(props: AnchorLinkProps) -> Element {
+    let class_string = ClassBuilder::new("el-anchor__link")
+        .add_opt(props.class.as_ref())
+        .build();
     let href_clone = props.href.clone();
+    let on_click = props.on_click;
+    let disabled = props.disabled;
+
     rsx! {
         div {
-            class: "el-anchor__link {props.class.clone().unwrap_or_default()}",
+            class: "{class_string}",
             a {
                 class: "el-anchor__link-title",
                 href: "{props.href}",
                 onclick: move |e| {
                     e.prevent_default();
-                    if !props.disabled {
-                        if let Some(handler) = props.on_click {
-                            handler.call(href_clone.clone());
-                        }
+                    if !disabled {
+                        fire_event(&on_click, href_clone.clone());
                     }
                 },
                 "{props.title}"

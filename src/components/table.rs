@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str};
+
 // Table CSS class constants
 pub const TABLE: &str = "el-table";
 pub const TABLE_BORDERED: &str = "el-table--border";
@@ -35,6 +37,31 @@ pub struct TableColumn {
 
 /// Table row data type
 pub type TableData = Vec<std::collections::HashMap<String, String>>;
+
+/// Pre-computed header column rendering data (file-private).
+///
+/// Fields correspond 1:1 to the former tuple used by `header_cols`:
+/// (title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order).
+struct HeaderColData {
+    title: String,
+    width_style: String,
+    sortable: bool,
+    asc_class: String,
+    desc_class: String,
+    col_key: String,
+    is_active: bool,
+    current_order: SortOrder,
+}
+
+/// Pre-computed row rendering data (file-private).
+///
+/// Fields correspond 1:1 to the former tuple used by `row_render_data`:
+/// (orig_idx, row_class, cells), where `cells` is a Vec of (cell_class, cell_value).
+struct RowRenderData {
+    orig_idx: usize,
+    row_class: String,
+    cells: Vec<(String, String)>,
+}
 
 /// Table props
 #[derive(Props, Clone, PartialEq)]
@@ -126,26 +153,16 @@ pub struct TableProps {
 /// ```
 #[component]
 pub fn Table(props: TableProps) -> Element {
-    let mut class_names = vec!["el-table".to_string()];
-
-    if props.border {
-        class_names.push("el-table--border".to_string());
-    }
-    if props.stripe {
-        class_names.push("el-table--striped".to_string());
-    }
-    if props.highlight_current_row {
-        class_names.push("el-table--highlight-current-row".to_string());
-    }
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
+    let class_string = ClassBuilder::new("el-table")
+        .add_if("el-table--border", props.border)
+        .add_if("el-table--striped", props.stripe)
+        .add_if("el-table--highlight-current-row", props.highlight_current_row)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     let active_sort_key = props.sort_key.clone().unwrap_or_default();
-    let active_sort_order = props.sort_order.clone();
+    let active_sort_order = props.sort_order;
 
     // Pre-compute sorted data
     let sorted_rows: Vec<(usize, std::collections::HashMap<String, String>)> = {
@@ -168,8 +185,8 @@ pub fn Table(props: TableProps) -> Element {
         }
     };
 
-    // Pre-compute header column data: (title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order)
-    let header_cols: Vec<(String, String, bool, String, String, String, bool, SortOrder)> = props
+    // Pre-compute header column data
+    let header_cols: Vec<HeaderColData> = props
         .columns
         .iter()
         .map(|col| {
@@ -196,28 +213,28 @@ pub fn Table(props: TableProps) -> Element {
                 "sort-caret descending"
             };
             let current_order = if is_active { active_sort_order } else { SortOrder::None };
-            (
-                col.title.clone(),
+            HeaderColData {
+                title: col.title.clone(),
                 width_style,
-                col.sortable,
-                asc_class.to_string(),
-                desc_class.to_string(),
-                col.key.clone(),
+                sortable: col.sortable,
+                asc_class: asc_class.to_string(),
+                desc_class: desc_class.to_string(),
+                col_key: col.key.clone(),
                 is_active,
                 current_order,
-            )
+            }
         })
         .collect();
 
-    // Pre-compute row rendering data: (orig_idx, row_class, cells)
-    let row_render_data: Vec<(usize, String, Vec<(String, String)>)> = {
+    // Pre-compute row rendering data
+    let row_render_data: Vec<RowRenderData> = {
         let cur = props.current_row_index;
         let stripe = props.stripe;
         let columns_keys: Vec<String> = props.columns.iter().map(|c| c.key.clone()).collect();
         sorted_rows
             .iter()
             .map(|(orig_idx, row)| {
-                let is_current = cur.map_or(false, |r| r == *orig_idx);
+                let is_current = cur == Some(*orig_idx);
                 let base_class = if *orig_idx % 2 == 1 && stripe {
                     "el-table__row el-table__row--striped"
                 } else {
@@ -237,7 +254,11 @@ pub fn Table(props: TableProps) -> Element {
                         )
                     })
                     .collect();
-                (*orig_idx, row_class, cells)
+                RowRenderData {
+                    orig_idx: *orig_idx,
+                    row_class,
+                    cells,
+                }
             })
             .collect()
     };
@@ -265,7 +286,7 @@ pub fn Table(props: TableProps) -> Element {
                         tr {
                             class: "el-table__row",
 
-                            for (title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order) in header_cols.into_iter() {
+                            for HeaderColData { title, width_style, sortable, asc_class, desc_class, col_key, is_active, current_order } in header_cols.into_iter() {
                                 th {
                                     class: "el-table__cell",
                                     style: "{width_style}",
@@ -314,7 +335,7 @@ pub fn Table(props: TableProps) -> Element {
                     tbody {
                         class: "el-table__body",
 
-                        for (orig_idx, row_class, cells) in row_render_data.into_iter() {
+                        for RowRenderData { orig_idx, row_class, cells } in row_render_data.into_iter() {
                             tr {
                                 class: "{row_class}",
 
@@ -402,22 +423,14 @@ pub struct DataListProps {
 /// A data list component for displaying item collections
 #[component]
 pub fn DataList(props: DataListProps) -> Element {
-    let mut class_names = vec!["el-data-list".to_string()];
-
-    class_names.push(format!("el-data-list--{}", props.direction));
-
-    if props.loading {
-        class_names.push("el-data-list--loading".to_string());
-    }
-    if props.items.is_empty() {
-        class_names.push("el-data-list--empty".to_string());
-    }
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
+    let direction_class = format!("el-data-list--{}", props.direction);
+    let class_string = ClassBuilder::new("el-data-list")
+        .add_class(&direction_class)
+        .add_if("el-data-list--loading", props.loading)
+        .add_if("el-data-list--empty", props.items.is_empty())
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     if props.items.is_empty() && props.show_empty {
         return rsx! {
@@ -440,6 +453,8 @@ pub fn DataList(props: DataListProps) -> Element {
         };
     }
 
+    let on_item_click = props.on_item_click;
+
     rsx! {
         div {
             class: "{class_string}",
@@ -450,7 +465,7 @@ pub fn DataList(props: DataListProps) -> Element {
                     class: "el-data-list__item",
 
                     onclick: move |_| {
-                        if let Some(handler) = props.on_item_click {
+                        if let Some(handler) = on_item_click.as_ref() {
                             handler.call(index);
                         }
                     },

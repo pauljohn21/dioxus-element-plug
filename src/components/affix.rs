@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Affix props
 #[derive(Props, Clone, PartialEq)]
@@ -31,13 +32,15 @@ pub struct AffixProps {
 /// Affix component for fixing elements on scroll
 #[component]
 pub fn Affix(props: AffixProps) -> Element {
-    let mut class_names = vec!["el-affix".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-affix")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             {props.children}
         }
     }

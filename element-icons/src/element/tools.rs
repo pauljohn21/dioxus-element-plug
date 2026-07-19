@@ -1,0 +1,16 @@
+// @generated from Element Plus SVG. Do not edit.
+
+use dioxus::core::{Element, Template, TemplateNode};
+
+use crate::IconProps;
+use crate::vdom::{attr, icon_element, icon_template, path, svg};
+
+#[allow(non_snake_case)]
+pub fn Tools(props: IconProps) -> Element {
+    static TEMPLATE_ROOTS: &[TemplateNode] = &[svg(&[
+        path(&[attr("fill", "currentColor"), attr("d", "M764.4 254.7A352 352 0 0 1 850.8 404H960v192H850.8a352 352 0 0 1-86.4 149.4l54.7 94.7L653 936l-54.6-94.7a353 353 0 0 1-172.5 0L371 936 205 840l54.7-94.7A352 352 0 0 1 173.2 596H64V404h109.2a352 352 0 0 1 86.4-149.3L204.8 160 371 64h.2l54.7 94.6a353 353 0 0 1 172.4 0L652.8 64h.1l166.3 96zM704 500a192 192 0 1 0-384 0 192 192 0 0 0 384 0")]),
+    ])];
+    static TEMPLATE: Template = icon_template(TEMPLATE_ROOTS);
+
+    icon_element(TEMPLATE, "0 0 1024 1024", props)
+}

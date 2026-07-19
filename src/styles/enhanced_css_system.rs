@@ -4,18 +4,72 @@
 /// Generate complete Element Plus styles with all components
 pub fn all_styles() -> String {
     let mut css = String::new();
-    
+
     // CSS Reset and theme variables
     css.push_str(create_css_reset().as_str());
     css.push_str("\n\n");
-    
+
     // Core theme variables
     css.push_str(create_theme_variables().as_str());
     css.push_str("\n\n");
-    
+
     // Component-specific styles
     css.push_str(generate_all_component_styles().as_str());
-    
+
+    css
+}
+
+/// Generate all component styles
+fn generate_all_component_styles() -> String {
+    let mut css = String::new();
+
+    // Button styles
+    css.push_str(button_styles());
+    css.push_str("\n\n");
+
+    // Input styles
+    css.push_str(input_styles());
+    css.push_str("\n\n");
+
+    // Form styles
+    css.push_str(form_styles());
+    css.push_str("\n\n");
+
+    // Steps styles
+    css.push_str(steps_styles());
+    css.push_str("\n\n");
+
+    // Timeline styles
+    css.push_str(timeline_styles());
+    css.push_str("\n\n");
+
+    // DatePicker styles
+    css.push_str(date_picker_styles());
+    css.push_str("\n\n");
+
+    // TimePicker styles
+    css.push_str(time_picker_styles());
+    css.push_str("\n\n");
+
+    // Layout styles
+    css.push_str(layout_styles());
+    css.push_str("\n\n");
+
+    // Data display styles
+    css.push_str(data_display_styles());
+    css.push_str("\n\n");
+
+    // Feedback styles
+    css.push_str(feedback_styles());
+    css.push_str("\n\n");
+
+    // Navigation styles
+    css.push_str(navigation_styles());
+    css.push_str("\n\n");
+
+    // Other component styles
+    css.push_str(additional_styles());
+
     css
 }
 
@@ -171,44 +225,7 @@ fn create_theme_variables() -> String {
 "#.to_string()
 }
 
-fn generate_all_component_styles() -> String {
-    let mut css = String::new();
-    
-    // Button styles
-    css.push_str(generate_button_styles().as_str());
-    css.push_str("\n\n");
-    
-    // Input styles
-    css.push_str(generate_input_styles().as_str());
-    css.push_str("\n\n");
-    
-    // Form styles
-    css.push_str(generate_form_styles().as_str());
-    css.push_str("\n\n");
-    
-    // Layout styles
-    css.push_str(generate_layout_styles().as_str());
-    css.push_str("\n\n");
-    
-    // Data display styles
-    css.push_str(generate_data_display_styles().as_str());
-    css.push_str("\n\n");
-    
-    // Feedback styles
-    css.push_str(generate_feedback_styles().as_str());
-    css.push_str("\n\n");
-    
-    // Navigation styles
-    css.push_str(generate_navigation_styles().as_str());
-    css.push_str("\n\n");
-    
-    // Other component styles
-    css.push_str(generate_additional_styles().as_str());
-    
-    css
-}
-
-fn generate_button_styles() -> String {
+pub fn button_styles() -> &'static str {
     r#"/* Button Component Styles */
 .el-button {
     display: inline-block;
@@ -330,10 +347,10 @@ fn generate_button_styles() -> String {
     padding: 9px 15px;
     font-size: var(--el-font-size-extra-small);
 }
-"#.to_string()
+"#
 }
 
-fn generate_input_styles() -> String {
+pub fn input_styles() -> &'static str {
     r#"/* Input Component Styles */
 .el-input {
     position: relative;
@@ -402,10 +419,378 @@ fn generate_input_styles() -> String {
     line-height: 24px;
     font-size: var(--el-font-size-extra-small);
 }
-"#.to_string()
+"#
 }
 
-fn generate_form_styles() -> String {
+pub fn timeline_styles() -> &'static str {
+    r#"/* Timeline Component Styles */
+.el-timeline {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.el-timeline.is-reverse {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+/* Timeline Item */
+.el-timeline-item {
+    position: relative;
+    padding-bottom: 20px;
+    list-style: none;
+}
+
+.el-timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+/* Timeline Tail (vertical line) */
+.el-timeline-item__tail {
+    position: absolute;
+    left: 7px;
+    height: 100%;
+    border-left: 2px solid var(--el-border-color-light);
+}
+
+.el-timeline-item:last-child .el-timeline-item__tail {
+    display: none;
+}
+
+/* Timeline Node (dot) */
+.el-timeline-item__node {
+    position: absolute;
+    left: 0;
+    width: 16px;
+    height: 16px;
+    background-color: var(--el-border-color-light);
+    border: 2px solid var(--el-color-white);
+    border-radius: 50%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+}
+
+.el-timeline-item__node--normal {
+    width: 16px;
+    height: 16px;
+    left: 0;
+}
+
+.el-timeline-item__node--large {
+    width: 24px;
+    height: 24px;
+    left: -4px;
+}
+
+.el-timeline-item__node--primary {
+    background-color: var(--el-color-primary);
+    border-color: var(--el-color-primary);
+}
+
+.el-timeline-item__node i {
+    color: var(--el-color-white);
+    font-size: 10px;
+}
+
+.el-timeline-item__node--large i {
+    font-size: 14px;
+}
+
+/* Timeline Wrapper */
+.el-timeline-item__wrapper {
+    position: relative;
+    padding-left: 28px;
+    top: -3px;
+}
+
+/* Timeline Timestamp */
+.el-timeline-item__timestamp {
+    margin-bottom: 8px;
+    padding-top: 4px;
+    color: var(--el-text-color-secondary);
+    line-height: 1;
+    font-size: 13px;
+}
+
+.el-timeline-item__timestamp.is-top {
+    margin-bottom: 8px;
+    padding-top: 4px;
+}
+
+.el-timeline-item__timestamp.is-bottom {
+    margin-top: 8px;
+    margin-bottom: 0;
+}
+
+/* Timeline Content */
+.el-timeline-item__content {
+    color: var(--el-text-color-primary);
+    font-size: 14px;
+    line-height: 1.5;
+}
+"#
+}
+
+pub fn steps_styles() -> &'static str {
+    r#"/* Steps Component Styles */
+.el-steps {
+    display: flex;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.el-steps.is-horizontal {
+    flex-direction: row;
+    white-space: nowrap;
+}
+
+.el-steps.is-vertical {
+    flex-direction: column;
+    height: 100%;
+}
+
+.el-steps.is-simple {
+    padding: 13px 8%;
+    border-radius: 4px;
+    background: var(--el-fill-color-light);
+}
+
+.el-steps.is-simple .el-step__head {
+    width: auto;
+    font-size: 0;
+    padding-right: 10px;
+}
+
+.el-steps.is-simple .el-step__icon {
+    width: 16px;
+    height: 16px;
+    font-size: 12px;
+}
+
+.el-steps.is-simple .el-step__main {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    flex-grow: 1;
+}
+
+.el-steps.is-simple .el-step__title {
+    font-size: 16px;
+    line-height: 20px;
+}
+
+.el-steps.is-center {
+    text-align: center;
+}
+
+/* Individual Step */
+.el-step {
+    position: relative;
+    flex-shrink: 1;
+    flex-basis: 50%;
+}
+
+.el-steps.is-horizontal .el-step {
+    display: inline-block;
+}
+
+.el-steps.is-vertical .el-step {
+    display: flex;
+}
+
+.el-step.is-last {
+    flex-basis: auto !important;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+/* Step Head */
+.el-step__head {
+    position: relative;
+    width: 100%;
+}
+
+.el-steps.is-horizontal .el-step__head {
+    text-align: center;
+}
+
+.el-steps.is-vertical .el-step__head {
+    flex-shrink: 0;
+    width: 28px;
+    height: 100%;
+    text-align: center;
+}
+
+/* Step Line (Connector) */
+.el-step__line {
+    position: absolute;
+    border-color: inherit;
+    background-color: var(--el-text-color-placeholder);
+}
+
+.el-steps.is-horizontal .el-step__line {
+    height: 2px;
+    top: 11px;
+    left: 0;
+    right: 0;
+}
+
+.el-steps.is-vertical .el-step__line {
+    width: 2px;
+    top: 0;
+    bottom: 0;
+    left: 13px;
+}
+
+.el-step.is-finish .el-step__line,
+.el-step.is-success .el-step__line {
+    background-color: var(--el-color-primary);
+}
+
+.el-step.is-error .el-step__line {
+    background-color: var(--el-color-danger);
+}
+
+/* Step Icon */
+.el-step__icon {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background: var(--el-color-white);
+    border: 2px solid;
+    border-radius: 50%;
+    transition: all 0.3s;
+}
+
+.el-steps.is-horizontal .el-step__icon {
+    margin-right: 8px;
+}
+
+.el-step.is-wait .el-step__icon {
+    border-color: var(--el-text-color-placeholder);
+    color: var(--el-text-color-placeholder);
+}
+
+.el-step.is-process .el-step__icon {
+    border-color: var(--el-color-primary);
+    color: var(--el-color-primary);
+    font-weight: bold;
+}
+
+.el-step.is-finish .el-step__icon {
+    border-color: var(--el-color-primary);
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+}
+
+.el-step.is-success .el-step__icon {
+    border-color: var(--el-color-success);
+    background-color: var(--el-color-success);
+    color: var(--el-color-white);
+}
+
+.el-step.is-error .el-step__icon {
+    border-color: var(--el-color-danger);
+    background-color: var(--el-color-danger);
+    color: var(--el-color-white);
+}
+
+.el-step__icon-inner {
+    display: inline-block;
+    user-select: none;
+    text-align: center;
+    font-weight: bold;
+    line-height: 1;
+}
+
+/* Step Main Content */
+.el-step__main {
+    text-align: left;
+}
+
+.el-steps.is-horizontal .el-step__main {
+    white-space: normal;
+    text-align: center;
+}
+
+.el-steps.is-vertical .el-step__main {
+    padding-left: 10px;
+}
+
+/* Step Title */
+.el-step__title {
+    font-size: 16px;
+    line-height: 38px;
+    color: var(--el-text-color-primary);
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.el-step.is-wait .el-step__title {
+    color: var(--el-text-color-placeholder);
+}
+
+.el-step.is-process .el-step__title {
+    color: var(--el-text-color-primary);
+    font-weight: bold;
+}
+
+.el-step.is-finish .el-step__title,
+.el-step.is-success .el-step__title {
+    color: var(--el-color-primary);
+}
+
+.el-step.is-error .el-step__title {
+    color: var(--el-color-danger);
+}
+
+/* Step Description */
+.el-step__description {
+    padding-right: 10%;
+    margin-top: -5px;
+    font-size: 12px;
+    line-height: 20px;
+    font-weight: normal;
+    color: var(--el-text-color-regular);
+    transition: all 0.3s;
+}
+
+.el-step.is-wait .el-step__description {
+    color: var(--el-text-color-placeholder);
+}
+
+.el-step.is-process .el-step__description {
+    color: var(--el-text-color-primary);
+}
+
+.el-step.is-finish .el-step__description,
+.el-step.is-success .el-step__description {
+    color: var(--el-color-primary);
+}
+
+.el-step.is-error .el-step__description {
+    color: var(--el-color-danger);
+}
+
+/* Step Content */
+.el-step__content {
+    margin-top: 10px;
+}
+"#
+}
+
+pub fn form_styles() -> &'static str {
     r#"/* Form Component Styles */
 .el-form {
     margin: 0;
@@ -413,12 +798,75 @@ fn generate_form_styles() -> String {
     box-sizing: border-box;
 }
 
+.el-form--inline {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.el-form--inline .el-form-item {
+    display: inline-flex;
+    margin-right: 10px;
+    vertical-align: top;
+}
+
+.el-form--horizontal .el-form-item {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.el-form--label-top .el-form-item {
+    flex-direction: column;
+}
+
+.el-form--label-top .el-form-item__label {
+    text-align: left;
+    padding: 0 0 8px 0;
+    line-height: 1.5;
+}
+
+.el-form--label-left .el-form-item__label {
+    text-align: left;
+}
+
+.el-form--label-right .el-form-item__label {
+    text-align: right;
+}
+
+/* Form Item Base Styles */
 .el-form-item {
     margin-bottom: 22px;
     display: flex;
     flex-direction: column;
 }
 
+.el-form-item--large {
+    margin-bottom: 24px;
+}
+
+.el-form-item--large .el-form-item__label {
+    line-height: 44px;
+    font-size: var(--el-font-size-medium);
+}
+
+.el-form-item--large .el-form-item__content {
+    line-height: 44px;
+}
+
+.el-form-item--small {
+    margin-bottom: 18px;
+}
+
+.el-form-item--small .el-form-item__label {
+    line-height: 32px;
+    font-size: var(--el-font-size-small);
+}
+
+.el-form-item--small .el-form-item__content {
+    line-height: 32px;
+}
+
+/* Form Item Label */
 .el-form-item__label {
     text-align: right;
     vertical-align: middle;
@@ -428,8 +876,17 @@ fn generate_form_styles() -> String {
     line-height: 40px;
     padding: 0 12px 0 0;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
+/* Required marker */
+.el-form-item__required {
+    color: var(--el-color-danger);
+    margin-right: 4px;
+    font-weight: bold;
+}
+
+/* Form Item Content */
 .el-form-item__content {
     line-height: 40px;
     position: relative;
@@ -438,18 +895,32 @@ fn generate_form_styles() -> String {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    min-width: 0;
 }
 
+/* Validation States */
 .el-form-item.is-required > .el-form-item__label:before {
     content: '*';
     color: var(--el-color-danger);
     margin-right: 4px;
 }
 
-.el-form-item.is-error .el-input__wrapper {
+.el-form-item.is-error .el-input__wrapper,
+.el-form-item.is-error .el-textarea__inner {
     box-shadow: 0 0 0 1px var(--el-color-danger) inset;
 }
 
+.el-form-item.is-success .el-input__wrapper,
+.el-form-item.is-success .el-textarea__inner {
+    box-shadow: 0 0 0 1px var(--el-color-success) inset;
+}
+
+.el-form-item.is-validating .el-input__wrapper,
+.el-form-item.is-validating .el-textarea__inner {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+}
+
+/* Error Message */
 .el-form-item__error {
     color: var(--el-color-danger);
     font-size: var(--el-font-size-extra-small);
@@ -458,11 +929,589 @@ fn generate_form_styles() -> String {
     position: absolute;
     top: 100%;
     left: 0;
-}
-"#.to_string()
+    z-index: 1;
 }
 
-fn generate_layout_styles() -> String {
+.el-form-item__error--inline {
+    position: relative;
+    top: auto;
+    left: auto;
+    display: inline-block;
+    margin-left: 10px;
+    padding-top: 0;
+}
+
+/* Form Item Label Position Modifiers */
+.el-form-item--label-top {
+    flex-direction: column;
+}
+
+.el-form-item--label-top .el-form-item__label {
+    text-align: left;
+    padding: 0 0 8px 0;
+    line-height: 1.5;
+}
+
+.el-form-item--label-left .el-form-item__label {
+    text-align: left;
+}
+
+.el-form-item--label-right .el-form-item__label {
+    text-align: right;
+}
+"#
+}
+
+pub fn tabs_styles() -> &'static str {
+    r#"/* Tabs Component Styles */
+
+/* Tabs Container */
+.el-tabs {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Tab Type Modifiers */
+.el-tabs--card {
+    border: 1px solid var(--el-border-color-light);
+    border-radius: var(--el-border-radius-base);
+    background-color: var(--el-color-white);
+}
+
+.el-tabs--border-card {
+    border: 1px solid var(--el-border-color);
+    border-radius: var(--el-border-radius-base);
+    background-color: var(--el-fill-color-light);
+    box-shadow: var(--el-box-shadow-light);
+}
+
+/* Tab Position Modifiers */
+.el-tabs--top .el-tabs__header {
+    margin-bottom: 15px;
+}
+
+.el-tabs--bottom {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.el-tabs--bottom .el-tabs__header {
+    margin-top: 15px;
+}
+
+.el-tabs--left {
+    display: flex;
+}
+
+.el-tabs--left .el-tabs__header {
+    flex-shrink: 0;
+    margin-right: 15px;
+}
+
+.el-tabs--right {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.el-tabs--right .el-tabs__header {
+    flex-shrink: 0;
+    margin-left: 15px;
+}
+
+/* Tabs Header */
+.el-tabs__header {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Tabs Nav */
+.el-tabs__nav-wrap {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: -1px;
+}
+
+.el-tabs__nav {
+    position: relative;
+    display: flex;
+    white-space: nowrap;
+    transition: transform 0.3s;
+}
+
+.el-tabs--left .el-tabs__nav,
+.el-tabs--right .el-tabs__nav {
+    flex-direction: column;
+}
+
+/* Tab Item */
+.el-tabs__item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+    height: 40px;
+    box-sizing: border-box;
+    font-size: var(--el-font-size-base);
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+    cursor: pointer;
+    transition: all 0.3s;
+    border-bottom: 2px solid transparent;
+}
+
+.el-tabs__item:hover {
+    color: var(--el-color-primary);
+}
+
+.el-tabs__item.is-active {
+    color: var(--el-color-primary);
+    border-bottom-color: var(--el-color-primary);
+}
+
+.el-tabs__item.is-disabled {
+    color: var(--el-text-color-placeholder);
+    cursor: not-allowed;
+}
+
+.el-tabs__item.is-closable {
+    padding-right: 16px;
+}
+
+/* Close Icon */
+.el-tabs__item .el-icon-close {
+    margin-left: 8px;
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    transition: color 0.3s;
+}
+
+.el-tabs__item .el-icon-close:hover {
+    color: var(--el-color-danger);
+}
+
+/* Card Type Tabs */
+.el-tabs--card .el-tabs__item {
+    border: 1px solid transparent;
+    border-bottom: none;
+    border-radius: var(--el-border-radius-base) var(--el-border-radius-base) 0 0;
+}
+
+.el-tabs--card .el-tabs__item.is-active {
+    border-color: var(--el-border-color-light);
+    border-bottom-color: var(--el-color-white);
+    background-color: var(--el-color-white);
+}
+
+/* Border Card Type Tabs */
+.el-tabs--border-card .el-tabs__header {
+    background-color: var(--el-fill-color-light);
+    border-bottom: 1px solid var(--el-border-color);
+}
+
+.el-tabs--border-card .el-tabs__item {
+    border: 1px solid transparent;
+    border-bottom: none;
+}
+
+.el-tabs--border-card .el-tabs__item.is-active {
+    background-color: var(--el-color-white);
+    border-color: var(--el-border-color);
+    border-bottom-color: var(--el-color-white);
+}
+
+/* Tabs Content */
+.el-tabs__content {
+    position: relative;
+    overflow: hidden;
+}
+
+/* Tab Pane */
+.el-tab-pane {
+    display: none;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.el-tab-pane.is-active {
+    display: block;
+}
+
+.el-tab-pane.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Add Tab Button */
+.el-tabs__add-tab {
+    display: inline-flex;
+    align-items: center;
+    margin-left: 10px;
+}
+
+/* Vertical Tabs (Left/Right) */
+.el-tabs--left .el-tabs__item,
+.el-tabs--right .el-tabs__item {
+    border-bottom: none;
+    border-right: 2px solid transparent;
+}
+
+.el-tabs--left .el-tabs__item.is-active,
+.el-tabs--right .el-tabs__item.is-active {
+    border-bottom-color: transparent;
+    border-right-color: var(--el-color-primary);
+}
+"#
+}
+
+pub fn date_picker_styles() -> &'static str {
+    r#"/* DatePicker Component Styles */
+
+/* Date Editor */
+.el-date-editor {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+}
+
+.el-date-editor--date {
+    width: 220px;
+}
+
+.el-date-editor--large {
+    width: 240px;
+}
+
+.el-date-editor--large .el-input__inner {
+    height: 40px;
+    line-height: 40px;
+}
+
+.el-date-editor--small {
+    width: 200px;
+}
+
+.el-date-editor--small .el-input__inner {
+    height: 32px;
+    line-height: 32px;
+}
+
+.el-date-editor.is-active {
+    border-color: var(--el-color-primary);
+}
+
+.el-date-editor.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Picker Panel */
+.el-picker-panel {
+    position: absolute;
+    z-index: 2000;
+    background-color: var(--el-color-white);
+    border: 1px solid var(--el-border-color-light);
+    border-radius: var(--el-border-radius-base);
+    box-shadow: var(--el-box-shadow-light);
+    margin-top: 5px;
+    min-width: 322px;
+}
+
+.el-date-picker {
+    width: 322px;
+}
+
+/* Panel Header */
+.el-picker-panel__header {
+    position: relative;
+    text-align: center;
+    height: 44px;
+    line-height: 44px;
+    border-bottom: 1px solid var(--el-border-color-light);
+    padding: 0 12px;
+}
+
+.el-picker-panel__icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 5px;
+    line-height: 22px;
+    margin-top: 10px;
+}
+
+.el-picker-panel__icon-btn:hover {
+    color: var(--el-color-primary);
+}
+
+.el-date-picker__prev-year {
+    float: left;
+}
+
+.el-date-picker__prev-month {
+    float: left;
+    margin-left: 5px;
+}
+
+.el-date-picker__next-month {
+    float: right;
+    margin-right: 5px;
+}
+
+.el-date-picker__next-year {
+    float: right;
+}
+
+.el-date-picker__header-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+    padding: 0 5px;
+    cursor: pointer;
+}
+
+.el-date-picker__header-label:hover {
+    color: var(--el-color-primary);
+}
+
+/* Date Table */
+.el-date-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    table-layout: fixed;
+}
+
+.el-date-table th {
+    padding: 5px;
+    color: var(--el-text-color-regular);
+    font-weight: 400;
+    border-bottom: 1px solid var(--el-border-color-light);
+    text-align: center;
+}
+
+.el-date-table td {
+    width: 32px;
+    height: 30px;
+    padding: 4px 0;
+    box-sizing: border-box;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.el-date-table td div {
+    height: 30px;
+    padding: 3px 0;
+    box-sizing: border-box;
+}
+
+.el-date-table td span {
+    width: 24px;
+    height: 24px;
+    display: block;
+    margin: 0 auto;
+    line-height: 24px;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.el-date-table td.available:hover {
+    color: var(--el-color-primary);
+}
+
+.el-date-table td.available:hover span {
+    background-color: var(--el-color-primary-light-9);
+}
+
+.el-date-table td.current:not(.disabled) span {
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+}
+
+.el-date-table td.selected span {
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+}
+
+.el-date-table td.prev-month,
+.el-date-table td.next-month {
+    color: var(--el-text-color-placeholder);
+}
+
+.el-date-table td.disabled {
+    background-color: var(--el-fill-color-light);
+    cursor: not-allowed;
+    color: var(--el-text-color-placeholder);
+}
+
+/* Panel Footer */
+.el-picker-panel__footer {
+    border-top: 1px solid var(--el-border-color-light);
+    padding: 10px;
+    text-align: right;
+    background-color: var(--el-color-white);
+}
+
+.el-picker-panel__footer .el-button {
+    margin-left: 10px;
+}
+"#
+}
+
+pub fn time_picker_styles() -> &'static str {
+    r#"/* TimePicker Component Styles */
+
+/* Time Editor */
+.el-time-editor {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+}
+
+.el-time-editor--time {
+    width: 180px;
+}
+
+.el-time-editor--large {
+    width: 200px;
+}
+
+.el-time-editor--large .el-input__inner {
+    height: 40px;
+    line-height: 40px;
+}
+
+.el-time-editor--small {
+    width: 160px;
+}
+
+.el-time-editor--small .el-input__inner {
+    height: 32px;
+    line-height: 32px;
+}
+
+.el-time-editor.is-active {
+    border-color: var(--el-color-primary);
+}
+
+.el-time-editor.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Time Panel */
+.el-time-panel {
+    position: absolute;
+    z-index: 2000;
+    background-color: var(--el-color-white);
+    border: 1px solid var(--el-border-color-light);
+    border-radius: var(--el-border-radius-base);
+    box-shadow: var(--el-box-shadow-light);
+    margin-top: 5px;
+    width: 180px;
+}
+
+/* Time Spinner */
+.el-time-spinner {
+    display: flex;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+}
+
+.el-time-spinner__wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    border-right: 1px solid var(--el-border-color-light);
+    position: relative;
+}
+
+.el-time-spinner__wrapper:last-child {
+    border-right: none;
+}
+
+.el-time-spinner__list {
+    flex: 1;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    scroll-behavior: smooth;
+}
+
+.el-time-spinner__list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.el-time-spinner__item {
+    height: 32px;
+    line-height: 32px;
+    font-size: 12px;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+}
+
+.el-time-spinner__item:hover {
+    background-color: var(--el-fill-color-light);
+    color: var(--el-color-primary);
+}
+
+.el-time-spinner__item.active {
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+}
+
+.el-time-spinner__item.disabled {
+    color: var(--el-text-color-placeholder);
+    cursor: not-allowed;
+}
+
+/* Time Panel Footer */
+.el-time-panel__footer {
+    border-top: 1px solid var(--el-border-color-light);
+    padding: 8px;
+    text-align: right;
+    background-color: var(--el-color-white);
+}
+
+.el-time-panel__btn {
+    border: none;
+    background: transparent;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-left: 5px;
+}
+
+.el-time-panel__btn.confirm {
+    color: var(--el-color-primary);
+    font-weight: 500;
+}
+
+.el-time-panel__btn.cancel {
+    color: var(--el-text-color-secondary);
+}
+
+.el-time-panel__btn:hover {
+    color: var(--el-color-primary);
+}
+"#
+}
+
+pub fn layout_styles() -> &'static str {
     r#"/* Layout Component Styles */
 .el-container {
     display: flex;
@@ -542,10 +1591,10 @@ fn generate_layout_styles() -> String {
 .el-col-22 { width: 91.6666666667%; }
 .el-col-23 { width: 95.8333333333%; }
 .el-col-24 { width: 100%; }
-"#.to_string()
+"#
 }
 
-fn generate_data_display_styles() -> String {
+pub fn data_display_styles() -> &'static str {
     r#"/* Data Display Component Styles */
 
 /* Table */
@@ -651,10 +1700,10 @@ fn generate_data_display_styles() -> String {
     line-height: 1;
     font-size: var(--el-font-size-extra-small);
 }
-"#.to_string()
+"#
 }
 
-fn generate_feedback_styles() -> String {
+pub fn feedback_styles() -> &'static str {
     r#"/* Feedback Component Styles */
 
 /* Alert */
@@ -792,10 +1841,10 @@ fn generate_feedback_styles() -> String {
     left: 0;
     transition: opacity var(--el-transition-duration) ease;
 }
-"#.to_string()
+"#
 }
 
-fn generate_navigation_styles() -> String {
+pub fn navigation_styles() -> &'static str {
     r#"/* Navigation Component Styles */
 
 /* Menu */
@@ -947,10 +1996,10 @@ fn generate_navigation_styles() -> String {
     box-sizing: border-box;
     text-align: center;
 }
-"#.to_string()
+"#
 }
 
-fn generate_additional_styles() -> String {
+pub fn additional_styles() -> &'static str {
     r#"/* Additional Component Styles */
 
 /* Badge */
@@ -1210,7 +2259,7 @@ fn generate_additional_styles() -> String {
     position: fixed;
     z-index: 10;
 }
-"#.to_string()
+"#
 }
 
 /// Export complete CSS styles
@@ -1227,5 +2276,17 @@ mod tests {
         assert!(css.contains("el-button"));
         assert!(css.contains("el-input"));
         assert!(css.contains("var(--el-color-primary)"));
+    }
+    
+    /// 重构一致性测试 - 验证输出与基准相同
+    ///
+    /// 注意：此测试在重构期间标记为 #[ignore]，重构完成后启用
+    #[test]
+    #[ignore = "重构期间禁用，Phase 5.3 启用"]
+    fn test_css_refactor_consistency() {
+        // 此测试在 Phase 5.3 启用，用于验证重构后输出与基准相同
+        // 基准将在 Phase 1 生成
+        let _current = all_styles();
+        // TODO: Phase 5.3 启用实际比较
     }
 }

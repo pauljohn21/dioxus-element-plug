@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Dialog props
 #[derive(Props, Clone, PartialEq)]
@@ -80,34 +81,29 @@ pub fn Dialog(props: DialogProps) -> Element {
         return rsx! {};
     }
 
-    let mut overlay_classes = vec!["el-overlay".to_string()];
-    if let Some(ref custom_class) = props.class {
-        overlay_classes.push(custom_class.clone());
-    }
+    let overlay_class = ClassBuilder::new("el-overlay")
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let mut dialog_classes = vec!["el-dialog".to_string()];
-    if props.align_center {
-        dialog_classes.push("el-dialog--center".to_string());
-    }
-    if props.draggable {
-        dialog_classes.push("el-dialog--draggable".to_string());
-    }
+    let dialog_class = ClassBuilder::new("el-dialog")
+        .add_if("el-dialog--center", props.align_center)
+        .add_if("el-dialog--draggable", props.draggable)
+        .build();
 
-    let dialog_style = format!("width: {}; margin-top: {}; {}", props.width, props.top, props.style.clone().unwrap_or_default());
+    let dialog_style = format!("width: {}; margin-top: {}; {}", props.width, props.top, style_str(&props.style));
+    let on_close = props.on_close;
 
     rsx! {
         div {
-            class: "{overlay_classes.join(\" \")}",
+            class: "{overlay_class}",
             style: "position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2000; overflow: auto;",
             onclick: move |_| {
                 if props.close_on_click_modal {
-                    if let Some(handler) = props.on_close {
-                        handler.call(());
-                    }
+                    fire_event(&on_close, ());
                 }
             },
             div {
-                class: "{dialog_classes.join(\" \")}",
+                class: "{dialog_class}",
                 style: "{dialog_style}",
                 onclick: move |e| e.stop_propagation(),
                 if let Some(ref title) = props.title {
@@ -121,9 +117,7 @@ pub fn Dialog(props: DialogProps) -> Element {
                             button {
                                 class: "el-dialog__headerbtn",
                                 onclick: move |_| {
-                                    if let Some(handler) = props.on_close {
-                                        handler.call(());
-                                    }
+                                    fire_event(&on_close, ());
                                 },
                                 "×"
                             }

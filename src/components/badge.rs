@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Badge type variants
 #[derive(Clone, PartialEq)]
@@ -83,20 +84,14 @@ pub fn Badge(props: BadgeProps) -> Element {
         return rsx! { {props.children} };
     }
 
-    let mut class_names = vec!["el-badge".to_string()];
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-    let class_string = class_names.join(" ");
+    let class_string = ClassBuilder::new("el-badge")
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let mut content_classes = vec!["el-badge__content".to_string()];
-    content_classes.push(props.badge_type.as_class().to_string());
-
-    if props.is_dot {
-        content_classes.push("is-dot".to_string());
-    }
-
-    let content_class_string = content_classes.join(" ");
+    let content_class_string = ClassBuilder::new("el-badge__content")
+        .add_class(props.badge_type.as_class())
+        .add_if("is-dot", props.is_dot)
+        .build();
 
     // Compute display value
     let display_value = if props.is_dot {
@@ -122,7 +117,7 @@ pub fn Badge(props: BadgeProps) -> Element {
 
     let show_content = !display_value.is_empty() || props.is_dot;
 
-    let mut content_style = props.style.clone().unwrap_or_default();
+    let mut content_style = style_str(&props.style);
     if let Some(ref color) = props.color {
         content_style = format!("background-color: {}; {}", color, content_style);
     }

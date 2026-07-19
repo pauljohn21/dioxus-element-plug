@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Skeleton props
 #[derive(Props, Clone, PartialEq)]
@@ -47,18 +48,12 @@ pub fn Skeleton(props: SkeletonProps) -> Element {
         return rsx! { {props.children} };
     }
 
-    let mut class_names = vec!["el-skeleton".to_string()];
+    let class_string = ClassBuilder::new("el-skeleton")
+        .add_if("is-animated", props.animated)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    if props.animated {
-        class_names.push("is-animated".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     let items: Vec<u32> = (0..props.count).collect();
     let rows: Vec<(u32, String)> = (0..props.rows)

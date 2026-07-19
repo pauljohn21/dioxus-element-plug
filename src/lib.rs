@@ -26,9 +26,9 @@
 //! use dioxus_element_plug::style_system::CompleteStyleManager;
 //!
 //! fn App() -> Element {
-//!     // Generate styles for specific components
+//!     // Generate complete Element Plus styles (114 components)
 //!     let styles = CompleteStyleManager::new()
-//!         .generate_styles_for_components(&["button", "input", "alert"]);
+//!         .generate_complete_styles();
 //!
 //!     rsx! {
 //!         style { "{styles}" }
@@ -86,8 +86,13 @@ pub mod style_system;
 pub mod styles;
 
 /// Pure Rust styling system
-/// This module provides comprehensive styling without SCSS dependencies
-pub use style_system::{Theme, CompleteStyleManager, CompleteCssBuilder};
+/// This module provides comprehensive styling without SCSS dependencies.
+///
+/// Since 0.3.0, this is the single source of truth for the theme system:
+/// `Theme` (50 fields), `ThemeBuilder`, `CompleteStyleManager`, and the
+/// deprecated `CompleteCssBuilder` all live here.
+#[allow(deprecated)]
+pub use style_system::{Theme, ThemeBuilder, CompleteStyleManager, CompleteCssBuilder, StyleManager, ALL_COMPONENTS};
 
 /// Theme and style re-exports from modular system
 pub use crate::styles::prelude::*;
@@ -178,7 +183,11 @@ pub mod prelude {
 
     // Style system
     pub use crate::Theme;
+    pub use crate::ThemeBuilder;
     pub use crate::CompleteStyleManager;
+    pub use crate::style_system::StyleManager;
+    pub use crate::style_system::ALL_COMPONENTS;
+    #[allow(deprecated)]
     pub use crate::CompleteCssBuilder;
 
     /// Complete Element Plus styling from modular system
@@ -206,7 +215,7 @@ mod tests {
         assert_eq!(primary.as_class(), "el-button--primary");
 
         let default = ButtonVariant::Default;
-        assert_eq!(default.as_class(), "el-button");
+        assert_eq!(default.as_class(), "");
     }
 
     #[test]

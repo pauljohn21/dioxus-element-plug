@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Empty props
 #[derive(Props, Clone, PartialEq)]
@@ -35,11 +36,11 @@ pub struct EmptyProps {
 /// ```
 #[component]
 pub fn Empty(props: EmptyProps) -> Element {
-    let mut class_names = vec!["el-empty".to_string()];
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-    let class_string = class_names.join(" ");
+    let class_string = ClassBuilder::new("el-empty")
+        .add_opt(props.class.as_ref())
+        .build();
+
+    let style_string = style_str(&props.style);
 
     let image_style = props
         .image_size
@@ -49,7 +50,7 @@ pub fn Empty(props: EmptyProps) -> Element {
     rsx! {
         div {
             class: "{class_string}",
-            style: props.style.clone().unwrap_or_default(),
+            style: "{style_string}",
             div {
                 class: "el-empty__image",
                 style: "{image_style}",

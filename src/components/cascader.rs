@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str};
+
 /// Cascader option
 #[derive(Clone, PartialEq)]
 pub struct CascaderOption {
@@ -73,13 +75,11 @@ type NodeRender = (String, String, bool, bool, bool);
 /// Cascader component for multi-level selection
 #[component]
 pub fn Cascader(props: CascaderProps) -> Element {
-    let mut class_names = vec!["el-cascader".to_string()];
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-    if let Some(ref c) = props.class {
-        class_names.push(c.clone());
-    }
+    let class_string = ClassBuilder::new("el-cascader")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     // Build display text from model_value
     let display_text = if props.model_value.is_empty() {
@@ -98,13 +98,13 @@ pub fn Cascader(props: CascaderProps) -> Element {
         .options
         .iter()
         .map(|opt| {
-            let is_active = props.model_value.first().map_or(false, |v| v == &opt.value);
+            let is_active = props.model_value.first() == Some(&opt.value);
             (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active)
         })
         .collect();
 
     // Pre-compute level 2 nodes: (value, label, disabled, has_children, is_active, l1_value)
-    let level2_nodes: Vec<(String, String, bool, bool, bool, String)> = if props.model_value.len() >= 1 {
+    let level2_nodes: Vec<(String, String, bool, bool, bool, String)> = if !props.model_value.is_empty() {
         let l1 = &props.model_value[0];
         props
             .options
@@ -116,7 +116,7 @@ pub fn Cascader(props: CascaderProps) -> Element {
                     .children
                     .iter()
                     .map(|opt| {
-                        let is_active = props.model_value.get(1).map_or(false, |v| v == &opt.value);
+                        let is_active = props.model_value.get(1) == Some(&opt.value);
                         (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active, l1_val.clone())
                     })
                     .collect()
@@ -142,7 +142,7 @@ pub fn Cascader(props: CascaderProps) -> Element {
                     .children
                     .iter()
                     .map(|opt| {
-                        let is_active = props.model_value.get(2).map_or(false, |v| v == &opt.value);
+                        let is_active = props.model_value.get(2) == Some(&opt.value);
                         (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active, l1_val.clone(), l2_val.clone())
                     })
                     .collect()
@@ -162,8 +162,8 @@ pub fn Cascader(props: CascaderProps) -> Element {
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
 
             div {
                 class: "el-cascader__wrapper",

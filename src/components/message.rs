@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Message type
 #[derive(Clone, PartialEq)]
@@ -69,15 +70,18 @@ pub struct MessageProps {
 /// Message component for transient notifications
 #[component]
 pub fn Message(props: MessageProps) -> Element {
-    let mut class_names = vec!["el-message".to_string()];
-    class_names.push(props.message_type.as_class().to_string());
-    if props.center { class_names.push("is-center".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-message")
+        .add_class(props.message_type.as_class())
+        .add_if("is-center", props.center)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+    let on_close = props.on_close;
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             role: "alert",
             if props.show_icon {
                 i { class: "{props.message_type.as_icon()} el-message__icon" }
@@ -90,9 +94,7 @@ pub fn Message(props: MessageProps) -> Element {
                 button {
                     class: "el-message__closeBtn",
                     onclick: move |_| {
-                        if let Some(handler) = props.on_close {
-                            handler.call(());
-                        }
+                        fire_event(&on_close, ());
                     },
                     "×"
                 }

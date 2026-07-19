@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// InputNumber props
 #[derive(Props, Clone, PartialEq)]
@@ -46,15 +47,20 @@ pub struct InputNumberProps {
 /// InputNumber component for numeric input with controls
 #[component]
 pub fn InputNumber(props: InputNumberProps) -> Element {
-    let mut class_names = vec!["el-input-number".to_string()];
-    if props.disabled { class_names.push("is-disabled".to_string()); }
-    class_names.push(format!("el-input-number--{}", props.size));
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let size_class = format!("el-input-number--{}", props.size);
+    let class_string = ClassBuilder::new("el-input-number")
+        .add_class(&size_class)
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
+
+    let style_string = style_str(&props.style);
+    let on_change = props.on_change;
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             if props.controls {
                 span {
                     class: "el-input-number__decrease",
@@ -62,9 +68,7 @@ pub fn InputNumber(props: InputNumberProps) -> Element {
                     onclick: move |_| {
                         if !props.disabled {
                             let new_val = (props.model_value - props.step).max(props.min);
-                            if let Some(handler) = props.on_change {
-                                handler.call(new_val);
-                            }
+                            fire_event(&on_change, new_val);
                         }
                     },
                     i { class: "el-icon-minus" }
@@ -82,9 +86,7 @@ pub fn InputNumber(props: InputNumberProps) -> Element {
                     disabled: props.disabled,
                     onchange: move |e| {
                         if let Ok(val) = e.value().parse::<f64>() {
-                            if let Some(handler) = props.on_change {
-                                handler.call(val);
-                            }
+                            fire_event(&on_change, val);
                         }
                     },
                 }
@@ -96,9 +98,7 @@ pub fn InputNumber(props: InputNumberProps) -> Element {
                     onclick: move |_| {
                         if !props.disabled {
                             let new_val = (props.model_value + props.step).min(props.max);
-                            if let Some(handler) = props.on_change {
-                                handler.call(new_val);
-                            }
+                            fire_event(&on_change, new_val);
                         }
                     },
                     i { class: "el-icon-plus" }

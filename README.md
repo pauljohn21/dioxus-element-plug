@@ -33,6 +33,8 @@
 - 🎯 **Controlled component pattern** — Parent owns state, communicates via `EventHandler`
 - 📱 **Responsive design** — 24-column grid system
 - ⚡ **Zero SCSS dependencies** — No runtime CSS compilation
+- 🌙 **Built-in dark mode** — `Theme::dark()` and `Theme::light()` presets
+- 🔣 **Element Plus Icons** — Optional `icons` feature with 137+ SVG icons
 
 ## Quick Start
 
@@ -41,13 +43,25 @@
 ```toml
 [dependencies]
 dioxus = { version = "0.7", features = ["web"] }
-dioxus-element-plug = "0.2.0"
+dioxus-element-plug = "0.3"
 ```
 
 Or from GitHub:
 
 ```toml
 dioxus-element-plug = { git = "https://github.com/pauljohn21/dioxus-element-plug.git" }
+```
+
+#### Feature Flags
+
+- `icons` (default) — Enable Element Plus icons support via `element-icons` crate
+- `web` — Web platform support
+- `server` — Server-side rendering support
+
+To disable icons:
+
+```toml
+dioxus-element-plug = { version = "0.3", default-features = false, features = ["web"] }
 ```
 
 ### 2. Generate styles
@@ -70,21 +84,12 @@ fn App() -> Element {
 
 Tree-shaking — generate only what you need:
 
-```rust
-let styles = CompleteStyleManager::new()
-    .generate_styles_for_components(&["button", "input", "alert"]);
-```
-
-**Option B: CDN (quick prototyping)**
+> **Note:** `generate_styles_for_components()` is **deprecated** in 0.3.0 — it currently
+> returns the complete stylesheet (114 components). Per-component tree-shaking will
+> return in 0.4.0. For now, prefer `generate_complete_styles()`:
 
 ```rust
-rsx! {
-    document::Link {
-        rel: "stylesheet",
-        href: "//unpkg.com/element-plus@2.4.4/dist/index.css"
-    }
-    Button { variant: ButtonVariant::Primary, "Click me!" }
-}
+let styles = CompleteStyleManager::new().generate_complete_styles();
 ```
 
 ### 3. Use components
@@ -293,17 +298,73 @@ rsx! {
 }
 ```
 
+### Dark Mode
+
+Built-in dark mode support with `Theme::dark()` and `Theme::light()`:
+
+```rust
+use dioxus::prelude::*;
+use dioxus_element_plug::prelude::*;
+
+fn App() -> Element {
+    let mut is_dark = use_signal(|| false);
+
+    let theme = if is_dark() { Theme::dark() } else { Theme::light() };
+    let styles = CompleteStyleManager::new()
+        .with_theme(theme)
+        .generate_complete_styles();
+
+    rsx! {
+        style { "{styles}" }
+        div {
+            style: if is_dark() {
+                "background-color: #141414; min-height: 100vh; padding: 24px;"
+            } else {
+                "background-color: #f5f7fa; min-height: 100vh; padding: 24px;"
+            },
+            Button {
+                variant: ButtonVariant::Primary,
+                on_click: move |_| is_dark.set(!is_dark()),
+                if is_dark() { "Switch to Light" } else { "Switch to Dark" }
+            }
+        }
+    }
+}
+```
+
 ## Theme Customization
+
+Since 0.3.0, `Theme` has 50 fields. Use `ThemeBuilder` for a fluent API, or the
+struct update syntax `..Theme::default()` to override only what you need:
+
+```rust
+use dioxus_element_plug::{ThemeBuilder, CompleteStyleManager};
+
+let custom_theme = ThemeBuilder::new()
+    .primary_color("#1890ff")
+    .font_size_base("16px")
+    .border_radius_base("6px")
+    .build();
+
+let styles = CompleteStyleManager::new()
+    .with_theme(custom_theme)
+    .generate_complete_styles();
+```
+
+Or with struct update syntax:
 
 ```rust
 use dioxus_element_plug::{Theme, CompleteStyleManager};
 
-let custom_theme = Theme::new()
-    .with_primary_color("#1890ff")
-    .with_font_size("16px");
+let dark = Theme {
+    color_white: "#141414",
+    color_black: "#ffffff",
+    color_text_primary: "#E5EAF3",
+    ..Theme::default()
+};
 
 let styles = CompleteStyleManager::new()
-    .with_theme(custom_theme)
+    .with_theme(dark)
     .generate_complete_styles();
 ```
 
@@ -312,7 +373,8 @@ let styles = CompleteStyleManager::new()
 **Production Ready** — 107+ components with pure Rust styling.
 
 - ✅ 107+ components via `#[component]` macro
-- ✅ 96 component files in `src/components/`
+- ✅ 97 component files in `src/components/`
+- ✅ 137+ icons via `element-icons` crate
 - ✅ Full Element Plus design system compatibility
 - ✅ Pure Rust CSS generation (zero runtime overhead)
 - ✅ Controlled component pattern throughout
@@ -323,10 +385,11 @@ let styles = CompleteStyleManager::new()
 ```
 dioxus-element-plug/
 ├── src/
-│   ├── components/     # 107+ Element Plus style components (96 files)
+│   ├── components/     # 107+ Element Plus style components (97 files)
 │   ├── styles/          # Modular CSS constants (colors, spacing, shadows, etc.)
 │   ├── style_system.rs  # Pure Rust CSS generation (Theme, CompleteStyleManager)
 │   └── lib.rs           # Crate entry point + prelude module
+├── element-icons/       # Element Plus icons crate (137+ SVG icons)
 ├── examples/
 │   ├── component-showcase/  # Component verification (13 categories)
 │   └── theme-switcher/      # Theme switching demo (5 themes)

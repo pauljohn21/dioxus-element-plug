@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Pagination props
 #[derive(Props, Clone, PartialEq)]
@@ -65,13 +66,16 @@ pub struct PaginationProps {
 /// Pagination component for navigating paged data
 #[component]
 pub fn Pagination(props: PaginationProps) -> Element {
-    let mut class_names = vec!["el-pagination".to_string()];
-    if props.small { class_names.push("el-pagination--small".to_string()); }
-    if props.disabled { class_names.push("is-disabled".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-pagination")
+        .add_if("el-pagination--small", props.small)
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+    let on_current_change = props.on_current_change;
 
     let total_pages = if props.page_size > 0 {
-        (props.total + props.page_size - 1) / props.page_size
+        props.total.div_ceil(props.page_size)
     } else {
         1
     };
@@ -79,8 +83,8 @@ pub fn Pagination(props: PaginationProps) -> Element {
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             role: "pagination",
 
             if props.show_total {
@@ -96,9 +100,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
                 disabled: props.disabled || props.current_page <= 1,
                 onclick: move |_| {
                     if !props.disabled && props.current_page > 1 {
-                        if let Some(handler) = props.on_current_change {
-                            handler.call(props.current_page - 1);
-                        }
+                        fire_event(&on_current_change, props.current_page - 1);
                     }
                 },
                 "‹"
@@ -116,9 +118,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
                         },
                         onclick: move |_| {
                             if !props.disabled {
-                                if let Some(handler) = props.on_current_change {
-                                    handler.call(page);
-                                }
+                                fire_event(&on_current_change, page);
                             }
                         },
                         "{page}"
@@ -135,9 +135,7 @@ pub fn Pagination(props: PaginationProps) -> Element {
                 disabled: props.disabled || props.current_page >= total_pages,
                 onclick: move |_| {
                     if !props.disabled && props.current_page < total_pages {
-                        if let Some(handler) = props.on_current_change {
-                            handler.call(props.current_page + 1);
-                        }
+                        fire_event(&on_current_change, props.current_page + 1);
                     }
                 },
                 "›"
