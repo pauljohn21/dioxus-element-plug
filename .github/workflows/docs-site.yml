@@ -28,7 +28,7 @@ jobs:
           targets: wasm32-unknown-unknown
 
       - name: Install Dioxus CLI
-        run: cargo install dioxus-cli@0.7.6 --locked
+        run: cargo install dioxus-cli@0.7.9 --locked
 
       - name: Build Documentation Site
         working-directory: ./docs-site
