@@ -1,7 +1,9 @@
-//! Component Showcase - 验证 dioxus-element-plug v0.2.0 的主要组件功能
+//! Component Showcase - 验证 dioxus-element-plug v0.3.0 的主要组件功能
 //!
 //! 覆盖组件：Button, Input, Select, Switch, Alert, Tag, Card,
 //! Dialog, Table, Tree, Cascader, Transfer, Progress
+//!
+//! 特性：展示 icons 特性集成（Loading, QuestionFilled, CircleCheck 等 SVG 图标）
 
 use dioxus::prelude::*;
 use dioxus_element_plug::prelude::*;
@@ -85,10 +87,17 @@ fn ButtonSection() -> Element {
             }
 
             div {
-                style: "display: flex; flex-wrap: wrap; gap: 12px; align-items: center;",
+                style: "display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px;",
 
                 Button { variant: ButtonVariant::Primary, disabled: true, "Disabled" }
                 Button { variant: ButtonVariant::Primary, round: true, "Round" }
+            }
+
+            div {
+                style: "display: flex; flex-wrap: wrap; gap: 12px; align-items: center;",
+
+                Button { variant: ButtonVariant::Primary, loading: true, "Loading" }
+                Button { variant: ButtonVariant::Primary, loading: true, "" }
             }
         }
     }
