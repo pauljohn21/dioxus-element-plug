@@ -4,18 +4,64 @@
 /// Generate complete Element Plus styles with all components
 pub fn all_styles() -> String {
     let mut css = String::new();
-    
+
     // CSS Reset and theme variables
     css.push_str(create_css_reset().as_str());
     css.push_str("\n\n");
-    
+
     // Core theme variables
     css.push_str(create_theme_variables().as_str());
     css.push_str("\n\n");
-    
+
     // Component-specific styles
     css.push_str(generate_all_component_styles().as_str());
-    
+
+    css
+}
+
+/// Generate all component styles
+fn generate_all_component_styles() -> String {
+    let mut css = String::new();
+
+    // Button styles
+    css.push_str(button_styles());
+    css.push_str("\n\n");
+
+    // Input styles
+    css.push_str(input_styles());
+    css.push_str("\n\n");
+
+    // Form styles
+    css.push_str(form_styles());
+    css.push_str("\n\n");
+
+    // DatePicker styles
+    css.push_str(date_picker_styles());
+    css.push_str("\n\n");
+
+    // TimePicker styles
+    css.push_str(time_picker_styles());
+    css.push_str("\n\n");
+
+    // Layout styles
+    css.push_str(layout_styles());
+    css.push_str("\n\n");
+
+    // Data display styles
+    css.push_str(data_display_styles());
+    css.push_str("\n\n");
+
+    // Feedback styles
+    css.push_str(feedback_styles());
+    css.push_str("\n\n");
+
+    // Navigation styles
+    css.push_str(navigation_styles());
+    css.push_str("\n\n");
+
+    // Other component styles
+    css.push_str(additional_styles());
+
     css
 }
 
@@ -169,43 +215,6 @@ fn create_theme_variables() -> String {
     --el-transition-color: color var(--el-transition-duration-fast) var(--el-transition-function-ease-in-out-bezier);
 }
 "#.to_string()
-}
-
-fn generate_all_component_styles() -> String {
-    let mut css = String::new();
-    
-    // Button styles
-    css.push_str(button_styles());
-    css.push_str("\n\n");
-    
-    // Input styles
-    css.push_str(input_styles());
-    css.push_str("\n\n");
-    
-    // Form styles
-    css.push_str(form_styles());
-    css.push_str("\n\n");
-    
-    // Layout styles
-    css.push_str(layout_styles());
-    css.push_str("\n\n");
-    
-    // Data display styles
-    css.push_str(data_display_styles());
-    css.push_str("\n\n");
-    
-    // Feedback styles
-    css.push_str(feedback_styles());
-    css.push_str("\n\n");
-    
-    // Navigation styles
-    css.push_str(navigation_styles());
-    css.push_str("\n\n");
-    
-    // Other component styles
-    css.push_str(additional_styles());
-    
-    css
 }
 
 pub fn button_styles() -> &'static str {
@@ -413,12 +422,75 @@ pub fn form_styles() -> &'static str {
     box-sizing: border-box;
 }
 
+.el-form--inline {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.el-form--inline .el-form-item {
+    display: inline-flex;
+    margin-right: 10px;
+    vertical-align: top;
+}
+
+.el-form--horizontal .el-form-item {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
+.el-form--label-top .el-form-item {
+    flex-direction: column;
+}
+
+.el-form--label-top .el-form-item__label {
+    text-align: left;
+    padding: 0 0 8px 0;
+    line-height: 1.5;
+}
+
+.el-form--label-left .el-form-item__label {
+    text-align: left;
+}
+
+.el-form--label-right .el-form-item__label {
+    text-align: right;
+}
+
+/* Form Item Base Styles */
 .el-form-item {
     margin-bottom: 22px;
     display: flex;
     flex-direction: column;
 }
 
+.el-form-item--large {
+    margin-bottom: 24px;
+}
+
+.el-form-item--large .el-form-item__label {
+    line-height: 44px;
+    font-size: var(--el-font-size-medium);
+}
+
+.el-form-item--large .el-form-item__content {
+    line-height: 44px;
+}
+
+.el-form-item--small {
+    margin-bottom: 18px;
+}
+
+.el-form-item--small .el-form-item__label {
+    line-height: 32px;
+    font-size: var(--el-font-size-small);
+}
+
+.el-form-item--small .el-form-item__content {
+    line-height: 32px;
+}
+
+/* Form Item Label */
 .el-form-item__label {
     text-align: right;
     vertical-align: middle;
@@ -428,8 +500,17 @@ pub fn form_styles() -> &'static str {
     line-height: 40px;
     padding: 0 12px 0 0;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
+/* Required marker */
+.el-form-item__required {
+    color: var(--el-color-danger);
+    margin-right: 4px;
+    font-weight: bold;
+}
+
+/* Form Item Content */
 .el-form-item__content {
     line-height: 40px;
     position: relative;
@@ -438,18 +519,32 @@ pub fn form_styles() -> &'static str {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    min-width: 0;
 }
 
+/* Validation States */
 .el-form-item.is-required > .el-form-item__label:before {
     content: '*';
     color: var(--el-color-danger);
     margin-right: 4px;
 }
 
-.el-form-item.is-error .el-input__wrapper {
+.el-form-item.is-error .el-input__wrapper,
+.el-form-item.is-error .el-textarea__inner {
     box-shadow: 0 0 0 1px var(--el-color-danger) inset;
 }
 
+.el-form-item.is-success .el-input__wrapper,
+.el-form-item.is-success .el-textarea__inner {
+    box-shadow: 0 0 0 1px var(--el-color-success) inset;
+}
+
+.el-form-item.is-validating .el-input__wrapper,
+.el-form-item.is-validating .el-textarea__inner {
+    box-shadow: 0 0 0 1px var(--el-color-primary) inset;
+}
+
+/* Error Message */
 .el-form-item__error {
     color: var(--el-color-danger);
     font-size: var(--el-font-size-extra-small);
@@ -458,6 +553,378 @@ pub fn form_styles() -> &'static str {
     position: absolute;
     top: 100%;
     left: 0;
+    z-index: 1;
+}
+
+.el-form-item__error--inline {
+    position: relative;
+    top: auto;
+    left: auto;
+    display: inline-block;
+    margin-left: 10px;
+    padding-top: 0;
+}
+
+/* Form Item Label Position Modifiers */
+.el-form-item--label-top {
+    flex-direction: column;
+}
+
+.el-form-item--label-top .el-form-item__label {
+    text-align: left;
+    padding: 0 0 8px 0;
+    line-height: 1.5;
+}
+
+.el-form-item--label-left .el-form-item__label {
+    text-align: left;
+}
+
+.el-form-item--label-right .el-form-item__label {
+    text-align: right;
+}
+"#
+}
+
+pub fn date_picker_styles() -> &'static str {
+    r#"/* DatePicker Component Styles */
+
+/* Date Editor */
+.el-date-editor {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+}
+
+.el-date-editor--date {
+    width: 220px;
+}
+
+.el-date-editor--large {
+    width: 240px;
+}
+
+.el-date-editor--large .el-input__inner {
+    height: 40px;
+    line-height: 40px;
+}
+
+.el-date-editor--small {
+    width: 200px;
+}
+
+.el-date-editor--small .el-input__inner {
+    height: 32px;
+    line-height: 32px;
+}
+
+.el-date-editor.is-active {
+    border-color: var(--el-color-primary);
+}
+
+.el-date-editor.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Picker Panel */
+.el-picker-panel {
+    position: absolute;
+    z-index: 2000;
+    background-color: var(--el-color-white);
+    border: 1px solid var(--el-border-color-light);
+    border-radius: var(--el-border-radius-base);
+    box-shadow: var(--el-box-shadow-light);
+    margin-top: 5px;
+    min-width: 322px;
+}
+
+.el-date-picker {
+    width: 322px;
+}
+
+/* Panel Header */
+.el-picker-panel__header {
+    position: relative;
+    text-align: center;
+    height: 44px;
+    line-height: 44px;
+    border-bottom: 1px solid var(--el-border-color-light);
+    padding: 0 12px;
+}
+
+.el-picker-panel__icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 0 5px;
+    line-height: 22px;
+    margin-top: 10px;
+}
+
+.el-picker-panel__icon-btn:hover {
+    color: var(--el-color-primary);
+}
+
+.el-date-picker__prev-year {
+    float: left;
+}
+
+.el-date-picker__prev-month {
+    float: left;
+    margin-left: 5px;
+}
+
+.el-date-picker__next-month {
+    float: right;
+    margin-right: 5px;
+}
+
+.el-date-picker__next-year {
+    float: right;
+}
+
+.el-date-picker__header-label {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--el-text-color-primary);
+    padding: 0 5px;
+    cursor: pointer;
+}
+
+.el-date-picker__header-label:hover {
+    color: var(--el-color-primary);
+}
+
+/* Date Table */
+.el-date-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    table-layout: fixed;
+}
+
+.el-date-table th {
+    padding: 5px;
+    color: var(--el-text-color-regular);
+    font-weight: 400;
+    border-bottom: 1px solid var(--el-border-color-light);
+    text-align: center;
+}
+
+.el-date-table td {
+    width: 32px;
+    height: 30px;
+    padding: 4px 0;
+    box-sizing: border-box;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.el-date-table td div {
+    height: 30px;
+    padding: 3px 0;
+    box-sizing: border-box;
+}
+
+.el-date-table td span {
+    width: 24px;
+    height: 24px;
+    display: block;
+    margin: 0 auto;
+    line-height: 24px;
+    border-radius: 50%;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.el-date-table td.available:hover {
+    color: var(--el-color-primary);
+}
+
+.el-date-table td.available:hover span {
+    background-color: var(--el-color-primary-light-9);
+}
+
+.el-date-table td.current:not(.disabled) span {
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+}
+
+.el-date-table td.selected span {
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+}
+
+.el-date-table td.prev-month,
+.el-date-table td.next-month {
+    color: var(--el-text-color-placeholder);
+}
+
+.el-date-table td.disabled {
+    background-color: var(--el-fill-color-light);
+    cursor: not-allowed;
+    color: var(--el-text-color-placeholder);
+}
+
+/* Panel Footer */
+.el-picker-panel__footer {
+    border-top: 1px solid var(--el-border-color-light);
+    padding: 10px;
+    text-align: right;
+    background-color: var(--el-color-white);
+}
+
+.el-picker-panel__footer .el-button {
+    margin-left: 10px;
+}
+"#
+}
+
+pub fn time_picker_styles() -> &'static str {
+    r#"/* TimePicker Component Styles */
+
+/* Time Editor */
+.el-time-editor {
+    position: relative;
+    display: inline-block;
+    text-align: left;
+}
+
+.el-time-editor--time {
+    width: 180px;
+}
+
+.el-time-editor--large {
+    width: 200px;
+}
+
+.el-time-editor--large .el-input__inner {
+    height: 40px;
+    line-height: 40px;
+}
+
+.el-time-editor--small {
+    width: 160px;
+}
+
+.el-time-editor--small .el-input__inner {
+    height: 32px;
+    line-height: 32px;
+}
+
+.el-time-editor.is-active {
+    border-color: var(--el-color-primary);
+}
+
+.el-time-editor.is-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Time Panel */
+.el-time-panel {
+    position: absolute;
+    z-index: 2000;
+    background-color: var(--el-color-white);
+    border: 1px solid var(--el-border-color-light);
+    border-radius: var(--el-border-radius-base);
+    box-shadow: var(--el-box-shadow-light);
+    margin-top: 5px;
+    width: 180px;
+}
+
+/* Time Spinner */
+.el-time-spinner {
+    display: flex;
+    width: 100%;
+    height: 180px;
+    overflow: hidden;
+}
+
+.el-time-spinner__wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    border-right: 1px solid var(--el-border-color-light);
+    position: relative;
+}
+
+.el-time-spinner__wrapper:last-child {
+    border-right: none;
+}
+
+.el-time-spinner__list {
+    flex: 1;
+    overflow-y: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    scroll-behavior: smooth;
+}
+
+.el-time-spinner__list::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.el-time-spinner__item {
+    height: 32px;
+    line-height: 32px;
+    font-size: 12px;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+}
+
+.el-time-spinner__item:hover {
+    background-color: var(--el-fill-color-light);
+    color: var(--el-color-primary);
+}
+
+.el-time-spinner__item.active {
+    background-color: var(--el-color-primary);
+    color: var(--el-color-white);
+}
+
+.el-time-spinner__item.disabled {
+    color: var(--el-text-color-placeholder);
+    cursor: not-allowed;
+}
+
+/* Time Panel Footer */
+.el-time-panel__footer {
+    border-top: 1px solid var(--el-border-color-light);
+    padding: 8px;
+    text-align: right;
+    background-color: var(--el-color-white);
+}
+
+.el-time-panel__btn {
+    border: none;
+    background: transparent;
+    color: var(--el-text-color-regular);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-left: 5px;
+}
+
+.el-time-panel__btn.confirm {
+    color: var(--el-color-primary);
+    font-weight: 500;
+}
+
+.el-time-panel__btn.cancel {
+    color: var(--el-text-color-secondary);
+}
+
+.el-time-panel__btn:hover {
+    color: var(--el-color-primary);
 }
 "#
 }
@@ -1230,7 +1697,7 @@ mod tests {
     }
     
     /// 重构一致性测试 - 验证输出与基准相同
-    /// 
+    ///
     /// 注意：此测试在重构期间标记为 #[ignore]，重构完成后启用
     #[test]
     #[ignore = "重构期间禁用，Phase 5.3 启用"]
