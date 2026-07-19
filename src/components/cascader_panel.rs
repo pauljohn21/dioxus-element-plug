@@ -223,7 +223,7 @@ mod tests {
 
     #[test]
     fn test_path_join() {
-        let values = vec!["zj".to_string(), "hz".to_string()];
+        let values = ["zj".to_string(), "hz".to_string()];
         let joined = values.join(" / ");
         assert_eq!(joined, "zj / hz");
     }

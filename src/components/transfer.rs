@@ -231,7 +231,6 @@ pub fn Transfer(props: TransferProps) -> Element {
                 let move_right = {
                     let left_selected_keys = left_selected_keys.clone();
                     let current_right_keys = current_right_keys.clone();
-                    let on_change = on_change.clone();
                     move |_| {
                         // Move selected left items to right
                         let mut new_right = current_right_keys.clone();
