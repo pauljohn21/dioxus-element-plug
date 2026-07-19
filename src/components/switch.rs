@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Switch size variants
 #[derive(Clone, PartialEq)]
@@ -94,36 +95,21 @@ pub struct SwitchProps {
 /// ```
 #[component]
 pub fn Switch(props: SwitchProps) -> Element {
-    let mut class_names = vec!["el-switch".to_string()];
+    let class_string = ClassBuilder::new("el-switch")
+        .add_class(props.size.as_class())
+        .add_if("is-checked", props.model_value)
+        .add_if("is-disabled", props.disabled)
+        .add_if("is-loading", props.loading)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let size_class = props.size.as_class();
-    if !size_class.is_empty() {
-        class_names.push(size_class.to_string());
-    }
-
-    if props.model_value {
-        class_names.push("is-checked".to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if props.loading {
-        class_names.push("is-loading".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-
-    let mut style_parts = vec![props.style.clone().unwrap_or_default()];
+    let mut style_parts = vec![style_str(&props.style)];
     if let Some(ref width) = props.width {
         style_parts.push(format!("width: {};", width));
     }
     let style_string = style_parts.join("");
+
+    let on_change = props.on_change;
 
     rsx! {
         div {
@@ -133,9 +119,7 @@ pub fn Switch(props: SwitchProps) -> Element {
             aria_checked: "{props.model_value}",
             onclick: move |_| {
                 if !props.disabled && !props.loading {
-                    if let Some(handler) = props.on_change {
-                        handler.call(!props.model_value);
-                    }
+                    fire_event(&on_change, !props.model_value);
                 }
             },
             div {

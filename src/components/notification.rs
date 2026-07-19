@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 // Notification CSS class constants
 pub const NOTIFICATION: &str = "el-notification";
@@ -71,18 +72,15 @@ pub struct NotificationProps {
 /// after a specified duration.
 #[component]
 pub fn Notification(props: NotificationProps) -> Element {
-    let mut class_names = vec![NOTIFICATION.to_string()];
+    let pos_class = format!("is-{}", props.position);
+    let class_string = ClassBuilder::new("el-notification")
+        .add_class(props.notification_type.as_class())
+        .add_class(&pos_class)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    class_names.push(props.notification_type.as_class().to_string());
-
-    class_names.push(format!("is-{}", props.position));
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
+    let style_string = style_str(&props.style);
+    let on_close = props.on_close;
 
     let icon_class = match props.notification_type {
         NotificationType::Success => "el-icon-check-circle",
@@ -126,9 +124,7 @@ pub fn Notification(props: NotificationProps) -> Element {
                     class: "el-notification__close-btn",
                     r#type: "button",
                     onclick: move |_| {
-                        if let Some(handler) = props.on_close {
-                            handler.call(());
-                        }
+                        fire_event(&on_close, ());
                     },
                     "×"
                 }

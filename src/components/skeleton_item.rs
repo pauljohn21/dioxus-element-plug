@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// SkeletonItem props
 #[derive(Props, Clone, PartialEq)]
@@ -27,15 +28,13 @@ pub struct SkeletonItemProps {
 /// ```
 #[component]
 pub fn SkeletonItem(props: SkeletonItemProps) -> Element {
-    let mut class_names = vec!["el-skeleton__item".to_string()];
-    class_names.push(format!("el-skeleton__{}", props.variant));
+    let variant_class = format!("el-skeleton__{}", props.variant);
+    let class_string = ClassBuilder::new("el-skeleton__item")
+        .add_class(&variant_class)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {

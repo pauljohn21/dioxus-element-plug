@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Carousel props
 #[derive(Props, Clone, PartialEq)]
@@ -51,14 +52,15 @@ pub struct CarouselProps {
 /// Carousel component for image/content slideshows
 #[component]
 pub fn Carousel(props: CarouselProps) -> Element {
-    let mut class_names = vec!["el-carousel".to_string()];
-    if props.carousel_type == "card" { class_names.push("el-carousel--card".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-carousel")
+        .add_if("el-carousel--card", props.carousel_type == "card")
+        .add_opt(props.class.as_ref())
+        .build();
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: "height: {props.height}; {props.style.clone().unwrap_or_default()}",
+            class: "{class_string}",
+            style: "height: {props.height}; {style_str(&props.style)}",
             div {
                 class: "el-carousel__container",
                 style: "height: {props.height};",

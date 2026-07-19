@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{style_str, fire_event};
 
 /// Drawer direction
 #[derive(Clone, PartialEq)]
@@ -64,12 +65,14 @@ pub fn Drawer(props: DrawerProps) -> Element {
         return rsx! {};
     }
 
+    let style_str_val = style_str(&props.style);
     let drawer_style = match props.direction {
-        DrawerDirection::Rtl => format!("width: {}; right: 0; top: 0; bottom: 0; {}", props.size, props.style.clone().unwrap_or_default()),
-        DrawerDirection::Ltr => format!("width: {}; left: 0; top: 0; bottom: 0; {}", props.size, props.style.clone().unwrap_or_default()),
-        DrawerDirection::Ttb => format!("height: {}; top: 0; left: 0; right: 0; {}", props.size, props.style.clone().unwrap_or_default()),
-        DrawerDirection::Btt => format!("height: {}; bottom: 0; left: 0; right: 0; {}", props.size, props.style.clone().unwrap_or_default()),
+        DrawerDirection::Rtl => format!("width: {}; right: 0; top: 0; bottom: 0; {}", props.size, style_str_val),
+        DrawerDirection::Ltr => format!("width: {}; left: 0; top: 0; bottom: 0; {}", props.size, style_str_val),
+        DrawerDirection::Ttb => format!("height: {}; top: 0; left: 0; right: 0; {}", props.size, style_str_val),
+        DrawerDirection::Btt => format!("height: {}; bottom: 0; left: 0; right: 0; {}", props.size, style_str_val),
     };
+    let on_close = props.on_close;
 
     rsx! {
         div {
@@ -77,9 +80,7 @@ pub fn Drawer(props: DrawerProps) -> Element {
             style: "position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2000;",
             onclick: move |_| {
                 if props.close_on_click_modal {
-                    if let Some(handler) = props.on_close {
-                        handler.call(());
-                    }
+                    fire_event(&on_close, ());
                 }
             },
             div {
@@ -94,9 +95,7 @@ pub fn Drawer(props: DrawerProps) -> Element {
                             button {
                                 class: "el-drawer__close-btn",
                                 onclick: move |_| {
-                                    if let Some(handler) = props.on_close {
-                                        handler.call(());
-                                    }
+                                    fire_event(&on_close, ());
                                 },
                                 "×"
                             }

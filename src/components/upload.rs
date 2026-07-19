@@ -2,16 +2,11 @@ use dioxus::prelude::*;
 use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Upload type variants
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone, PartialEq, Debug, Default)]
 pub enum UploadType {
+    #[default]
     Select,
     Drag,
-}
-
-impl Default for UploadType {
-    fn default() -> Self {
-        UploadType::Select
-    }
 }
 
 /// File list item status
@@ -199,10 +194,10 @@ pub fn Upload(props: UploadProps) -> Element {
 
     let style_string = style_str(&props.style);
 
-    let on_change = props.on_change.clone();
-    let on_remove = props.on_remove.clone();
-    let on_preview = props.on_preview.clone();
-    let on_exceed = props.on_exceed.clone();
+    let on_change = props.on_change;
+    let on_remove = props.on_remove;
+    let on_preview = props.on_preview;
+    let on_exceed = props.on_exceed;
 
     // Handle file selection
     let mut handle_file_select = move |files: Vec<UploadFile>| {

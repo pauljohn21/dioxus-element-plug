@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str};
+
 /// Transfer data item
 #[derive(Clone, PartialEq)]
 pub struct TransferItem {
@@ -95,10 +97,10 @@ pub struct TransferProps {
 /// ```
 #[component]
 pub fn Transfer(props: TransferProps) -> Element {
-    let mut class_names = vec!["el-transfer".to_string()];
-    if let Some(ref c) = props.class {
-        class_names.push(c.clone());
-    }
+    let class_string = ClassBuilder::new("el-transfer")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     // Split data into left and right panels
     let right_keys: std::collections::HashSet<&String> = props.model_value.iter().collect();
@@ -132,8 +134,8 @@ pub fn Transfer(props: TransferProps) -> Element {
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
 
             // Left panel
             div {

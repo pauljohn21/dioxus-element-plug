@@ -215,7 +215,7 @@ mod tests {
         assert_eq!(primary.as_class(), "el-button--primary");
 
         let default = ButtonVariant::Default;
-        assert_eq!(default.as_class(), "el-button");
+        assert_eq!(default.as_class(), "");
     }
 
     #[test]

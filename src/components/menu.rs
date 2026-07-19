@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str, fire_event};
+
 /// Menu mode
 #[derive(Clone, PartialEq)]
 pub enum MenuMode {
@@ -63,17 +65,21 @@ pub struct MenuProps {
 /// Menu component for navigation
 #[component]
 pub fn Menu(props: MenuProps) -> Element {
-    let mut class_names = vec!["el-menu".to_string()];
-    class_names.push(format!("el-menu--{}", props.mode.as_str()));
-    if props.collapse { class_names.push("el-menu--collapse".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let mode_class = format!("el-menu--{}", props.mode.as_str());
+    let class_string = ClassBuilder::new("el-menu")
+        .add_class(&mode_class)
+        .add_if("el-menu--collapse", props.collapse)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let mut style = props.style.clone().unwrap_or_default();
-    if let Some(ref bg) = props.background_color { style = format!("background-color: {}; {}", bg, style); }
+    let mut style = style_str(&props.style);
+    if let Some(ref bg) = props.background_color {
+        style = format!("background-color: {}; {}", bg, style);
+    }
 
     rsx! {
         ul {
-            class: "{class_names.join(\" \")}",
+            class: "{class_string}",
             style: "{style}",
             role: "menubar",
             {props.children}
@@ -109,21 +115,22 @@ pub struct MenuItemProps {
 /// MenuItem component for individual menu items
 #[component]
 pub fn MenuItem(props: MenuItemProps) -> Element {
-    let mut class_names = vec!["el-menu-item".to_string()];
-    if props.disabled { class_names.push("is-disabled".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-menu-item")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
     let index_clone = props.index.clone();
+    let on_click = props.on_click;
+    let disabled = props.disabled;
 
     rsx! {
         li {
-            class: "{class_names.join(\" \")}",
+            class: "{class_string}",
             role: "menuitem",
             onclick: move |_| {
-                if !props.disabled {
-                    if let Some(handler) = props.on_click {
-                        handler.call(index_clone.clone());
-                    }
+                if !disabled {
+                    fire_event(&on_click, index_clone.clone());
                 }
             },
             {props.children}
@@ -147,12 +154,13 @@ pub struct MenuItemGroupProps {
 /// MenuItemGroup component for grouping menu items
 #[component]
 pub fn MenuItemGroup(props: MenuItemGroupProps) -> Element {
-    let mut class_names = vec!["el-menu-item-group".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-menu-item-group")
+        .add_opt(props.class.as_ref())
+        .build();
 
     rsx! {
         li {
-            class: "{class_names.join(\" \")}",
+            class: "{class_string}",
             role: "menuitemgroup",
             if let Some(ref title) = props.title {
                 div { class: "el-menu-item-group__title", "{title}" }
@@ -189,13 +197,14 @@ pub struct SubMenuProps {
 /// SubMenu component for nested menu items
 #[component]
 pub fn SubMenu(props: SubMenuProps) -> Element {
-    let mut class_names = vec!["el-sub-menu".to_string()];
-    if props.disabled { class_names.push("is-disabled".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-sub-menu")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
     rsx! {
         li {
-            class: "{class_names.join(\" \")}",
+            class: "{class_string}",
             role: "menuitem",
             div {
                 class: "el-sub-menu__title",

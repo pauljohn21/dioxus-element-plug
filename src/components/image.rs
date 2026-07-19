@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Image fit type
 #[derive(Clone, PartialEq)]
@@ -68,15 +69,16 @@ pub struct ImageProps {
 /// Image component with preview support
 #[component]
 pub fn Image(props: ImageProps) -> Element {
-    let mut class_names = vec!["el-image".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
-    let class_string = class_names.join(" ");
+    let class_string = ClassBuilder::new("el-image")
+        .add_opt(props.class.as_ref())
+        .build();
     let fit_str = props.fit.as_str();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
             class: "{class_string}",
-            style: props.style.clone().unwrap_or_default(),
+            style: "{style_string}",
             img {
                 class: "el-image__inner",
                 src: "{props.src}",

@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Loading props
 #[derive(Props, Clone, PartialEq)]
@@ -34,15 +35,16 @@ pub struct LoadingProps {
 /// Loading component for displaying loading indicators
 #[component]
 pub fn Loading(props: LoadingProps) -> Element {
-    let mut class_names = vec!["el-loading".to_string()];
-    if props.fullscreen { class_names.push("el-loading--fullscreen".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
-    let class_string = class_names.join(" ");
+    let class_string = ClassBuilder::new("el-loading")
+        .add_if("el-loading--fullscreen", props.fullscreen)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
             class: "{class_string}",
-            style: props.style.clone().unwrap_or_default(),
+            style: "{style_string}",
             {props.children}
             if props.loading {
                 div {
@@ -77,13 +79,14 @@ pub struct LoadingDirectiveProps {
 /// LoadingDirective - standalone loading spinner
 #[component]
 pub fn LoadingDirective(props: LoadingDirectiveProps) -> Element {
-    let mut class_names = vec!["el-loading".to_string()];
-    if props.fullscreen { class_names.push("el-loading--fullscreen".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-loading")
+        .add_if("el-loading--fullscreen", props.fullscreen)
+        .add_opt(props.class.as_ref())
+        .build();
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
+            class: "{class_string}",
             style: "position: relative;",
             div {
                 class: "el-loading__mask",

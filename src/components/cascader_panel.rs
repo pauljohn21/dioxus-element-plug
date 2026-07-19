@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 pub use super::cascader::{CascaderOption, CascaderProps};
 
+use crate::components::common::{ClassBuilder, style_str};
+
 /// CascaderPanel props
 #[derive(Props, Clone, PartialEq)]
 pub struct CascaderPanelProps {
@@ -20,13 +22,15 @@ pub struct CascaderPanelProps {
 /// CascaderPanel component - core panel for cascader
 #[component]
 pub fn CascaderPanel(props: CascaderPanelProps) -> Element {
-    let mut class_names = vec!["el-cascader-panel".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-cascader-panel")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             div {
                 class: "el-cascader-menu",
                 for opt in props.options.iter() {

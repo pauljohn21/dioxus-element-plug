@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// InfiniteScroll props
 #[derive(Props, Clone, PartialEq)]
@@ -36,13 +37,16 @@ pub struct InfiniteScrollProps {
 /// InfiniteScroll component for lazy loading content
 #[component]
 pub fn InfiniteScroll(props: InfiniteScrollProps) -> Element {
-    let mut class_names = vec!["el-infinite-scroll".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-infinite-scroll")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+    let on_load = props.on_load;
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             {props.children}
             div {
                 class: "el-infinite-scroll__loading",
@@ -50,9 +54,7 @@ pub fn InfiniteScroll(props: InfiniteScrollProps) -> Element {
                     span {
                         class: "el-infinite-scroll__text",
                         onclick: move |_| {
-                            if let Some(handler) = props.on_load {
-                                handler.call(());
-                            }
+                            fire_event(&on_load, ());
                         },
                         "{props.loading_text}"
                     }

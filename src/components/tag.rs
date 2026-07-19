@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Tag type variants
 #[derive(Clone, PartialEq)]
@@ -122,52 +123,36 @@ pub struct TagProps {
 /// ```
 #[component]
 pub fn Tag(props: TagProps) -> Element {
-    let mut class_names = vec!["el-tag".to_string()];
+    let class_string = ClassBuilder::new("el-tag")
+        .add_class(props.tag_type.as_class())
+        .add_class(props.effect.as_class())
+        .add_class(props.size.as_class())
+        .add_if("is-round", props.round)
+        .add_if("is-hit", props.hit)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    class_names.push(props.tag_type.as_class().to_string());
-    class_names.push(props.effect.as_class().to_string());
-
-    let size_class = props.size.as_class();
-    if !size_class.is_empty() {
-        class_names.push(size_class.to_string());
-    }
-
-    if props.round {
-        class_names.push("is-round".to_string());
-    }
-
-    if props.hit {
-        class_names.push("is-hit".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-
-    let mut style_string = props.style.clone().unwrap_or_default();
+    let mut style_string = style_str(&props.style);
     if let Some(ref color) = props.color {
         style_string = format!("background-color: {}; border-color: {}; {}", color, color, style_string);
     }
+
+    let on_click = props.on_click;
+    let on_close = props.on_close;
 
     rsx! {
         span {
             class: "{class_string}",
             style: "{style_string}",
             onclick: move |event| {
-                if let Some(handler) = props.on_click {
-                    handler.call(event);
-                }
+                fire_event(&on_click, event);
             },
             {props.children}
             if props.closable {
                 span {
                     class: "el-tag__close",
                     onclick: move |event| {
-                        if let Some(handler) = props.on_close {
-                            handler.call(event);
-                        }
+                        fire_event(&on_close, event);
                     },
                     "×"
                 }

@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Collapse props
 #[derive(Props, Clone, PartialEq)]
@@ -27,14 +28,15 @@ pub struct CollapseProps {
 /// Collapse component for collapsible panels
 #[component]
 pub fn Collapse(props: CollapseProps) -> Element {
-    let mut class_names = vec!["el-collapse".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
-    let class_string = class_names.join(" ");
+    let class_string = ClassBuilder::new("el-collapse")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
             class: "{class_string}",
-            style: props.style.clone().unwrap_or_default(),
+            style: "{style_string}",
             role: "tablist",
             {props.children}
         }
@@ -71,18 +73,18 @@ pub struct CollapseItemProps {
 #[component]
 pub fn CollapseItem(props: CollapseItemProps) -> Element {
     let name_clone = props.name.clone();
+    let style_string = style_str(&props.style);
+    let on_click = props.on_click;
     rsx! {
         div {
             class: "el-collapse-item",
-            style: props.style.clone().unwrap_or_default(),
+            style: "{style_string}",
             div {
                 class: "el-collapse-item__header",
                 role: "tab",
                 onclick: move |_| {
                     if !props.disabled {
-                        if let Some(handler) = props.on_click {
-                            handler.call(name_clone.clone());
-                        }
+                        fire_event(&on_click, name_clone.clone());
                     }
                 },
                 "{props.title}"

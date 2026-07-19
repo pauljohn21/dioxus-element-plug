@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str, fire_event};
+
 // Card CSS class constants
 pub const CARD: &str = "el-card";
 pub const CARD_HEADER: &str = "el-card__header";
@@ -57,30 +59,26 @@ pub struct CardProps {
 /// ```
 #[component]
 pub fn Card(props: CardProps) -> Element {
-    let mut class_names = vec!["el-card".to_string()];
-    
-    class_names.push(format!("is-{}-shadow", props.shadow));
-    
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-    
-    let class_string = class_names.join(" ");
-    let card_style = props.style.unwrap_or_default();
-    let body_style = props.body_style.unwrap_or_default();
-    
+    let shadow_class = format!("is-{}-shadow", props.shadow);
+    let class_string = ClassBuilder::new("el-card")
+        .add_class(&shadow_class)
+        .add_opt(props.class.as_ref())
+        .build();
+    let card_style = style_str(&props.style);
+    let body_style = style_str(&props.body_style);
+
     rsx! {
         div {
             class: "{class_string}",
             style: "{card_style}",
-            
+
             if let Some(ref header_text) = props.header {
                 div {
                     class: "el-card__header",
                     "{header_text}"
                 }
             }
-            
+
             div {
                 class: "el-card__body",
                 style: "{body_style}",
@@ -135,53 +133,42 @@ pub struct PanelProps {
 /// related form controls or content sections.
 #[component]
 pub fn Panel(props: PanelProps) -> Element {
-    let mut class_names = vec!["el-panel".to_string()];
-    
-    class_names.push(format!("el-panel--{}", props.panel_type));
-    
-    if props.collapsible {
-        class_names.push("is-collapsible".to_string());
-    }
-    
-    if props.collapsed {
-        class_names.push("is-collapsed".to_string());
-    }
-    
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-    
-    let class_string = class_names.join(" ");
-    let style_string = props.style.unwrap_or_default();
-    
+    let panel_type_class = format!("el-panel--{}", props.panel_type);
+    let class_string = ClassBuilder::new("el-panel")
+        .add_class(&panel_type_class)
+        .add_if("is-collapsible", props.collapsible)
+        .add_if("is-collapsed", props.collapsed)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+    let on_toggle = props.on_toggle;
+
     rsx! {
         div {
             class: "{class_string}",
             style: "{style_string}",
-            
+
             if props.collapsible {
                 div {
                     class: "el-panel__header is-clickable",
                     onclick: move |event| {
-                        if let Some(handler) = props.on_toggle {
-                            handler.call(event);
-                        }
+                        fire_event(&on_toggle, event);
                     },
-                    
+
                     if let Some(ref title_text) = props.title {
                         h3 {
                             class: "el-panel__title",
                             "{title_text}"
                         }
                     }
-                    
+
                     if let Some(ref sub_text) = props.subtitle {
                         span {
                             class: "el-panel__subtitle",
                             "{sub_text}"
                         }
                     }
-                    
+
                     i {
                         class: if props.collapsed { "el-icon-arrow-down" } else { "el-icon-arrow-up" }
                     }
@@ -189,12 +176,12 @@ pub fn Panel(props: PanelProps) -> Element {
             } else if let Some(ref title_text) = props.title {
                 div {
                     class: "el-panel__header",
-                    
+
                     h3 {
                         class: "el-panel__title",
                         "{title_text}"
                     }
-                    
+
                     if let Some(ref sub_text) = props.subtitle {
                         span {
                             class: "el-panel__subtitle",
@@ -203,7 +190,7 @@ pub fn Panel(props: PanelProps) -> Element {
                     }
                 }
             }
-            
+
             if !props.collapsible || !props.collapsed {
                 div {
                     class: "el-panel__body",
@@ -259,28 +246,28 @@ pub struct BoxProps {
 /// padding, margin, borders, shadows, and background styling.
 #[component]
 pub fn Box(props: BoxProps) -> Element {
-    let mut styles = vec![props.style.unwrap_or_default()];
-    
+    let mut styles = vec![style_str(&props.style)];
+
     if let Some(padding) = props.padding {
         styles.push(format!("padding: {};", padding));
     }
-    
+
     if let Some(margin) = props.margin {
         styles.push(format!("margin: {};", margin));
     }
-    
+
     if let Some(border_radius) = props.border_radius {
         styles.push(format!("border-radius: {};", border_radius));
     }
-    
+
     if let Some(background) = props.background {
         styles.push(format!("background: {};", background));
     }
-    
+
     if let Some(border) = props.border {
         styles.push(format!("border: {};", border));
     }
-    
+
     if let Some(elevation) = props.elevation {
         let shadow = match elevation {
             0 => "none",
@@ -293,21 +280,15 @@ pub fn Box(props: BoxProps) -> Element {
         };
         styles.push(format!("box-shadow: {};", shadow));
     }
-    
+
     let style_string = styles.join("");
-    
-    let mut class_names = vec!["el-box".to_string()];
-    
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-    
-    if let Some(elevation) = props.elevation {
-        class_names.push(format!("el-box--elevation-{}", elevation));
-    }
-    
-    let class_string = class_names.join(" ");
-    
+
+    let elevation_class = props.elevation.map(|e| format!("el-box--elevation-{}", e));
+    let class_string = ClassBuilder::new("el-box")
+        .add_opt_str(elevation_class.as_deref())
+        .add_opt(props.class.as_ref())
+        .build();
+
     rsx! {
         div {
             class: "{class_string}",
@@ -365,60 +346,49 @@ pub struct AccordionProps {
 /// that can be expanded or collapsed by the user.
 #[component]
 pub fn Accordion(props: AccordionProps) -> Element {
-    let mut class_names = vec!["el-accordion".to_string()];
-    
-    if props.accordion {
-        class_names.push("el-accordion--multiple".to_string());
-    }
-    
-    if props.animated {
-        class_names.push("el-accordion--animated".to_string());
-    }
-    
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-    
-    let class_string = class_names.join(" ");
-    let style_string = props.style.unwrap_or_default();
-    
+    let class_string = ClassBuilder::new("el-accordion")
+        .add_if("el-accordion--multiple", props.accordion)
+        .add_if("el-accordion--animated", props.animated)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+    let on_change = props.on_change;
+
     rsx! {
         div {
             class: "{class_string}",
             style: "{style_string}",
-            
+
             for (index, item) in props.items.iter().enumerate() {
                 div {
                     class: "el-accordion__item",
-                    
+
                     if !props.accordion || props.active_index == Some(index) {
                         div {
                             class: "el-accordion__header",
-                            
+
                             button {
                                 class: "el-accordion__button",
                                 r#type: "button",
                                 disabled: item.disabled,
                                 onclick: move |_| {
-                                    if let Some(handler) = props.on_change {
-                                        handler.call(index);
-                                    }
+                                    fire_event(&on_change, index);
                                 },
-                                
+
                                 span {
                                     class: "el-accordion__title",
                                     "{item.title}"
                                 }
-                                
+
                                 i {
                                     class: "el-icon-arrow-down el-accordion__icon"
                                 }
                             }
                         }
-                        
+
                         div {
                             class: "el-accordion__content",
-                            
+
                             div {
                                 class: "el-accordion__body",
                                 "{item.content}"
@@ -427,22 +397,20 @@ pub fn Accordion(props: AccordionProps) -> Element {
                     } else {
                         div {
                             class: "el-accordion__header",
-                            
+
                             button {
                                 class: "el-accordion__button",
                                 r#type: "button",
                                 disabled: item.disabled,
                                 onclick: move |_| {
-                                    if let Some(handler) = props.on_change {
-                                        handler.call(index);
-                                    }
+                                    fire_event(&on_change, index);
                                 },
-                                
+
                                 span {
                                     class: "el-accordion__title",
                                     "{item.title}"
                                 }
-                                
+
                                 i {
                                     class: "el-icon-arrow-right el-accordion__icon"
                                 }

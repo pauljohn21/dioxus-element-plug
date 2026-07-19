@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Link type variants
 #[derive(Clone, PartialEq)]
@@ -87,30 +88,23 @@ pub struct LinkProps {
 /// ```
 #[component]
 pub fn Link(props: LinkProps) -> Element {
-    let mut class_names = vec!["el-link".to_string()];
-
-    let type_class = props.link_type.as_class();
-    if !type_class.is_empty() {
-        class_names.push(type_class.to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
+    let mut underline_class = "";
     match props.underline {
-        LinkUnderline::Always => class_names.push("is-underline".to_string()),
-        LinkUnderline::Never => class_names.push("is-never-underline".to_string()),
+        LinkUnderline::Always => underline_class = "is-underline",
+        LinkUnderline::Never => underline_class = "is-never-underline",
         LinkUnderline::Hover => {}
     }
 
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
+    let class_string = ClassBuilder::new("el-link")
+        .add_class(props.link_type.as_class())
+        .add_class(underline_class)
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
     let href = props.href.clone().unwrap_or_default();
+    let on_click = props.on_click;
 
     rsx! {
         a {
@@ -122,9 +116,7 @@ pub fn Link(props: LinkProps) -> Element {
                 if props.disabled {
                     return;
                 }
-                if let Some(handler) = props.on_click {
-                    handler.call(event);
-                }
+                fire_event(&on_click, event);
             },
             if let Some(ref icon) = props.icon {
                 i { class: "{icon} el-link__icon" }

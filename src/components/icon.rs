@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Icon props
 #[derive(Props, Clone, PartialEq)]
@@ -27,13 +28,12 @@ pub struct IconProps {
 /// Icon component for displaying icons
 #[component]
 pub fn Icon(props: IconProps) -> Element {
-    let mut class_names = vec!["el-icon".to_string()];
-    if let Some(ref name) = props.name {
-        class_names.push(name.clone());
-    }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-icon")
+        .add_opt(props.name.as_ref())
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let mut style_parts = vec![props.style.clone().unwrap_or_default()];
+    let mut style_parts = vec![style_str(&props.style)];
     if let Some(ref color) = props.color {
         style_parts.push(format!("color: {};", color));
     }
@@ -44,7 +44,7 @@ pub fn Icon(props: IconProps) -> Element {
 
     rsx! {
         i {
-            class: "{class_names.join(\" \")}",
+            class: "{class_string}",
             style: "{style_string}",
         }
     }

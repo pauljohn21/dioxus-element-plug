@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Avatar size variants
 #[derive(Clone, PartialEq)]
@@ -104,20 +105,13 @@ pub struct AvatarProps {
 /// ```
 #[component]
 pub fn Avatar(props: AvatarProps) -> Element {
-    let mut class_names = vec!["el-avatar".to_string()];
-    class_names.push(props.shape.as_class().to_string());
+    let class_string = ClassBuilder::new("el-avatar")
+        .add_class(props.shape.as_class())
+        .add_class(props.size.as_class())
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let size_class = props.size.as_class();
-    if !size_class.is_empty() {
-        class_names.push(size_class.to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
     let fit_str = props.fit.as_str();
 
     rsx! {

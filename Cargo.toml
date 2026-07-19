@@ -40,6 +40,9 @@ docs = []  # Minimal feature set for documentation generation
 dioxus = { version = "0.7", features = ["web"] }
 # manganis removed - using pure Rust styling
 
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+js-sys = "0.3"
+
 [dev-dependencies]
 console_error_panic_hook = "0.1"
 

@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Spin props
 #[derive(Props, Clone, PartialEq)]
@@ -30,16 +31,18 @@ pub struct SpinProps {
 /// Spin component for loading states
 #[component]
 pub fn Spin(props: SpinProps) -> Element {
-    let mut class_names = vec!["el-spin".to_string()];
-    if props.spinning { class_names.push("is-spinning".to_string()); }
-    class_names.push(format!("el-spin--{}", props.size));
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
-    let class_string = class_names.join(" ");
+    let size_class = format!("el-spin--{}", props.size);
+    let class_string = ClassBuilder::new("el-spin")
+        .add_if("is-spinning", props.spinning)
+        .add_class(&size_class)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
             class: "{class_string}",
-            style: props.style.clone().unwrap_or_default(),
+            style: "{style_string}",
             if props.spinning {
                 div {
                     class: "el-spin__container",

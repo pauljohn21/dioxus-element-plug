@@ -689,6 +689,7 @@ name = "dioxus-element-plug"
 version = "0.3.0"
 dependencies = [
  "dioxus",
+ "js-sys",
 ]
 
 [[package]]

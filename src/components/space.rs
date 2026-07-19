@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Space direction
 #[derive(Clone, PartialEq)]
@@ -60,10 +61,10 @@ pub struct SpaceProps {
 /// Space component for consistent spacing between elements
 #[component]
 pub fn Space(props: SpaceProps) -> Element {
-    let mut class_names = vec!["el-space".to_string()];
-    if props.fill { class_names.push("el-space--fill".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
-    let class_string = class_names.join(" ");
+    let class_string = ClassBuilder::new("el-space")
+        .add_if("el-space--fill", props.fill)
+        .add_opt(props.class.as_ref())
+        .build();
 
     let dir = match props.direction {
         SpaceDirection::Horizontal => "row",
@@ -74,7 +75,7 @@ pub fn Space(props: SpaceProps) -> Element {
     rsx! {
         div {
             class: "{class_string}",
-            style: "display: flex; flex-direction: {dir}; flex-wrap: {wrap}; align-items: {props.alignment.as_str()}; gap: {props.size}; {props.style.clone().unwrap_or_default()}",
+            style: "display: flex; flex-direction: {dir}; flex-wrap: {wrap}; align-items: {props.alignment.as_str()}; gap: {props.size}; {style_str(&props.style)}",
             {props.children}
         }
     }

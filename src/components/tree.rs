@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 use std::collections::HashSet;
 
+use crate::components::common::{ClassBuilder, style_str};
+
 /// Tree node data
 #[derive(Clone, PartialEq)]
 pub struct TreeNodeData {
@@ -105,10 +107,10 @@ pub struct TreeProps {
 /// ```
 #[component]
 pub fn Tree(props: TreeProps) -> Element {
-    let mut class_names = vec!["el-tree".to_string()];
-    if let Some(ref c) = props.class {
-        class_names.push(c.clone());
-    }
+    let class_string = ClassBuilder::new("el-tree")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     // Build expanded set from props
     let expanded_set: HashSet<String> = if props.default_expand_all {
@@ -129,8 +131,8 @@ pub fn Tree(props: TreeProps) -> Element {
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             role: "tree",
 
             for render_node in node_data.into_iter() {
@@ -248,16 +250,10 @@ fn TreeChild(props: TreeChildProps) -> Element {
     };
 
     // Build content class
-    let content_class = {
-        let mut cls = vec!["el-tree-node__content".to_string()];
-        if is_current {
-            cls.push("is-current".to_string());
-        }
-        if disabled {
-            cls.push("is-disabled".to_string());
-        }
-        cls.join(" ")
-    };
+    let content_class = ClassBuilder::new("el-tree-node__content")
+        .add_if("is-current", is_current)
+        .add_if("is-disabled", disabled)
+        .build();
 
     // Build expand icon class
     let expand_icon_class = if is_expanded {
@@ -267,14 +263,10 @@ fn TreeChild(props: TreeChildProps) -> Element {
     };
 
     // Build checkbox class
-    let checkbox_class = {
-        let mut cls = vec!["el-checkbox".to_string()];
-        if is_checked {
-            cls.push("is-checked".to_string());
-        }
-        cls.push("el-tree-node__checkbox".to_string());
-        cls.join(" ")
-    };
+    let checkbox_class = ClassBuilder::new("el-checkbox")
+        .add_if("is-checked", is_checked)
+        .add_class("el-tree-node__checkbox")
+        .build();
 
     rsx! {
         div {

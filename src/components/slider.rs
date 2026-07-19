@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Slider props
 #[derive(Props, Clone, PartialEq)]
@@ -80,24 +81,16 @@ pub struct SliderProps {
 /// ```
 #[component]
 pub fn Slider(props: SliderProps) -> Element {
-    let mut class_names = vec!["el-slider".to_string()];
+    let dir_class = format!("is-{}", props.direction);
+    let class_string = ClassBuilder::new("el-slider")
+        .add_class(&dir_class)
+        .add_if("is-disabled", props.disabled)
+        .add_if("el-slider--with-input", props.show_input)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    class_names.push(format!("is-{}", props.direction));
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if props.show_input {
-        class_names.push("el-slider--with-input".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
+    let on_change = props.on_change;
 
     let percentage = if props.max > props.min {
         ((props.model_value - props.min) / (props.max - props.min) * 100.0).clamp(0.0, 100.0)
@@ -167,10 +160,8 @@ pub fn Slider(props: SliderProps) -> Element {
                         step: "{props.step}",
                         disabled: props.disabled,
                         onchange: move |e| {
-                            if let Some(handler) = props.on_change {
-                                if let Ok(val) = e.value().parse::<f64>() {
-                                    handler.call(val);
-                                }
+                            if let Ok(val) = e.value().parse::<f64>() {
+                                fire_event(&on_change, val);
                             }
                         },
                     }

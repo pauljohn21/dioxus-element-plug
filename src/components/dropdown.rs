@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str, fire_event};
+
 /// Dropdown trigger type
 #[derive(Clone, PartialEq)]
 pub enum DropdownTrigger {
@@ -39,14 +41,16 @@ pub struct DropdownProps {
 /// Dropdown component for dropdown menus
 #[component]
 pub fn Dropdown(props: DropdownProps) -> Element {
-    let mut class_names = vec!["el-dropdown".to_string()];
-    if props.disabled { class_names.push("is-disabled".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-dropdown")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             {props.children}
         }
     }
@@ -80,23 +84,24 @@ pub struct DropdownItemProps {
 /// DropdownItem component for individual dropdown menu items
 #[component]
 pub fn DropdownItem(props: DropdownItemProps) -> Element {
-    let mut class_names = vec!["el-dropdown-menu__item".to_string()];
-    if props.disabled { class_names.push("is-disabled".to_string()); }
-    if props.divided { class_names.push("is-divided".to_string()); }
-    if props.selected { class_names.push("is-selected".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-dropdown-menu__item")
+        .add_if("is-disabled", props.disabled)
+        .add_if("is-divided", props.divided)
+        .add_if("is-selected", props.selected)
+        .add_opt(props.class.as_ref())
+        .build();
 
     let cmd_clone = props.command.clone();
+    let on_click = props.on_click;
+    let disabled = props.disabled;
 
     rsx! {
         li {
-            class: "{class_names.join(\" \")}",
+            class: "{class_string}",
             role: "menuitem",
             onclick: move |e| {
-                if !props.disabled {
-                    if let Some(handler) = props.on_click {
-                        handler.call(e);
-                    }
+                if !disabled {
+                    fire_event(&on_click, e);
                 }
             },
             {props.children}
@@ -121,13 +126,15 @@ pub struct DropdownMenuProps {
 /// DropdownMenu component - container for dropdown items
 #[component]
 pub fn DropdownMenu(props: DropdownMenuProps) -> Element {
-    let mut class_names = vec!["el-dropdown-menu".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-dropdown-menu")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         ul {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             role: "menu",
             {props.children}
         }

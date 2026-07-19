@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str};
+
 /// TreeSelect props
 #[derive(Props, Clone, PartialEq)]
 pub struct TreeSelectProps {
@@ -34,14 +36,16 @@ pub struct TreeSelectProps {
 /// TreeSelect component for selecting from a tree structure
 #[component]
 pub fn TreeSelect(props: TreeSelectProps) -> Element {
-    let mut class_names = vec!["el-tree-select".to_string()];
-    if props.disabled { class_names.push("is-disabled".to_string()); }
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-tree-select")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
-            style: props.style.clone().unwrap_or_default(),
+            class: "{class_string}",
+            style: "{style_string}",
             div {
                 class: "el-select el-select__wrapper",
                 onclick: move |_| {

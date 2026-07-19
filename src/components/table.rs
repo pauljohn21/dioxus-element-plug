@@ -1,5 +1,7 @@
 use dioxus::prelude::*;
 
+use crate::components::common::{ClassBuilder, style_str};
+
 // Table CSS class constants
 pub const TABLE: &str = "el-table";
 pub const TABLE_BORDERED: &str = "el-table--border";
@@ -151,23 +153,13 @@ pub struct TableProps {
 /// ```
 #[component]
 pub fn Table(props: TableProps) -> Element {
-    let mut class_names = vec!["el-table".to_string()];
-
-    if props.border {
-        class_names.push("el-table--border".to_string());
-    }
-    if props.stripe {
-        class_names.push("el-table--striped".to_string());
-    }
-    if props.highlight_current_row {
-        class_names.push("el-table--highlight-current-row".to_string());
-    }
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
+    let class_string = ClassBuilder::new("el-table")
+        .add_if("el-table--border", props.border)
+        .add_if("el-table--striped", props.stripe)
+        .add_if("el-table--highlight-current-row", props.highlight_current_row)
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     let active_sort_key = props.sort_key.clone().unwrap_or_default();
     let active_sort_order = props.sort_order;
@@ -431,22 +423,14 @@ pub struct DataListProps {
 /// A data list component for displaying item collections
 #[component]
 pub fn DataList(props: DataListProps) -> Element {
-    let mut class_names = vec!["el-data-list".to_string()];
-
-    class_names.push(format!("el-data-list--{}", props.direction));
-
-    if props.loading {
-        class_names.push("el-data-list--loading".to_string());
-    }
-    if props.items.is_empty() {
-        class_names.push("el-data-list--empty".to_string());
-    }
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.to_string());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.as_ref().cloned().unwrap_or_default();
+    let direction_class = format!("el-data-list--{}", props.direction);
+    let class_string = ClassBuilder::new("el-data-list")
+        .add_class(&direction_class)
+        .add_if("el-data-list--loading", props.loading)
+        .add_if("el-data-list--empty", props.items.is_empty())
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     if props.items.is_empty() && props.show_empty {
         return rsx! {
@@ -469,6 +453,8 @@ pub fn DataList(props: DataListProps) -> Element {
         };
     }
 
+    let on_item_click = props.on_item_click;
+
     rsx! {
         div {
             class: "{class_string}",
@@ -479,7 +465,7 @@ pub fn DataList(props: DataListProps) -> Element {
                     class: "el-data-list__item",
 
                     onclick: move |_| {
-                        if let Some(handler) = props.on_item_click {
+                        if let Some(handler) = on_item_click.as_ref() {
                             handler.call(index);
                         }
                     },

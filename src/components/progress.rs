@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Progress type
 #[derive(Clone, PartialEq)]
@@ -107,36 +108,18 @@ pub struct ProgressProps {
 pub fn Progress(props: ProgressProps) -> Element {
     let percentage = props.percentage.min(100);
 
-    let mut class_names = vec!["el-progress".to_string()];
-    class_names.push(format!("el-progress--{}", props.progress_type.as_str()));
+    let type_class = format!("el-progress--{}", props.progress_type.as_str());
+    let class_string = ClassBuilder::new("el-progress")
+        .add_class(&type_class)
+        .add_class(props.status.as_class())
+        .add_if("el-progress--indeterminate", props.indeterminate)
+        .add_if("el-progress--striped", props.striped)
+        .add_if("el-progress--striped-flow", props.striped_flow)
+        .add_if("el-progress--text-inside", props.text_inside && props.progress_type == ProgressType::Line)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let status_class = props.status.as_class();
-    if !status_class.is_empty() {
-        class_names.push(status_class.to_string());
-    }
-
-    if props.indeterminate {
-        class_names.push("el-progress--indeterminate".to_string());
-    }
-
-    if props.striped {
-        class_names.push("el-progress--striped".to_string());
-    }
-
-    if props.striped_flow {
-        class_names.push("el-progress--striped-flow".to_string());
-    }
-
-    if props.text_inside && props.progress_type == ProgressType::Line {
-        class_names.push("el-progress--text-inside".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     let bar_color = props.color.clone().unwrap_or_else(|| {
         match props.status {

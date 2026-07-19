@@ -1,9 +1,11 @@
 use dioxus::prelude::*;
 use crate::components::common::{ClassBuilder, style_str, fire_event};
+use std::fmt;
 
 /// DatePicker type variants
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub enum DatePickerType {
+    #[default]
     Date,
     Week,
     Month,
@@ -39,15 +41,10 @@ impl DatePickerType {
     }
 }
 
-impl Default for DatePickerType {
-    fn default() -> Self {
-        DatePickerType::Date
-    }
-}
-
 /// DatePicker size variants
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub enum DatePickerSize {
+    #[default]
     Default,
     Large,
     Small,
@@ -60,12 +57,6 @@ impl DatePickerSize {
             DatePickerSize::Large => "el-date-editor--large",
             DatePickerSize::Small => "el-date-editor--small",
         }
-    }
-}
-
-impl Default for DatePickerSize {
-    fn default() -> Self {
-        DatePickerSize::Default
     }
 }
 
@@ -82,10 +73,77 @@ impl SimpleDate {
         Self { year, month, day }
     }
 
+    /// Returns the current date.
+    ///
+    /// On `wasm32` targets this reads from the browser via `js_sys::Date`;
+    /// on native targets it derives the date from `std::time::SystemTime`.
     pub fn today() -> Self {
-        // Get current date from browser/system
-        // For now, use a default date
-        Self::new(2024, 1, 1)
+        #[cfg(target_arch = "wasm32")]
+        {
+            let date = js_sys::Date::new_0();
+            // JS months are 0-indexed; Rust uses 1-indexed.
+            Self::new(
+                date.get_full_year() as i32,
+                date.get_month() as u32 + 1,
+                date.get_date() as u32,
+            )
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            use std::time::{SystemTime, UNIX_EPOCH};
+            let secs = SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .map(|d| d.as_secs() as i64)
+                .unwrap_or(0);
+            let days = (secs / 86400) as i32;
+            Self::from_days_since_epoch(days)
+        }
+    }
+
+    /// Convert days since the Unix epoch (1970-01-01) into a `SimpleDate`.
+    ///
+    /// Negative inputs produce dates before 1970. The algorithm walks
+    /// year-by-year then month-by-month, subtracting days as it goes.
+    pub fn from_days_since_epoch(days: i32) -> Self {
+        let mut remaining = days;
+        let mut year: i32;
+
+        if remaining >= 0 {
+            year = 1970;
+            loop {
+                let year_len = if Self::is_leap_year(year) { 366 } else { 365 };
+                if remaining < year_len {
+                    break;
+                }
+                remaining -= year_len;
+                year += 1;
+            }
+        } else {
+            year = 1969;
+            loop {
+                let prev_year_len = if Self::is_leap_year(year) { 366 } else { 365 };
+                let needed = remaining + prev_year_len;
+                if needed >= 0 {
+                    remaining = needed;
+                    break;
+                }
+                remaining = needed;
+                year -= 1;
+            }
+        }
+
+        let mut month: u32 = 1;
+        while month <= 12 {
+            let month_len = Self::days_in_month(year, month) as i32;
+            if remaining < month_len {
+                break;
+            }
+            remaining -= month_len;
+            month += 1;
+        }
+
+        let day = remaining as u32 + 1;
+        Self::new(year, month, day)
     }
 
     pub fn from_string(date_str: &str) -> Option<Self> {
@@ -97,10 +155,6 @@ impl SimpleDate {
         let month = parts[1].parse::<u32>().ok()?;
         let day = parts[2].parse::<u32>().ok()?;
         Some(Self::new(year, month, day))
-    }
-
-    pub fn to_string(&self) -> String {
-        format!("{:04}-{:02}-{:02}", self.year, self.month, self.day)
     }
 
     pub fn days_in_month(year: i32, month: u32) -> u32 {
@@ -131,8 +185,8 @@ impl SimpleDate {
             year -= 1;
         }
         let q = self.day as i32;
-        let k = (year % 100) as i32;
-        let j = (year / 100) as i32;
+        let k = year % 100;
+        let j = year / 100;
         let h = (q + 13 * (month + 1) / 5 + k + k / 4 + j / 4 + 5 * j) % 7;
         // Convert to 0=Sunday, 1=Monday, ...
         (((h + 5) % 7 + 1) % 7) as u32
@@ -140,6 +194,12 @@ impl SimpleDate {
 
     pub fn first_day_of_month(&self) -> u32 {
         Self::new(self.year, self.month, 1).weekday()
+    }
+}
+
+impl fmt::Display for SimpleDate {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:04}-{:02}-{:02}", self.year, self.month, self.day)
     }
 }
 
@@ -229,8 +289,9 @@ pub struct DatePickerProps {
 pub fn DatePicker(props: DatePickerProps) -> Element {
     let mut panel_visible = use_signal(|| false);
     let mut input_value = use_signal(|| props.model_value.clone().unwrap_or_default());
-    let mut current_year = use_signal(|| 2024i32);
-    let mut current_month = use_signal(|| 1u32);
+    let today = SimpleDate::today();
+    let mut current_year = use_signal(|| today.year);
+    let mut current_month = use_signal(|| today.month);
 
     // Update input_value when model_value changes
     use_effect(move || {
@@ -260,9 +321,9 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
 
     let style_string = style_str(&props.style);
 
-    let on_change = props.on_change.clone();
-    let on_focus = props.on_focus.clone();
-    let on_blur = props.on_blur.clone();
+    let on_change = props.on_change;
+    let on_focus = props.on_focus;
+    let on_blur = props.on_blur;
 
     // Calendar data
     let year = current_year();
@@ -578,6 +639,47 @@ mod tests {
         // 2024-01-01 was a Monday (1)
         let date = SimpleDate::new(2024, 1, 1);
         assert_eq!(date.weekday(), 1);
+    }
+
+    #[test]
+    fn test_from_days_since_epoch() {
+        // Unix epoch: 1970-01-01 = 0 days
+        let epoch = SimpleDate::from_days_since_epoch(0);
+        assert_eq!(epoch.year, 1970);
+        assert_eq!(epoch.month, 1);
+        assert_eq!(epoch.day, 1);
+
+        // 2024-01-01 = 19723 days since epoch
+        let d2024 = SimpleDate::from_days_since_epoch(19723);
+        assert_eq!(d2024.year, 2024);
+        assert_eq!(d2024.month, 1);
+        assert_eq!(d2024.day, 1);
+
+        // Cross a month boundary: 1970-02-01 = 31 days
+        let feb = SimpleDate::from_days_since_epoch(31);
+        assert_eq!(feb.year, 1970);
+        assert_eq!(feb.month, 2);
+        assert_eq!(feb.day, 1);
+
+        // Leap day: 1972-02-29 = (365 + 365 + 59) = 789 days
+        // 1970 (365) + 1971 (365) = 730, + Jan (31) + 28 (Feb to 28th) = 789 → Feb 29
+        let leap = SimpleDate::from_days_since_epoch(789);
+        assert_eq!(leap.year, 1972);
+        assert_eq!(leap.month, 2);
+        assert_eq!(leap.day, 29);
+    }
+
+    #[test]
+    fn test_today_returns_recent_date() {
+        let today = SimpleDate::today();
+        // Year should be within ±1 of 2026 (allows for clock drift / timezone edge cases).
+        assert!(
+            (2024..=2028).contains(&today.year),
+            "today().year = {} is outside the expected range",
+            today.year
+        );
+        assert!((1..=12).contains(&today.month), "month out of range: {}", today.month);
+        assert!((1..=31).contains(&today.day), "day out of range: {}", today.day);
     }
 
     #[test]

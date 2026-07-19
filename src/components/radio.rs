@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Radio size variants
 #[derive(Clone, PartialEq)]
@@ -76,31 +77,16 @@ pub struct RadioProps {
 /// ```
 #[component]
 pub fn Radio(props: RadioProps) -> Element {
-    let mut class_names = vec!["el-radio".to_string()];
+    let class_string = ClassBuilder::new("el-radio")
+        .add_class(props.size.as_class())
+        .add_if("is-checked", props.model_value)
+        .add_if("is-disabled", props.disabled)
+        .add_if("is-bordered", props.border)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    let size_class = props.size.as_class();
-    if !size_class.is_empty() {
-        class_names.push(size_class.to_string());
-    }
-
-    if props.model_value {
-        class_names.push("is-checked".to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if props.border {
-        class_names.push("is-bordered".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
+    let on_change = props.on_change;
     let value_clone1 = props.value.clone();
     let value_clone2 = props.value.clone();
 
@@ -123,9 +109,7 @@ pub fn Radio(props: RadioProps) -> Element {
                     checked: props.model_value,
                     onchange: move |_| {
                         if !props.disabled {
-                            if let Some(handler) = props.on_change {
-                                handler.call(value_clone1.clone());
-                            }
+                            fire_event(&on_change, value_clone1.clone());
                         }
                     },
                 }
@@ -134,9 +118,7 @@ pub fn Radio(props: RadioProps) -> Element {
                 class: "el-radio__label",
                 onclick: move |_| {
                     if !props.disabled {
-                        if let Some(handler) = props.on_change {
-                            handler.call(value_clone2.clone());
-                        }
+                        fire_event(&on_change, value_clone2.clone());
                     }
                 },
                 if let Some(ref label) = props.label {
@@ -191,18 +173,12 @@ pub struct RadioGroupProps {
 /// RadioGroup component for grouping radio buttons
 #[component]
 pub fn RadioGroup(props: RadioGroupProps) -> Element {
-    let mut class_names = vec!["el-radio-group".to_string()];
+    let class_string = ClassBuilder::new("el-radio-group")
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
@@ -252,22 +228,14 @@ pub struct RadioButtonProps {
 /// RadioButton component - radio styled as a button
 #[component]
 pub fn RadioButton(props: RadioButtonProps) -> Element {
-    let mut class_names = vec!["el-radio-button".to_string()];
+    let class_string = ClassBuilder::new("el-radio-button")
+        .add_if("is-checked", props.model_value)
+        .add_if("is-disabled", props.disabled)
+        .add_opt(props.class.as_ref())
+        .build();
 
-    if props.model_value {
-        class_names.push("is-checked".to_string());
-    }
-
-    if props.disabled {
-        class_names.push("is-disabled".to_string());
-    }
-
-    if let Some(ref custom_class) = props.class {
-        class_names.push(custom_class.clone());
-    }
-
-    let class_string = class_names.join(" ");
-    let style_string = props.style.clone().unwrap_or_default();
+    let style_string = style_str(&props.style);
+    let on_change = props.on_change;
     let value_clone = props.value.clone();
 
     rsx! {
@@ -280,9 +248,7 @@ pub fn RadioButton(props: RadioButtonProps) -> Element {
                 aria_checked: "{props.model_value}",
                 onclick: move |_| {
                     if !props.disabled {
-                        if let Some(handler) = props.on_change {
-                            handler.call(value_clone.clone());
-                        }
+                        fire_event(&on_change, value_clone.clone());
                     }
                 },
                 if let Some(ref label) = props.label {

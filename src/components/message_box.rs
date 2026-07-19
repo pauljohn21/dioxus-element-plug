@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// MessageBox type
 #[derive(Clone, PartialEq)]
@@ -89,17 +90,21 @@ pub fn MessageBox(props: MessageBoxProps) -> Element {
         return rsx! {};
     }
 
-    let mut class_names = vec!["el-message-box".to_string()];
-    class_names.push(props.box_type.as_class().to_string());
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-message-box")
+        .add_class(props.box_type.as_class())
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
+    let on_confirm = props.on_confirm;
+    let on_cancel = props.on_cancel;
 
     rsx! {
         div {
             class: "el-overlay",
             style: "position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2001;",
             div {
-                class: "{class_names.join(\" \")}",
-                style: props.style.clone().unwrap_or_default(),
+                class: "{class_string}",
+                style: "{style_string}",
                 if let Some(ref title) = props.title {
                     div {
                         class: "el-message-box__header",
@@ -109,9 +114,7 @@ pub fn MessageBox(props: MessageBoxProps) -> Element {
                             button {
                                 class: "el-message-box__close",
                                 onclick: move |_| {
-                                    if let Some(handler) = props.on_cancel {
-                                        handler.call(());
-                                    }
+                                    fire_event(&on_cancel, ());
                                 },
                                 "×"
                             }
@@ -128,9 +131,7 @@ pub fn MessageBox(props: MessageBoxProps) -> Element {
                         button {
                             class: "el-button el-button--default",
                             onclick: move |_| {
-                                if let Some(handler) = props.on_cancel {
-                                    handler.call(());
-                                }
+                                fire_event(&on_cancel, ());
                             },
                             "{props.cancel_button_text}"
                         }
@@ -139,9 +140,7 @@ pub fn MessageBox(props: MessageBoxProps) -> Element {
                         button {
                             class: "el-button el-button--primary",
                             onclick: move |_| {
-                                if let Some(handler) = props.on_confirm {
-                                    handler.call(());
-                                }
+                                fire_event(&on_confirm, ());
                             },
                             "{props.confirm_button_text}"
                         }

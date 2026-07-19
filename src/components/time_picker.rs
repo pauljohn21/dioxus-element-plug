@@ -1,9 +1,11 @@
 use dioxus::prelude::*;
 use crate::components::common::{ClassBuilder, style_str, fire_event};
+use std::fmt;
 
 /// TimePicker size variants
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub enum TimePickerSize {
+    #[default]
     Default,
     Large,
     Small,
@@ -16,12 +18,6 @@ impl TimePickerSize {
             TimePickerSize::Large => "el-time-editor--large",
             TimePickerSize::Small => "el-time-editor--small",
         }
-    }
-}
-
-impl Default for TimePickerSize {
-    fn default() -> Self {
-        TimePickerSize::Default
     }
 }
 
@@ -53,12 +49,14 @@ impl TimeValue {
         Some(Self::new(hour, minute, second))
     }
 
-    pub fn to_string(&self) -> String {
-        format!("{:02}:{:02}:{:02}", self.hour, self.minute, self.second)
-    }
-
     pub fn to_short_string(&self) -> String {
         format!("{:02}:{:02}", self.hour, self.minute)
+    }
+}
+
+impl fmt::Display for TimeValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{:02}:{:02}:{:02}", self.hour, self.minute, self.second)
     }
 }
 
@@ -180,9 +178,9 @@ pub fn TimePicker(props: TimePickerProps) -> Element {
 
     let style_string = style_str(&props.style);
 
-    let on_change = props.on_change.clone();
-    let on_focus = props.on_focus.clone();
-    let on_blur = props.on_blur.clone();
+    let on_change = props.on_change;
+    let on_focus = props.on_focus;
+    let on_blur = props.on_blur;
 
     // Generate time lists
     let hours: Vec<u32> = (0..24).collect();

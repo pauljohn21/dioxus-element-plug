@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, style_str};
 
 /// Result icon type
 #[derive(Clone, PartialEq)]
@@ -57,14 +58,15 @@ pub struct ResultProps {
 /// Result component for feedback pages
 #[component]
 pub fn Result(props: ResultProps) -> Element {
-    let mut class_names = vec!["el-result".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
-    let class_string = class_names.join(" ");
+    let class_string = ClassBuilder::new("el-result")
+        .add_opt(props.class.as_ref())
+        .build();
+    let style_string = style_str(&props.style);
 
     rsx! {
         div {
             class: "{class_string}",
-            style: props.style.clone().unwrap_or_default(),
+            style: "{style_string}",
             div {
                 class: "el-result__icon {props.result_type.as_class()}",
                 style: "font-size: 64px;",

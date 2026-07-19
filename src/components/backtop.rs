@@ -1,4 +1,5 @@
 use dioxus::prelude::*;
+use crate::components::common::{ClassBuilder, fire_event};
 
 /// Backtop props
 #[derive(Props, Clone, PartialEq)]
@@ -32,17 +33,17 @@ pub struct BacktopProps {
 /// Backtop component for scroll-to-top button
 #[component]
 pub fn Backtop(props: BacktopProps) -> Element {
-    let mut class_names = vec!["el-backtop".to_string()];
-    if let Some(ref c) = props.class { class_names.push(c.clone()); }
+    let class_string = ClassBuilder::new("el-backtop")
+        .add_opt(props.class.as_ref())
+        .build();
+    let on_click = props.on_click;
 
     rsx! {
         div {
-            class: "{class_names.join(\" \")}",
+            class: "{class_string}",
             style: "position: fixed; right: {props.right}px; bottom: {props.bottom}px; z-index: 1000; cursor: pointer;",
             onclick: move |_| {
-                if let Some(handler) = props.on_click {
-                    handler.call(());
-                }
+                fire_event(&on_click, ());
             },
             if props.children.is_some() {
                 {props.children}
