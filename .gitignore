@@ -7,7 +7,7 @@
 .idea/
 *.swp
 *.swo
-
+.claude/
 # OS
 .DS_Store
 Thumbs.db
@@ -27,3 +27,6 @@ dist/
 # Environment variables
 .env
 .env.*
+
+# OpenSpec
+openspec/

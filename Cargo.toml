@@ -15,17 +15,10 @@ readme = "README.md"
 # Files to exclude from the published package
 exclude = [
   "examples/*",
-  "dist/*", 
+  "dist/*",
   ".github/*",
   "*.txt",
   "Makefile",
-  "DIOXUS_*.md",
-  "GITHUB_*.md",
-  "PUSH_*.md",
-  "SCSS_*.md",
-  "PROJECT_*.md",
-  "OPTIMIZATION_*.md",
-  "CHANGELOG.md",
 ]
 
 [package.metadata.docs.rs]
@@ -45,11 +38,9 @@ docs = []  # Minimal feature set for documentation generation
 
 [dependencies]
 dioxus = { version = "0.7", features = ["web"] }
-serde_json = "1.0"
 # manganis removed - using pure Rust styling
 
 [dev-dependencies]
-dioxus = { version = "0.7", features = ["web"] }
 console_error_panic_hook = "0.1"
 
 [profile.release]
