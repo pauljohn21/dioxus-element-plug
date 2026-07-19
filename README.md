@@ -33,6 +33,7 @@
 - 🎯 **Controlled component pattern** — Parent owns state, communicates via `EventHandler`
 - 📱 **Responsive design** — 24-column grid system
 - ⚡ **Zero SCSS dependencies** — No runtime CSS compilation
+- 🌙 **Built-in dark mode** — `Theme::dark()` and `Theme::light()` presets
 
 ## Quick Start
 
@@ -280,6 +281,40 @@ rsx! {
         }
 
         Footer { "Footer" }
+    }
+}
+```
+
+### Dark Mode
+
+Built-in dark mode support with `Theme::dark()` and `Theme::light()`:
+
+```rust
+use dioxus::prelude::*;
+use dioxus_element_plug::prelude::*;
+
+fn App() -> Element {
+    let mut is_dark = use_signal(|| false);
+
+    let theme = if is_dark() { Theme::dark() } else { Theme::light() };
+    let styles = CompleteStyleManager::new()
+        .with_theme(theme)
+        .generate_complete_styles();
+
+    rsx! {
+        style { "{styles}" }
+        div {
+            style: if is_dark() {
+                "background-color: #141414; min-height: 100vh; padding: 24px;"
+            } else {
+                "background-color: #f5f7fa; min-height: 100vh; padding: 24px;"
+            },
+            Button {
+                variant: ButtonVariant::Primary,
+                on_click: move |_| is_dark.set(!is_dark()),
+                if is_dark() { "Switch to Light" } else { "Switch to Dark" }
+            }
+        }
     }
 }
 ```

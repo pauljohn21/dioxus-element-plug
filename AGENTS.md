@@ -858,6 +858,48 @@ color_black: "#ffffff",
 };
 ```
 
+### Dark Mode
+
+Built-in dark mode presets available since 0.3.0:
+
+```rust
+use dioxus_element_plug::{Theme, CompleteStyleManager};
+
+// Use built-in dark theme
+let dark_theme = Theme::dark();
+
+// Or light theme (equivalent to Theme::default())
+let light_theme = Theme::light();
+
+// Generate styles with dark theme
+let styles = CompleteStyleManager::new()
+    .with_theme(Theme::dark())
+    .generate_complete_styles();
+```
+
+Toggle between light and dark in your app:
+
+```rust
+use dioxus::prelude::*;
+use dioxus_element_plug::prelude::*;
+
+fn App() -> Element {
+    let mut is_dark = use_signal(|| false);
+    let theme = if is_dark() { Theme::dark() } else { Theme::light() };
+    let styles = CompleteStyleManager::new()
+        .with_theme(theme)
+        .generate_complete_styles();
+
+    rsx! {
+        style { "{styles}" }
+        Button {
+            on_click: move |_| is_dark.set(!is_dark()),
+            if is_dark() { "Switch to Light" } else { "Switch to Dark" }
+        }
+    }
+}
+```
+
 ## Tests
 
 - Tests use standard Rust `#[cfg(test)]` + `#[test]`

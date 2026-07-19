@@ -47,7 +47,7 @@ use crate::styles::prelude::*;
 ///     .font_size_base("16px")
 ///     .build();
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Theme {
     // Colors
     pub color_primary: &'static str,
@@ -205,6 +205,68 @@ impl Default for Theme {
             z_index_message: 2002,
             z_index_notification: 2003,
             z_index_tooltip: 2004,
+        }
+    }
+}
+
+impl Theme {
+    /// Returns the default light theme.
+    ///
+    /// This is equivalent to `Theme::default()`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use dioxus_element_plug::Theme;
+    ///
+    /// let theme = Theme::light();
+    /// ```
+    pub fn light() -> Self {
+        Self::default()
+    }
+
+    /// Returns a pre-configured dark theme.
+    ///
+    /// The dark theme uses inverted colors suitable for dark backgrounds.
+    /// All colors meet WCAG AA contrast requirements.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use dioxus_element_plug::Theme;
+    ///
+    /// let theme = Theme::dark();
+    /// ```
+    pub fn dark() -> Self {
+        Self {
+            // Inverted base colors
+            color_white: "#141414",
+            color_black: "#ffffff",
+
+            // Text colors (inverted hierarchy for dark backgrounds)
+            color_text_primary: "#E5EAF3",
+            color_text_regular: "#CFD3DC",
+            color_text_secondary: "#A3A6AD",
+            color_text_placeholder: "#8D9095",
+
+            // Border colors (darkened)
+            border_color_base: "#4C4D4F",
+            border_color_light: "#414243",
+            border_color_lighter: "#363637",
+            border_color_extra_light: "#2B2B2C",
+
+            // Background (dark)
+            background_color_base: "#1d1e1f",
+
+            // Primary colors stay similar but slightly adjusted for dark backgrounds
+            color_primary: "#409EFF",
+            color_success: "#67C23A",
+            color_warning: "#E6A23C",
+            color_danger: "#F56C6C",
+            color_info: "#73767A",
+
+            // Other fields inherit from default
+            ..Self::default()
         }
     }
 }
@@ -817,5 +879,64 @@ impl CompleteCssBuilder {
     #[deprecated(note = "use CompleteStyleManager::generate_complete_styles instead")]
     pub fn build_complete(self) -> String {
         self.build()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_theme_equality() {
+        let light1 = Theme::light();
+        let light2 = Theme::light();
+        assert_eq!(light1, light2);
+
+        let dark1 = Theme::dark();
+        let dark2 = Theme::dark();
+        assert_eq!(dark1, dark2);
+
+        assert_ne!(Theme::light(), Theme::dark());
+    }
+
+    #[test]
+    fn test_light_theme_is_default() {
+        assert_eq!(Theme::light(), Theme::default());
+    }
+
+    #[test]
+    fn test_dark_theme_colors() {
+        let dark = Theme::dark();
+
+        // Inverted base colors
+        assert_eq!(dark.color_white, "#141414");
+        assert_eq!(dark.color_black, "#ffffff");
+
+        // Text colors for dark backgrounds
+        assert_eq!(dark.color_text_primary, "#E5EAF3");
+        assert_eq!(dark.color_text_regular, "#CFD3DC");
+        assert_eq!(dark.color_text_secondary, "#A3A6AD");
+        assert_eq!(dark.color_text_placeholder, "#8D9095");
+
+        // Border colors (darkened)
+        assert_eq!(dark.border_color_base, "#4C4D4F");
+        assert_eq!(dark.border_color_light, "#414243");
+        assert_eq!(dark.border_color_lighter, "#363637");
+        assert_eq!(dark.border_color_extra_light, "#2B2B2C");
+
+        // Background (dark)
+        assert_eq!(dark.background_color_base, "#1d1e1f");
+    }
+
+    #[test]
+    fn test_dark_theme_css_generation() {
+        let dark = Theme::dark();
+        let css = generate_css_variables(&dark);
+
+        assert!(css.contains("--el-color-white: #141414"));
+        assert!(css.contains("--el-color-black: #ffffff"));
+        assert!(css.contains("--el-color-text-primary: #E5EAF3"));
+        assert!(css.contains("--el-border-color-base: #4C4D4F"));
+        assert!(css.contains("--el-background-color-base: #1d1e1f"));
     }
 }

@@ -41,23 +41,9 @@ impl ThemeMode {
 
     fn to_theme(&self) -> Theme {
         match self {
-            ThemeMode::Default => Theme::default(),
+            ThemeMode::Default => Theme::light(),
 
-            ThemeMode::Dark => Theme {
-                color_info: "#73767A",
-                color_white: "#141414",
-                color_black: "#ffffff",
-                color_text_primary: "#E5EAF3",
-                color_text_regular: "#CFD3DC",
-                color_text_secondary: "#A3A6AD",
-                color_text_placeholder: "#8D9095",
-                border_color_base: "#4C4D4F",
-                border_color_light: "#414243",
-                border_color_lighter: "#363637",
-                border_color_extra_light: "#2B2B2C",
-                background_color_base: "#1d1e1f",
-                ..Theme::default()
-            },
+            ThemeMode::Dark => Theme::dark(),
 
             ThemeMode::Green => Theme {
                 color_primary: "#00B96B",
