@@ -32,7 +32,7 @@ jobs:
 
       - name: Build Documentation Site
         working-directory: ./docs-site
-        run: dx build --release --debug-symbols false
+        run: dx build --release
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
