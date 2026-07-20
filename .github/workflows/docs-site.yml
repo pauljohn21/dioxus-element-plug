@@ -42,15 +42,34 @@ jobs:
       - name: Copy build output
         run: |
           # Dioxus build output is in docs-site/target/dx/*/release/web/public
+          echo "Looking for build output..."
+          ls -la docs-site/target/dx/ 2>/dev/null || echo "No docs-site/target/dx/"
+          
+          # Try to find the public directory
           BUILD_DIR=$(find docs-site/target/dx -name "public" -type d 2>/dev/null | head -1)
+          
+          # If not found, try the known path pattern
+          if [ -z "$BUILD_DIR" ]; then
+            PROJECT_NAME="dioxus-element-plug-docs"
+            KNOWN_PATH="docs-site/target/dx/${PROJECT_NAME}/release/web/public"
+            if [ -d "$KNOWN_PATH" ]; then
+              BUILD_DIR="$KNOWN_PATH"
+            fi
+          fi
+          
           if [ -z "$BUILD_DIR" ]; then
             echo "Error: Could not find build output directory"
+            echo "Contents of docs-site/target:"
+            find docs-site/target -type d 2>/dev/null | head -20
             exit 1
           fi
+          
           echo "Found build output at: $BUILD_DIR"
           ls -la "$BUILD_DIR"
+          
           mkdir -p docs-site/dist
           cp -r "$BUILD_DIR"/* docs-site/dist/
+          
           echo "Copied to docs-site/dist:"
           ls -la docs-site/dist/
 
