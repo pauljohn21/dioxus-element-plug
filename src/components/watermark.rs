@@ -1,5 +1,5 @@
+use crate::components::common::{style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str};
 
 /// Generate an SVG watermark string with tiled text pattern.
 ///
@@ -39,10 +39,7 @@ fn generate_watermark_svg(
 
 /// Encode an SVG string as a CSS `url()` data URI.
 fn svg_to_data_uri(svg: &str) -> String {
-    let encoded = svg
-        .replace('#', "%23")
-        .replace('"', "'")
-        .replace('\n', "");
+    let encoded = svg.replace('#', "%23").replace('"', "'").replace('\n', "");
     format!("url(\"data:image/svg+xml,{encoded}\")")
 }
 

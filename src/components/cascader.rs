@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str};
+use crate::components::common::{style_str, ClassBuilder};
 
 /// Cascader option
 #[derive(Clone, PartialEq)]
@@ -99,58 +99,80 @@ pub fn Cascader(props: CascaderProps) -> Element {
         .iter()
         .map(|opt| {
             let is_active = props.model_value.first() == Some(&opt.value);
-            (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active)
+            (
+                opt.value.clone(),
+                opt.label.clone(),
+                opt.disabled,
+                !opt.children.is_empty(),
+                is_active,
+            )
         })
         .collect();
 
     // Pre-compute level 2 nodes: (value, label, disabled, has_children, is_active, l1_value)
-    let level2_nodes: Vec<(String, String, bool, bool, bool, String)> = if !props.model_value.is_empty() {
-        let l1 = &props.model_value[0];
-        props
-            .options
-            .iter()
-            .find(|o| &o.value == l1)
-            .map(|parent| {
-                let l1_val = l1.clone();
-                parent
-                    .children
-                    .iter()
-                    .map(|opt| {
-                        let is_active = props.model_value.get(1) == Some(&opt.value);
-                        (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active, l1_val.clone())
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
-    } else {
-        vec![]
-    };
+    let level2_nodes: Vec<(String, String, bool, bool, bool, String)> =
+        if !props.model_value.is_empty() {
+            let l1 = &props.model_value[0];
+            props
+                .options
+                .iter()
+                .find(|o| &o.value == l1)
+                .map(|parent| {
+                    let l1_val = l1.clone();
+                    parent
+                        .children
+                        .iter()
+                        .map(|opt| {
+                            let is_active = props.model_value.get(1) == Some(&opt.value);
+                            (
+                                opt.value.clone(),
+                                opt.label.clone(),
+                                opt.disabled,
+                                !opt.children.is_empty(),
+                                is_active,
+                                l1_val.clone(),
+                            )
+                        })
+                        .collect()
+                })
+                .unwrap_or_default()
+        } else {
+            vec![]
+        };
 
     // Pre-compute level 3 nodes: (value, label, disabled, has_children, is_active, l1_value, l2_value)
-    let level3_nodes: Vec<(String, String, bool, bool, bool, String, String)> = if props.model_value.len() >= 2 {
-        let l1 = &props.model_value[0];
-        let l2 = &props.model_value[1];
-        props
-            .options
-            .iter()
-            .find(|o| &o.value == l1)
-            .and_then(|p1| p1.children.iter().find(|o| &o.value == l2))
-            .map(|p2| {
-                let l1_val = l1.clone();
-                let l2_val = l2.clone();
-                p2
-                    .children
-                    .iter()
-                    .map(|opt| {
-                        let is_active = props.model_value.get(2) == Some(&opt.value);
-                        (opt.value.clone(), opt.label.clone(), opt.disabled, !opt.children.is_empty(), is_active, l1_val.clone(), l2_val.clone())
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
-    } else {
-        vec![]
-    };
+    let level3_nodes: Vec<(String, String, bool, bool, bool, String, String)> =
+        if props.model_value.len() >= 2 {
+            let l1 = &props.model_value[0];
+            let l2 = &props.model_value[1];
+            props
+                .options
+                .iter()
+                .find(|o| &o.value == l1)
+                .and_then(|p1| p1.children.iter().find(|o| &o.value == l2))
+                .map(|p2| {
+                    let l1_val = l1.clone();
+                    let l2_val = l2.clone();
+                    p2.children
+                        .iter()
+                        .map(|opt| {
+                            let is_active = props.model_value.get(2) == Some(&opt.value);
+                            (
+                                opt.value.clone(),
+                                opt.label.clone(),
+                                opt.disabled,
+                                !opt.children.is_empty(),
+                                is_active,
+                                l1_val.clone(),
+                                l2_val.clone(),
+                            )
+                        })
+                        .collect()
+                })
+                .unwrap_or_default()
+        } else {
+            vec![]
+        };
 
     let has_value = !props.model_value.is_empty();
     let placeholder = props.placeholder.clone();

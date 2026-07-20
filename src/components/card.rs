@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str, fire_event};
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 
 #[cfg(feature = "icons")]
 use element_icons::element::{ArrowDown, ArrowRight};

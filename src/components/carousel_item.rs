@@ -1,6 +1,6 @@
-use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str};
 use super::carousel::CarouselCtx;
+use crate::components::common::{style_str, ClassBuilder};
+use dioxus::prelude::*;
 
 /// CarouselItem props
 #[derive(Props, Clone, PartialEq)]

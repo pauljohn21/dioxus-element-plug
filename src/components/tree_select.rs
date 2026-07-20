@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str, fire_event};
-use crate::components::tree::{Tree, TreeProps, TreeNodeData};
+use crate::components::common::{fire_event, style_str, ClassBuilder};
+use crate::components::tree::{Tree, TreeNodeData, TreeProps};
 
 /// TreeSelect props
 #[derive(Props, Clone, PartialEq)]
@@ -47,7 +47,10 @@ pub fn TreeSelect(props: TreeSelectProps) -> Element {
         .build();
     let style_string = style_str(&props.style);
 
-    let display_text = props.model_value.clone().unwrap_or_else(|| props.placeholder.clone());
+    let display_text = props
+        .model_value
+        .clone()
+        .unwrap_or_else(|| props.placeholder.clone());
     let has_value = props.model_value.is_some();
     let on_change = props.on_change;
     let disabled = props.disabled;

@@ -1,6 +1,6 @@
-use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use crate::components::image_viewer::ImageViewer;
+use dioxus::prelude::*;
 
 /// Image fit type
 #[derive(Clone, PartialEq)]

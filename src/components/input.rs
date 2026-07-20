@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 // Input CSS class constants
 pub const INPUT: &str = "el-input";

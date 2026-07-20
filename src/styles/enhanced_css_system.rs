@@ -2268,7 +2268,7 @@ pub const COMPLETE_CSS: &str = ""; // Will be populated when file generation is 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_css_generation() {
         let css = all_styles();
@@ -2277,7 +2277,7 @@ mod tests {
         assert!(css.contains("el-input"));
         assert!(css.contains("var(--el-color-primary)"));
     }
-    
+
     /// 重构一致性测试 - 验证输出与基准相同
     ///
     /// 注意：此测试在重构期间标记为 #[ignore]，重构完成后启用

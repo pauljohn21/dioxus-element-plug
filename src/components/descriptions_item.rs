@@ -1,5 +1,5 @@
+use crate::components::common::{style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str};
 
 /// DescriptionsItem props
 #[derive(Props, Clone, PartialEq)]
@@ -40,7 +40,9 @@ pub fn DescriptionsItem(props: DescriptionsItemProps) -> Element {
         .build();
 
     let content_style = style_str(&props.style);
-    let label_style = props.label_width.as_ref()
+    let label_style = props
+        .label_width
+        .as_ref()
         .map(|w| format!("width: {w};"))
         .unwrap_or_default();
 

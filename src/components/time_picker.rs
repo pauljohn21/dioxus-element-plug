@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 use std::fmt;
 
 /// TimePicker size variants
@@ -31,7 +31,11 @@ pub struct TimeValue {
 
 impl TimeValue {
     pub fn new(hour: u32, minute: u32, second: u32) -> Self {
-        Self { hour, minute, second }
+        Self {
+            hour,
+            minute,
+            second,
+        }
     }
 
     pub fn from_string(time_str: &str) -> Option<Self> {
@@ -389,7 +393,13 @@ pub fn TimePicker(props: TimePickerProps) -> Element {
 }
 
 /// Check if time is disabled
-fn is_time_disabled(hour: u32, minute: u32, second: u32, min_time: &Option<String>, max_time: &Option<String>) -> bool {
+fn is_time_disabled(
+    hour: u32,
+    minute: u32,
+    second: u32,
+    min_time: &Option<String>,
+    max_time: &Option<String>,
+) -> bool {
     let current_seconds = hour * 3600 + minute * 60 + second;
 
     if let Some(ref min) = min_time {
@@ -453,11 +463,35 @@ mod tests {
         assert!(!is_time_disabled(12, 30, 0, &None, &None));
 
         // Min time restriction
-        assert!(!is_time_disabled(12, 30, 0, &Some("10:00:00".to_string()), &None));
-        assert!(is_time_disabled(8, 30, 0, &Some("10:00:00".to_string()), &None));
+        assert!(!is_time_disabled(
+            12,
+            30,
+            0,
+            &Some("10:00:00".to_string()),
+            &None
+        ));
+        assert!(is_time_disabled(
+            8,
+            30,
+            0,
+            &Some("10:00:00".to_string()),
+            &None
+        ));
 
         // Max time restriction
-        assert!(!is_time_disabled(12, 30, 0, &None, &Some("14:00:00".to_string())));
-        assert!(is_time_disabled(15, 30, 0, &None, &Some("14:00:00".to_string())));
+        assert!(!is_time_disabled(
+            12,
+            30,
+            0,
+            &None,
+            &Some("14:00:00".to_string())
+        ));
+        assert!(is_time_disabled(
+            15,
+            30,
+            0,
+            &None,
+            &Some("14:00:00".to_string())
+        ));
     }
 }

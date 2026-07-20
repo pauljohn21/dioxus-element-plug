@@ -1,6 +1,6 @@
 //! # Component CSS Class Constants
 //!
-//! This module contains CSS class constants for Element Plus components 
+//! This module contains CSS class constants for Element Plus components
 //! that are not yet split into individual component files.
 //!
 //! Note: Core component classes like Button, Input, Layout, Form, Alert, Card, and Table

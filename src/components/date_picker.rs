@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 use std::fmt;
 
 /// DatePicker type variants
@@ -337,8 +337,20 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
     let days_in_prev_month = SimpleDate::days_in_month(prev_year, prev_month);
 
     // Month and weekday names
-    let month_names = ["一月", "二月", "三月", "四月", "五月", "六月",
-                       "七月", "八月", "九月", "十月", "十一月", "十二月"];
+    let month_names = [
+        "一月",
+        "二月",
+        "三月",
+        "四月",
+        "五月",
+        "六月",
+        "七月",
+        "八月",
+        "九月",
+        "十月",
+        "十一月",
+        "十二月",
+    ];
     let week_days = ["日", "一", "二", "三", "四", "五", "六"];
 
     rsx! {
@@ -560,21 +572,27 @@ pub fn DatePicker(props: DatePickerProps) -> Element {
 }
 
 /// Check if date is disabled
-fn is_date_disabled(date: &SimpleDate, min_date: &Option<String>, max_date: &Option<String>) -> bool {
+fn is_date_disabled(
+    date: &SimpleDate,
+    min_date: &Option<String>,
+    max_date: &Option<String>,
+) -> bool {
     if let Some(ref min) = min_date {
         if let Some(min_d) = SimpleDate::from_string(min) {
-            if date.year < min_d.year ||
-               (date.year == min_d.year && date.month < min_d.month) ||
-               (date.year == min_d.year && date.month == min_d.month && date.day < min_d.day) {
+            if date.year < min_d.year
+                || (date.year == min_d.year && date.month < min_d.month)
+                || (date.year == min_d.year && date.month == min_d.month && date.day < min_d.day)
+            {
                 return true;
             }
         }
     }
     if let Some(ref max) = max_date {
         if let Some(max_d) = SimpleDate::from_string(max) {
-            if date.year > max_d.year ||
-               (date.year == max_d.year && date.month > max_d.month) ||
-               (date.year == max_d.year && date.month == max_d.month && date.day > max_d.day) {
+            if date.year > max_d.year
+                || (date.year == max_d.year && date.month > max_d.month)
+                || (date.year == max_d.year && date.month == max_d.month && date.day > max_d.day)
+            {
                 return true;
             }
         }
@@ -603,10 +621,10 @@ mod tests {
 
     #[test]
     fn test_simple_date_days_in_month() {
-        assert_eq!(SimpleDate::days_in_month(2024, 1), 31);  // January
-        assert_eq!(SimpleDate::days_in_month(2024, 2), 29);  // February (leap year)
-        assert_eq!(SimpleDate::days_in_month(2023, 2), 28);  // February (non-leap year)
-        assert_eq!(SimpleDate::days_in_month(2024, 4), 30);  // April
+        assert_eq!(SimpleDate::days_in_month(2024, 1), 31); // January
+        assert_eq!(SimpleDate::days_in_month(2024, 2), 29); // February (leap year)
+        assert_eq!(SimpleDate::days_in_month(2023, 2), 28); // February (non-leap year)
+        assert_eq!(SimpleDate::days_in_month(2024, 4), 30); // April
     }
 
     #[test]
@@ -678,8 +696,16 @@ mod tests {
             "today().year = {} is outside the expected range",
             today.year
         );
-        assert!((1..=12).contains(&today.month), "month out of range: {}", today.month);
-        assert!((1..=31).contains(&today.day), "day out of range: {}", today.day);
+        assert!(
+            (1..=12).contains(&today.month),
+            "month out of range: {}",
+            today.month
+        );
+        assert!(
+            (1..=31).contains(&today.day),
+            "day out of range: {}",
+            today.day
+        );
     }
 
     #[test]
@@ -690,11 +716,27 @@ mod tests {
         assert!(!is_date_disabled(&date, &None, &None));
 
         // Min date restriction
-        assert!(!is_date_disabled(&date, &Some("2024-06-01".to_string()), &None));
-        assert!(is_date_disabled(&date, &Some("2024-06-20".to_string()), &None));
+        assert!(!is_date_disabled(
+            &date,
+            &Some("2024-06-01".to_string()),
+            &None
+        ));
+        assert!(is_date_disabled(
+            &date,
+            &Some("2024-06-20".to_string()),
+            &None
+        ));
 
         // Max date restriction
-        assert!(!is_date_disabled(&date, &None, &Some("2024-06-20".to_string())));
-        assert!(is_date_disabled(&date, &None, &Some("2024-06-01".to_string())));
+        assert!(!is_date_disabled(
+            &date,
+            &None,
+            &Some("2024-06-20".to_string())
+        ));
+        assert!(is_date_disabled(
+            &date,
+            &None,
+            &Some("2024-06-01".to_string())
+        ));
     }
 }

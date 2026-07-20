@@ -1,5 +1,5 @@
+use crate::components::common::{style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str};
 
 /// FormItem size variants
 #[derive(Clone, PartialEq)]
@@ -123,9 +123,30 @@ pub fn FormItem(props: FormItemProps) -> Element {
         .add_class(props.size.as_class())
         .add_if("is-required", props.required)
         .add_if("is-error", props.error.is_some())
-        .add_if("is-success", props.status.as_ref().map(|s| s == "success").unwrap_or(false))
-        .add_if("is-validating", props.status.as_ref().map(|s| s == "validating").unwrap_or(false))
-        .add_if(props.label_position.as_ref().map(|p| p.as_class()).unwrap_or(""), props.label_position.is_some())
+        .add_if(
+            "is-success",
+            props
+                .status
+                .as_ref()
+                .map(|s| s == "success")
+                .unwrap_or(false),
+        )
+        .add_if(
+            "is-validating",
+            props
+                .status
+                .as_ref()
+                .map(|s| s == "validating")
+                .unwrap_or(false),
+        )
+        .add_if(
+            props
+                .label_position
+                .as_ref()
+                .map(|p| p.as_class())
+                .unwrap_or(""),
+            props.label_position.is_some(),
+        )
         .add_opt(props.class.as_ref())
         .build();
 

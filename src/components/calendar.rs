@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str, fire_event};
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use crate::components::date_picker::SimpleDate;
 
 /// Calendar cell data for a single day in the 6×7 grid.
@@ -91,9 +91,8 @@ pub fn build_calendar_grid(year: i32, month: u32, first_day_of_week: u32) -> Vec
             (next_year, next_month, day, false)
         };
 
-        let is_today = today.year == cell_year
-            && today.month == cell_month
-            && today.day == cell_day;
+        let is_today =
+            today.year == cell_year && today.month == cell_month && today.day == cell_day;
 
         cells.push(CalendarCell {
             year: cell_year,
@@ -323,7 +322,11 @@ mod tests {
         let today = SimpleDate::today();
         let grid = build_calendar_grid(today.year, today.month, 1);
         let today_cells: Vec<&CalendarCell> = grid.iter().filter(|c| c.is_today).collect();
-        assert_eq!(today_cells.len(), 1, "exactly one cell should be flagged as today");
+        assert_eq!(
+            today_cells.len(),
+            1,
+            "exactly one cell should be flagged as today"
+        );
         assert_eq!(today_cells[0].day, today.day);
         assert!(today_cells[0].is_current_month);
     }

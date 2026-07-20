@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, fire_event};
 
 /// Backtop props
 #[derive(Props, Clone, PartialEq)]

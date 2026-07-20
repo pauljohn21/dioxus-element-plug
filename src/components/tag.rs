@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Tag type variants
 #[derive(Clone, PartialEq)]
@@ -134,7 +134,10 @@ pub fn Tag(props: TagProps) -> Element {
 
     let mut style_string = style_str(&props.style);
     if let Some(ref color) = props.color {
-        style_string = format!("background-color: {}; border-color: {}; {}", color, color, style_string);
+        style_string = format!(
+            "background-color: {}; border-color: {}; {}",
+            color, color, style_string
+        );
     }
 
     let on_click = props.on_click;

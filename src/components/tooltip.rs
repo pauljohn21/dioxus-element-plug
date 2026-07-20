@@ -3,10 +3,18 @@ use dioxus::prelude::*;
 /// Tooltip placement
 #[derive(Clone, PartialEq)]
 pub enum TooltipPlacement {
-    Top, TopStart, TopEnd,
-    Bottom, BottomStart, BottomEnd,
-    Left, LeftStart, LeftEnd,
-    Right, RightStart, RightEnd,
+    Top,
+    TopStart,
+    TopEnd,
+    Bottom,
+    BottomStart,
+    BottomEnd,
+    Left,
+    LeftStart,
+    LeftEnd,
+    Right,
+    RightStart,
+    RightEnd,
 }
 
 impl TooltipPlacement {

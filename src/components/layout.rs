@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str};
+use crate::components::common::{style_str, ClassBuilder};
 
 // Layout CSS class constants
 pub const CONTAINER: &str = "el-container";
@@ -31,7 +31,13 @@ pub struct ContainerProps {
 #[component]
 pub fn Container(props: ContainerProps) -> Element {
     let class_string = ClassBuilder::new(CONTAINER)
-        .add_opt_str(props.direction.as_deref().map(|d| format!("el-container--{}", d)).as_deref())
+        .add_opt_str(
+            props
+                .direction
+                .as_deref()
+                .map(|d| format!("el-container--{}", d))
+                .as_deref(),
+        )
         .add_opt(props.class.as_ref())
         .build();
     let style_string = style_str(&props.style);
@@ -67,11 +73,7 @@ pub fn Header(props: HeaderProps) -> Element {
     let class_string = ClassBuilder::new(HEADER)
         .add_opt(props.class.as_ref())
         .build();
-    let style_string = format!(
-        "height: {}px;{}",
-        props.height,
-        style_str(&props.style)
-    );
+    let style_string = format!("height: {}px;{}", props.height, style_str(&props.style));
 
     rsx! {
         header {
@@ -104,11 +106,7 @@ pub fn Aside(props: AsideProps) -> Element {
     let class_string = ClassBuilder::new(ASIDE)
         .add_opt(props.class.as_ref())
         .build();
-    let style_string = format!(
-        "width: {}px;{}",
-        props.width,
-        style_str(&props.style)
-    );
+    let style_string = format!("width: {}px;{}", props.width, style_str(&props.style));
 
     rsx! {
         aside {
@@ -171,11 +169,7 @@ pub fn Footer(props: FooterProps) -> Element {
     let class_string = ClassBuilder::new(FOOTER)
         .add_opt(props.class.as_ref())
         .build();
-    let style_string = format!(
-        "height: {}px;{}",
-        props.height,
-        style_str(&props.style)
-    );
+    let style_string = format!("height: {}px;{}", props.height, style_str(&props.style));
 
     rsx! {
         footer {
@@ -212,8 +206,20 @@ pub struct RowProps {
 #[component]
 pub fn Row(props: RowProps) -> Element {
     let class_string = ClassBuilder::new(ROW)
-        .add_opt_str(props.justify.as_ref().map(|j| format!("is-justify-{}", j)).as_deref())
-        .add_opt_str(props.align.as_ref().map(|a| format!("is-align-{}", a)).as_deref())
+        .add_opt_str(
+            props
+                .justify
+                .as_ref()
+                .map(|j| format!("is-justify-{}", j))
+                .as_deref(),
+        )
+        .add_opt_str(
+            props
+                .align
+                .as_ref()
+                .map(|a| format!("is-align-{}", a))
+                .as_deref(),
+        )
         .add_opt(props.class.as_ref())
         .build();
 
@@ -221,7 +227,10 @@ pub fn Row(props: RowProps) -> Element {
 
     if let Some(gutter) = props.gutter {
         let gutter_margin = -(gutter as i32 / 2);
-        style_parts.push(format!("margin-left: {}px; margin-right: {}px;", gutter_margin, gutter_margin));
+        style_parts.push(format!(
+            "margin-left: {}px; margin-right: {}px;",
+            gutter_margin, gutter_margin
+        ));
     }
 
     let style_string = style_parts.join("");
@@ -264,10 +273,34 @@ pub struct ColProps {
 #[component]
 pub fn Col(props: ColProps) -> Element {
     let class_string = ClassBuilder::new(COL)
-        .add_opt_str(props.span.as_ref().map(|s| format!("el-col-{}", s)).as_deref())
-        .add_opt_str(props.offset.as_ref().map(|o| format!("el-col-offset-{}", o)).as_deref())
-        .add_opt_str(props.push.as_ref().map(|p| format!("el-col-push-{}", p)).as_deref())
-        .add_opt_str(props.pull.as_ref().map(|p| format!("el-col-pull-{}", p)).as_deref())
+        .add_opt_str(
+            props
+                .span
+                .as_ref()
+                .map(|s| format!("el-col-{}", s))
+                .as_deref(),
+        )
+        .add_opt_str(
+            props
+                .offset
+                .as_ref()
+                .map(|o| format!("el-col-offset-{}", o))
+                .as_deref(),
+        )
+        .add_opt_str(
+            props
+                .push
+                .as_ref()
+                .map(|p| format!("el-col-push-{}", p))
+                .as_deref(),
+        )
+        .add_opt_str(
+            props
+                .pull
+                .as_ref()
+                .map(|p| format!("el-col-pull-{}", p))
+                .as_deref(),
+        )
         .add_opt(props.class.as_ref())
         .build();
     let style_string = style_str(&props.style);

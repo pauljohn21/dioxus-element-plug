@@ -92,7 +92,9 @@ pub mod styles;
 /// `Theme` (50 fields), `ThemeBuilder`, `CompleteStyleManager`, and the
 /// deprecated `CompleteCssBuilder` all live here.
 #[allow(deprecated)]
-pub use style_system::{Theme, ThemeBuilder, CompleteStyleManager, CompleteCssBuilder, StyleManager, ALL_COMPONENTS};
+pub use style_system::{
+    CompleteCssBuilder, CompleteStyleManager, StyleManager, Theme, ThemeBuilder, ALL_COMPONENTS,
+};
 
 /// Theme and style re-exports from modular system
 pub use crate::styles::prelude::*;
@@ -102,93 +104,93 @@ pub use components::*;
 /// Prelude module for easy importing
 pub mod prelude {
     // Core components
+    pub use crate::components::alert::*;
     pub use crate::components::button::*;
+    pub use crate::components::card::*;
+    pub use crate::components::form::*;
+    pub use crate::components::form_item::*;
     pub use crate::components::input::*;
     pub use crate::components::input_number::*;
     pub use crate::components::layout::*;
-    pub use crate::components::form::*;
-    pub use crate::components::form_item::*;
-    pub use crate::components::alert::*;
-    pub use crate::components::card::*;
     pub use crate::components::table::*;
     pub use crate::components::table_column::*;
 
     // Basic UI
-    pub use crate::components::tag::*;
-    pub use crate::components::badge::*;
-    pub use crate::components::link::*;
-    pub use crate::components::divider::*;
-    pub use crate::components::empty::*;
     pub use crate::components::avatar::*;
     pub use crate::components::avatar_group::*;
+    pub use crate::components::badge::*;
     pub use crate::components::button_group::*;
+    pub use crate::components::divider::*;
+    pub use crate::components::empty::*;
     pub use crate::components::icon::*;
+    pub use crate::components::link::*;
+    pub use crate::components::tag::*;
 
     // Form
-    pub use crate::components::switch::*;
-    pub use crate::components::checkbox::*;
-    pub use crate::components::radio::*;
-    pub use crate::components::select::*;
-    pub use crate::components::option::*;
-    pub use crate::components::slider::*;
-    pub use crate::components::rate::*;
     pub use crate::components::autocomplete::*;
     pub use crate::components::cascader::*;
+    pub use crate::components::checkbox::*;
     pub use crate::components::color_picker::*;
     pub use crate::components::date_picker::*;
+    pub use crate::components::option::*;
+    pub use crate::components::radio::*;
+    pub use crate::components::rate::*;
+    pub use crate::components::select::*;
+    pub use crate::components::slider::*;
+    pub use crate::components::switch::*;
     pub use crate::components::time_picker::*;
     pub use crate::components::time_select::*;
     pub use crate::components::transfer::*;
 
     // Display
-    pub use crate::components::dialog::*;
-    pub use crate::components::drawer::*;
-    pub use crate::components::collapse::*;
-    pub use crate::components::result::*;
-    pub use crate::components::image::*;
-    pub use crate::components::image_viewer::*;
-    pub use crate::components::descriptions::*;
     pub use crate::components::calendar::*;
     pub use crate::components::carousel::*;
+    pub use crate::components::collapse::*;
+    pub use crate::components::descriptions::*;
+    pub use crate::components::dialog::*;
+    pub use crate::components::drawer::*;
+    pub use crate::components::image::*;
+    pub use crate::components::image_viewer::*;
+    pub use crate::components::progress::*;
+    pub use crate::components::result::*;
+    pub use crate::components::skeleton::*;
+    pub use crate::components::space::*;
     pub use crate::components::timeline::*;
     pub use crate::components::tree::*;
     pub use crate::components::upload::*;
     pub use crate::components::watermark::*;
-    pub use crate::components::progress::*;
-    pub use crate::components::skeleton::*;
-    pub use crate::components::space::*;
 
     // Navigation
-    pub use crate::components::breadcrumb::*;
-    pub use crate::components::dropdown::*;
-    pub use crate::components::menu::*;
-    pub use crate::components::pagination::*;
-    pub use crate::components::tabs::*;
-    pub use crate::components::steps::*;
-    pub use crate::components::page_header::*;
     pub use crate::components::affix::*;
     pub use crate::components::anchor::*;
     pub use crate::components::backtop::*;
+    pub use crate::components::breadcrumb::*;
+    pub use crate::components::dropdown::*;
+    pub use crate::components::menu::*;
+    pub use crate::components::page_header::*;
+    pub use crate::components::pagination::*;
+    pub use crate::components::steps::*;
+    pub use crate::components::tabs::*;
 
     // Feedback
+    pub use crate::components::infinite_scroll::*;
     pub use crate::components::loading::*;
     pub use crate::components::message::*;
     pub use crate::components::message_box::*;
     pub use crate::components::notification::*;
-    pub use crate::components::tooltip::*;
-    pub use crate::components::popover::*;
     pub use crate::components::popconfirm::*;
+    pub use crate::components::popover::*;
     pub use crate::components::spin::*;
-    pub use crate::components::infinite_scroll::*;
+    pub use crate::components::tooltip::*;
 
     // Style system
-    pub use crate::Theme;
-    pub use crate::ThemeBuilder;
-    pub use crate::CompleteStyleManager;
     pub use crate::style_system::StyleManager;
     pub use crate::style_system::ALL_COMPONENTS;
     #[allow(deprecated)]
     pub use crate::CompleteCssBuilder;
+    pub use crate::CompleteStyleManager;
+    pub use crate::Theme;
+    pub use crate::ThemeBuilder;
 
     /// Complete Element Plus styling from modular system
     pub use crate::styles::prelude::*;
@@ -197,7 +199,6 @@ pub mod prelude {
 // Simple test module to verify the library compiles
 #[cfg(test)]
 mod tests {
-    
 
     #[test]
     fn test_generated_style_constants() {

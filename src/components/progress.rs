@@ -1,5 +1,5 @@
+use crate::components::common::{style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str};
 
 #[cfg(feature = "icons")]
 use element_icons::element::{CircleCheck, CircleClose, Warning};
@@ -145,19 +145,20 @@ pub fn Progress(props: ProgressProps) -> Element {
         .add_if("el-progress--indeterminate", props.indeterminate)
         .add_if("el-progress--striped", props.striped)
         .add_if("el-progress--striped-flow", props.striped_flow)
-        .add_if("el-progress--text-inside", props.text_inside && props.progress_type == ProgressType::Line)
+        .add_if(
+            "el-progress--text-inside",
+            props.text_inside && props.progress_type == ProgressType::Line,
+        )
         .add_opt(props.class.as_ref())
         .build();
 
     let style_string = style_str(&props.style);
 
-    let bar_color = props.color.clone().unwrap_or_else(|| {
-        match props.status {
-            ProgressStatus::Success => "#67C23A".to_string(),
-            ProgressStatus::Exception => "#F56C6C".to_string(),
-            ProgressStatus::Warning => "#E6A23C".to_string(),
-            ProgressStatus::Default => "#409EFF".to_string(),
-        }
+    let bar_color = props.color.clone().unwrap_or_else(|| match props.status {
+        ProgressStatus::Success => "#67C23A".to_string(),
+        ProgressStatus::Exception => "#F56C6C".to_string(),
+        ProgressStatus::Warning => "#E6A23C".to_string(),
+        ProgressStatus::Default => "#409EFF".to_string(),
     });
 
     let display_text = format!("{}%", percentage);
@@ -204,11 +205,18 @@ pub fn Progress(props: ProgressProps) -> Element {
         let size = props.width;
         let deg = (percentage as f64 / 100.0) * 360.0;
         let bg_gradient = if props.progress_type == ProgressType::Dashboard {
-            format!("conic-gradient(from 135deg, {} 0deg, {} {}deg, transparent {}deg)",
-                bar_color, bar_color, deg * 0.75, deg * 0.75)
+            format!(
+                "conic-gradient(from 135deg, {} 0deg, {} {}deg, transparent {}deg)",
+                bar_color,
+                bar_color,
+                deg * 0.75,
+                deg * 0.75
+            )
         } else {
-            format!("conic-gradient({} {}deg, var(--el-fill-color-light) {}deg)",
-                bar_color, deg, deg)
+            format!(
+                "conic-gradient({} {}deg, var(--el-fill-color-light) {}deg)",
+                bar_color, deg, deg
+            )
         };
 
         let inner_size = size - props.stroke_width * 2;

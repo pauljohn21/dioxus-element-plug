@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::components::common::ClassBuilder;
+use dioxus::prelude::*;
 
 /// OptionGroup props
 #[derive(Props, Clone, PartialEq)]

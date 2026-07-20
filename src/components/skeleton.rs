@@ -1,5 +1,5 @@
+use crate::components::common::{style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str};
 
 /// Skeleton props
 #[derive(Props, Clone, PartialEq)]
@@ -81,4 +81,3 @@ pub fn Skeleton(props: SkeletonProps) -> Element {
         }
     }
 }
-

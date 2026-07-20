@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str, fire_event};
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 
 /// Convert HSV (h: 0-360, s: 0-100, v: 0-100) to a hex color string like `#RRGGBB`.
 pub fn hsv_to_hex(h: u32, s: u32, v: u32) -> String {
@@ -155,16 +155,20 @@ pub fn ColorPicker(props: ColorPickerProps) -> Element {
         .map(|i| {
             let hue = i * 15;
             let bg = hsv_to_hex(hue, 100, 100);
-            let border = if hue == h { "#333".to_string() } else { "transparent".to_string() };
+            let border = if hue == h {
+                "#333".to_string()
+            } else {
+                "transparent".to_string()
+            };
             (hue, bg, border)
         })
         .collect();
 
     // Common preset colors.
     let presets: &[&str] = &[
-        "#45006E", "#7C4DFF", "#B388FF", "#03A9F4", "#1E88E5", "#00BCD4",
-        "#4CAF50", "#8BC34A", "#CDDC39", "#FFEB3B", "#FFC107", "#FF9800",
-        "#FF5722", "#795548", "#9E9E9E", "#607D8B", "#000000", "#FFFFFF",
+        "#45006E", "#7C4DFF", "#B388FF", "#03A9F4", "#1E88E5", "#00BCD4", "#4CAF50", "#8BC34A",
+        "#CDDC39", "#FFEB3B", "#FFC107", "#FF9800", "#FF5722", "#795548", "#9E9E9E", "#607D8B",
+        "#000000", "#FFFFFF",
     ];
 
     rsx! {
@@ -406,7 +410,9 @@ mod tests {
     #[test]
     fn test_hsv_hex_roundtrip() {
         // Round-trip: hex → hsv → hex should be identity for common colors.
-        let test_colors = ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"];
+        let test_colors = [
+            "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF",
+        ];
         for original in test_colors.iter() {
             let (h, s, v) = hex_to_hsv(original);
             let result = hsv_to_hex(h, s, v);

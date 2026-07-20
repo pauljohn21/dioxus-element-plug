@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str};
+use crate::components::common::{style_str, ClassBuilder};
 
 /// Descriptions direction
 #[derive(Clone, PartialEq)]

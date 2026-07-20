@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str, fire_event};
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 
 #[cfg(feature = "icons")]
 use element_icons::element::{ArrowLeft, ArrowRight};
@@ -126,8 +126,16 @@ pub fn Transfer(props: TransferProps) -> Element {
         .map(|item| (item.key.clone(), item.label.clone(), item.disabled))
         .collect();
 
-    let left_title = props.titles.first().cloned().unwrap_or_else(|| "List 1".to_string());
-    let right_title = props.titles.get(1).cloned().unwrap_or_else(|| "List 2".to_string());
+    let left_title = props
+        .titles
+        .first()
+        .cloned()
+        .unwrap_or_else(|| "List 1".to_string());
+    let right_title = props
+        .titles
+        .get(1)
+        .cloned()
+        .unwrap_or_else(|| "List 2".to_string());
 
     let left_count = left_items.len();
     let right_count = right_items.len();

@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str};
+use crate::components::common::{style_str, ClassBuilder};
 
 // Table CSS class constants
 pub const TABLE: &str = "el-table";
@@ -156,7 +156,10 @@ pub fn Table(props: TableProps) -> Element {
     let class_string = ClassBuilder::new("el-table")
         .add_if("el-table--border", props.border)
         .add_if("el-table--striped", props.stripe)
-        .add_if("el-table--highlight-current-row", props.highlight_current_row)
+        .add_if(
+            "el-table--highlight-current-row",
+            props.highlight_current_row,
+        )
         .add_opt(props.class.as_ref())
         .build();
     let style_string = style_str(&props.style);
@@ -179,9 +182,17 @@ pub fn Table(props: TableProps) -> Element {
                     SortOrder::None => std::cmp::Ordering::Equal,
                 }
             });
-            indexed.into_iter().map(|(i, row)| (i, row.clone())).collect()
+            indexed
+                .into_iter()
+                .map(|(i, row)| (i, row.clone()))
+                .collect()
         } else {
-            props.data.iter().enumerate().map(|(i, row)| (i, row.clone())).collect()
+            props
+                .data
+                .iter()
+                .enumerate()
+                .map(|(i, row)| (i, row.clone()))
+                .collect()
         }
     };
 
@@ -212,7 +223,11 @@ pub fn Table(props: TableProps) -> Element {
             } else {
                 "sort-caret descending"
             };
-            let current_order = if is_active { active_sort_order } else { SortOrder::None };
+            let current_order = if is_active {
+                active_sort_order
+            } else {
+                SortOrder::None
+            };
             HeaderColData {
                 title: col.title.clone(),
                 width_style,

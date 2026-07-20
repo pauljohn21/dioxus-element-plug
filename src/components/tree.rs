@@ -1,7 +1,7 @@
 use dioxus::prelude::*;
 use std::collections::HashSet;
 
-use crate::components::common::{ClassBuilder, style_str};
+use crate::components::common::{style_str, ClassBuilder};
 
 /// Tree node data
 #[derive(Clone, PartialEq)]
@@ -13,7 +13,11 @@ pub struct TreeNodeData {
 
 impl TreeNodeData {
     pub fn new(label: &str) -> Self {
-        Self { label: label.to_string(), children: vec![], disabled: false }
+        Self {
+            label: label.to_string(),
+            children: vec![],
+            disabled: false,
+        }
     }
 
     pub fn child(mut self, node: TreeNodeData) -> Self {
@@ -126,7 +130,17 @@ pub fn Tree(props: TreeProps) -> Element {
     let node_data: Vec<TreeNodeRenderData> = props
         .data
         .iter()
-        .map(|node| build_node_render_data(node, 0, &expanded_set, &checked_set, &current_key, props.highlight_current, props.show_checkbox))
+        .map(|node| {
+            build_node_render_data(
+                node,
+                0,
+                &expanded_set,
+                &checked_set,
+                &current_key,
+                props.highlight_current,
+                props.show_checkbox,
+            )
+        })
         .collect();
 
     rsx! {
@@ -181,7 +195,17 @@ fn build_node_render_data(
     let children = if has_children {
         node.children
             .iter()
-            .map(|child| build_node_render_data(child, level + 1, expanded, checked, current, highlight, _show_checkbox))
+            .map(|child| {
+                build_node_render_data(
+                    child,
+                    level + 1,
+                    expanded,
+                    checked,
+                    current,
+                    highlight,
+                    _show_checkbox,
+                )
+            })
             .collect()
     } else {
         vec![]

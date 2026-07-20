@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 // Form CSS class constants
 pub const FORM: &str = "el-form";
@@ -88,8 +88,7 @@ pub fn Form(props: FormProps) -> Element {
 
     let form_style = format!(
         "--el-form-label-width: {}px; {}",
-        props.label_width,
-        style_string
+        props.label_width, style_string
     );
 
     let on_submit = props.on_submit;

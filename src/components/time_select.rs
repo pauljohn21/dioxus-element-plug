@@ -1,6 +1,6 @@
 use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str, fire_event};
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 
 /// Parse a "HH:MM" time string into total minutes.
 fn parse_time(s: &str) -> Option<u32> {

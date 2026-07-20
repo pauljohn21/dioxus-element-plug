@@ -1,5 +1,5 @@
-use dioxus::prelude::*;
 use crate::components::common::ClassBuilder;
+use dioxus::prelude::*;
 
 /// Option component for use inside Select
 #[derive(Props, Clone, PartialEq)]

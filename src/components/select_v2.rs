@@ -9,4 +9,4 @@
 /// A virtualized version of Select (with support for large option lists via
 /// windowing/virtual scrolling) will be implemented in a future version.
 /// Until then, `SelectV2` behaves identically to `Select`.
-pub use super::select::{Select, SelectProps, SelectOption, SelectSize};
+pub use super::select::{Select, SelectOption, SelectProps, SelectSize};

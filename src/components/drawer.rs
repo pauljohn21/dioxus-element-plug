@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str};
 use dioxus::prelude::*;
-use crate::components::common::{style_str, fire_event};
 
 /// Drawer direction
 #[derive(Clone, PartialEq)]
@@ -67,10 +67,22 @@ pub fn Drawer(props: DrawerProps) -> Element {
 
     let style_str_val = style_str(&props.style);
     let drawer_style = match props.direction {
-        DrawerDirection::Rtl => format!("width: {}; right: 0; top: 0; bottom: 0; {}", props.size, style_str_val),
-        DrawerDirection::Ltr => format!("width: {}; left: 0; top: 0; bottom: 0; {}", props.size, style_str_val),
-        DrawerDirection::Ttb => format!("height: {}; top: 0; left: 0; right: 0; {}", props.size, style_str_val),
-        DrawerDirection::Btt => format!("height: {}; bottom: 0; left: 0; right: 0; {}", props.size, style_str_val),
+        DrawerDirection::Rtl => format!(
+            "width: {}; right: 0; top: 0; bottom: 0; {}",
+            props.size, style_str_val
+        ),
+        DrawerDirection::Ltr => format!(
+            "width: {}; left: 0; top: 0; bottom: 0; {}",
+            props.size, style_str_val
+        ),
+        DrawerDirection::Ttb => format!(
+            "height: {}; top: 0; left: 0; right: 0; {}",
+            props.size, style_str_val
+        ),
+        DrawerDirection::Btt => format!(
+            "height: {}; bottom: 0; left: 0; right: 0; {}",
+            props.size, style_str_val
+        ),
     };
     let on_close = props.on_close;
 

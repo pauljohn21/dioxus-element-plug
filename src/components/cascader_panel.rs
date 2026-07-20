@@ -1,7 +1,7 @@
-use dioxus::prelude::*;
 pub use super::cascader::{CascaderOption, CascaderProps};
+use dioxus::prelude::*;
 
-use crate::components::common::{ClassBuilder, style_str, fire_event};
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 
 #[cfg(feature = "icons")]
 use element_icons::element::ArrowRight;
@@ -74,7 +74,14 @@ pub fn CascaderPanel(props: CascaderPanelProps) -> Element {
     levels.push(
         current_options
             .iter()
-            .map(|o| (o.value.clone(), o.label.clone(), o.disabled, !o.children.is_empty()))
+            .map(|o| {
+                (
+                    o.value.clone(),
+                    o.label.clone(),
+                    o.disabled,
+                    !o.children.is_empty(),
+                )
+            })
             .collect(),
     );
     for &idx in selected_path().iter() {
@@ -86,7 +93,14 @@ pub fn CascaderPanel(props: CascaderPanelProps) -> Element {
             levels.push(
                 current_options
                     .iter()
-                    .map(|o| (o.value.clone(), o.label.clone(), o.disabled, !o.children.is_empty()))
+                    .map(|o| {
+                        (
+                            o.value.clone(),
+                            o.label.clone(),
+                            o.disabled,
+                            !o.children.is_empty(),
+                        )
+                    })
                     .collect(),
             );
         } else {
@@ -197,8 +211,7 @@ mod tests {
             CascaderOption::new("zj", "Zhejiang")
                 .child(CascaderOption::new("hz", "Hangzhou"))
                 .child(CascaderOption::new("nb", "Ningbo")),
-            CascaderOption::new("js", "Jiangsu")
-                .child(CascaderOption::new("nj", "Nanjing")),
+            CascaderOption::new("js", "Jiangsu").child(CascaderOption::new("nj", "Nanjing")),
         ];
         let path = vec![0, 1];
         let values = build_path_values(&options, &path);

@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Dialog props
 #[derive(Props, Clone, PartialEq)]
@@ -90,7 +90,12 @@ pub fn Dialog(props: DialogProps) -> Element {
         .add_if("el-dialog--draggable", props.draggable)
         .build();
 
-    let dialog_style = format!("width: {}; margin-top: {}; {}", props.width, props.top, style_str(&props.style));
+    let dialog_style = format!(
+        "width: {}; margin-top: {}; {}",
+        props.width,
+        props.top,
+        style_str(&props.style)
+    );
     let on_close = props.on_close;
 
     rsx! {

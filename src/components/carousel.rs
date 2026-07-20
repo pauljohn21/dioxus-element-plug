@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Context for passing active index to CarouselItem via context provider.
 #[derive(Clone, Copy)]
@@ -112,7 +112,7 @@ pub fn Carousel(props: CarouselProps) -> Element {
         if !autoplay || length == 0 {
             return;
         }
-            loop {
+        loop {
             sleep_ms(interval).await;
             let next = next_index((active)(), length);
             let mut a = active;

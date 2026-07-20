@@ -10,20 +10,20 @@
 //! - Utility classes and helpers
 
 // Core style constants and system
-pub mod core;
-pub mod colors;
-pub mod typography;
-pub mod spacing;
 pub mod borders;
+pub mod colors;
+pub mod core;
 pub mod shadows;
+pub mod spacing;
+pub mod typography;
 pub mod z_index;
 
 // Component style constants
 pub mod component_classes;
 
 // CSS generation functions
-pub mod simple_css_generation;
 pub mod enhanced_css_system;
+pub mod simple_css_generation;
 
 // Utility classes
 pub mod utilities;
@@ -42,12 +42,12 @@ pub mod prelude {
     //! Import everything with: `use dioxus_element_plug::styles::prelude::*;`
 
     // Core system
-    pub use super::core::*;
-    pub use super::colors::*;
-    pub use super::typography::*;
-    pub use super::spacing::*;
     pub use super::borders::*;
+    pub use super::colors::*;
+    pub use super::core::*;
     pub use super::shadows::*;
+    pub use super::spacing::*;
+    pub use super::typography::*;
     pub use super::z_index::*;
 
     // Component classes

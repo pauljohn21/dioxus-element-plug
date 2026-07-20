@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Select option data
 #[derive(Clone, PartialEq)]
@@ -138,14 +138,18 @@ pub fn Select(props: SelectProps) -> Element {
 
     let is_empty = props.options.is_empty();
     let model_value_clone = props.model_value.clone();
-    let option_data: Vec<(String, String, bool, String)> = props.options.iter().map(|opt| {
-        let is_selected = Some(&opt.value) == model_value_clone.as_ref();
-        let cls = ClassBuilder::new("el-select-dropdown__item")
-            .add_if("selected", is_selected)
-            .add_if("is-disabled", opt.disabled)
-            .build();
-        (opt.value.clone(), opt.label.clone(), opt.disabled, cls)
-    }).collect();
+    let option_data: Vec<(String, String, bool, String)> = props
+        .options
+        .iter()
+        .map(|opt| {
+            let is_selected = Some(&opt.value) == model_value_clone.as_ref();
+            let cls = ClassBuilder::new("el-select-dropdown__item")
+                .add_if("selected", is_selected)
+                .add_if("is-disabled", opt.disabled)
+                .build();
+            (opt.value.clone(), opt.label.clone(), opt.disabled, cls)
+        })
+        .collect();
 
     let on_change = props.on_change;
 

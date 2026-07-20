@@ -690,39 +690,71 @@ pub struct StyleManager {
 }
 
 /// 组件依赖关系图
-/// 
+///
 /// 键: 组件名称
 /// 值: 该组件依赖的其他组件列表
-static COMPONENT_DEPENDENCIES: std::sync::LazyLock<std::collections::HashMap<&'static str, &[&'static str]>> =
-    std::sync::LazyLock::new(|| {
-        let mut deps = std::collections::HashMap::new();
-        // 依赖 overlay 的组件
-        deps.insert("dialog", &["overlay"] as &[&str]);
-        deps.insert("drawer", &["overlay"]);
-        deps.insert("dropdown", &["overlay"]);
-        deps.insert("popover", &["overlay"]);
-        deps.insert("tooltip", &["overlay"]);
-        deps.insert("loading", &["overlay"]);
-        deps.insert("message", &["overlay"]);
-        deps.insert("notification", &["overlay"]);
-        // 其他依赖关系可以在此添加
-        deps
-    });
+static COMPONENT_DEPENDENCIES: std::sync::LazyLock<
+    std::collections::HashMap<&'static str, &[&'static str]>,
+> = std::sync::LazyLock::new(|| {
+    let mut deps = std::collections::HashMap::new();
+    // 依赖 overlay 的组件
+    deps.insert("dialog", &["overlay"] as &[&str]);
+    deps.insert("drawer", &["overlay"]);
+    deps.insert("dropdown", &["overlay"]);
+    deps.insert("popover", &["overlay"]);
+    deps.insert("tooltip", &["overlay"]);
+    deps.insert("loading", &["overlay"]);
+    deps.insert("message", &["overlay"]);
+    deps.insert("notification", &["overlay"]);
+    // 其他依赖关系可以在此添加
+    deps
+});
 
 /// 所有可用组件列表
 pub const ALL_COMPONENTS: &[&str] = &[
     // 基础组件
-    "button", "input", "form",
+    "button",
+    "input",
+    "form",
     // 布局组件
-    "container", "row", "col", "grid",
+    "container",
+    "row",
+    "col",
+    "grid",
     // 数据展示
-    "table", "card", "descriptions", "timeline", "tag", "badge", "progress", "avatar", "empty", "skeleton",
+    "table",
+    "card",
+    "descriptions",
+    "timeline",
+    "tag",
+    "badge",
+    "progress",
+    "avatar",
+    "empty",
+    "skeleton",
     // 反馈组件
-    "alert", "message", "dialog", "drawer", "loading", "notification", "popover", "tooltip",
+    "alert",
+    "message",
+    "dialog",
+    "drawer",
+    "loading",
+    "notification",
+    "popover",
+    "tooltip",
     // 导航组件
-    "menu", "tabs", "dropdown", "steps", "pagination", "breadcrumb", "anchor", "backtop",
+    "menu",
+    "tabs",
+    "dropdown",
+    "steps",
+    "pagination",
+    "breadcrumb",
+    "anchor",
+    "backtop",
     // 其他组件
-    "divider", "spin", "result", "overlay",
+    "divider",
+    "spin",
+    "result",
+    "overlay",
 ];
 
 impl Default for StyleManager {
@@ -778,18 +810,18 @@ impl StyleManager {
         }
 
         let mut css = String::new();
-        
+
         // 添加 CSS reset
         css.push_str(self.get_reset_css());
         css.push('\n');
-        
+
         // 添加主题变量
         css.push_str(&generate_css_variables(&self.theme));
         css.push('\n');
 
         // 按类别添加组件样式
         let components: Vec<_> = self.components.iter().copied().collect();
-        
+
         for component in components {
             if let Some(style) = self.get_component_css(component) {
                 css.push_str(style);
@@ -816,7 +848,7 @@ html {
     /// 获取单个组件的 CSS
     fn get_component_css(&self, component: &str) -> Option<&'static str> {
         use crate::styles::enhanced_css_system::*;
-        
+
         match component {
             // 基础组件
             "button" => Some(button_styles()),
@@ -825,11 +857,14 @@ html {
             // 布局组件
             "container" | "row" | "col" | "grid" => Some(layout_styles()),
             // 数据展示
-            "table" | "card" | "descriptions" | "timeline" | "tag" | "badge" | "progress" | "avatar" | "empty" | "skeleton" => Some(data_display_styles()),
+            "table" | "card" | "descriptions" | "timeline" | "tag" | "badge" | "progress"
+            | "avatar" | "empty" | "skeleton" => Some(data_display_styles()),
             // 反馈组件
-            "alert" | "message" | "dialog" | "drawer" | "loading" | "notification" | "popover" | "tooltip" => Some(feedback_styles()),
+            "alert" | "message" | "dialog" | "drawer" | "loading" | "notification" | "popover"
+            | "tooltip" => Some(feedback_styles()),
             // 导航组件
-            "menu" | "tabs" | "dropdown" | "steps" | "pagination" | "breadcrumb" | "anchor" | "backtop" => Some(navigation_styles()),
+            "menu" | "tabs" | "dropdown" | "steps" | "pagination" | "breadcrumb" | "anchor"
+            | "backtop" => Some(navigation_styles()),
             // 其他组件
             "divider" | "spin" | "result" | "overlay" => Some(additional_styles()),
             _ => None,

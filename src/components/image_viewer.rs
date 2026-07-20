@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// ImageViewer props
 #[derive(Props, Clone, PartialEq)]
@@ -52,7 +52,11 @@ pub fn ImageViewer(props: ImageViewerProps) -> Element {
     }
 
     let idx = current_index().min(url_count.saturating_sub(1));
-    let current_img = props.url_list.get(idx as usize).cloned().unwrap_or_default();
+    let current_img = props
+        .url_list
+        .get(idx as usize)
+        .cloned()
+        .unwrap_or_default();
     let z = zoom();
     let r = rotation();
 

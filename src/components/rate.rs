@@ -1,5 +1,5 @@
+use crate::components::common::{fire_event, style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str, fire_event};
 
 /// Rate size variants
 #[derive(Clone, PartialEq)]
@@ -106,7 +106,9 @@ pub fn Rate(props: RateProps) -> Element {
 
     let current_value = props.model_value;
     let text_index = if current_value > 0.0 {
-        (current_value.ceil() as usize).saturating_sub(1).min(props.texts.len().saturating_sub(1))
+        (current_value.ceil() as usize)
+            .saturating_sub(1)
+            .min(props.texts.len().saturating_sub(1))
     } else {
         0
     };
@@ -124,8 +126,18 @@ pub fn Rate(props: RateProps) -> Element {
             let star_value = i as f64;
             let is_active = star_value <= current_value;
             let is_half = props.allow_half && star_value - 0.5 == current_value;
-            let color = if is_active { props.active_color.clone() } else { props.inactive_color.clone() };
-            let star_char = if is_active { "★" } else if is_half { "⯨" } else { "☆" };
+            let color = if is_active {
+                props.active_color.clone()
+            } else {
+                props.inactive_color.clone()
+            };
+            let star_char = if is_active {
+                "★"
+            } else if is_half {
+                "⯨"
+            } else {
+                "☆"
+            };
             (star_value, color, star_char)
         })
         .collect();

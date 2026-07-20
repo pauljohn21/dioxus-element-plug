@@ -5,8 +5,9 @@
 /// Generate responsive grid classes
 pub fn generate_grid_classes() -> String {
     let mut grid_css = String::new();
-    
-    grid_css.push_str(r#"
+
+    grid_css.push_str(
+        r#"
 /* Row */
 .el-row {
     display: flex;
@@ -39,14 +40,16 @@ pub fn generate_grid_classes() -> String {
 .el-col-22 { width: 91.6666666667%; }
 .el-col-23 { width: 95.8333333333%; }
 .el-col-24 { width: 100%; }
-"#);
-    
+"#,
+    );
+
     grid_css
 }
 
 /// Generate display utility classes
 pub fn generate_display_utilities() -> String {
-    String::from(r#"
+    String::from(
+        r#"
 /* Display utilities */
 .d-none { display: none; }
 .d-block { display: block; }
@@ -54,5 +57,6 @@ pub fn generate_display_utilities() -> String {
 .d-inline-block { display: inline-block; }
 .d-flex { display: flex; }
 .d-inline-flex { display: inline-flex; }
-"#)
+"#,
+    )
 }

@@ -1,5 +1,5 @@
+use crate::components::common::{style_str, ClassBuilder};
 use dioxus::prelude::*;
-use crate::components::common::{ClassBuilder, style_str};
 
 /// TimelineItem timestamp placement
 #[derive(Clone, PartialEq, Default, Debug)]
@@ -161,7 +161,9 @@ pub struct TimelineItemProps {
 #[component]
 pub fn TimelineItem(props: TimelineItemProps) -> Element {
     // Build node style with custom color
-    let node_style = props.color.as_ref()
+    let node_style = props
+        .color
+        .as_ref()
         .map(|c| format!("background-color: {}; border-color: {};", c, c))
         .unwrap_or_default();
 
@@ -241,8 +243,14 @@ mod tests {
     #[test]
     fn test_timeline_node_type_as_class() {
         assert_eq!(TimelineNodeType::Normal.as_class(), "");
-        assert_eq!(TimelineNodeType::Large.as_class(), "el-timeline-item__node--large");
-        assert_eq!(TimelineNodeType::Primary.as_class(), "el-timeline-item__node--primary");
+        assert_eq!(
+            TimelineNodeType::Large.as_class(),
+            "el-timeline-item__node--large"
+        );
+        assert_eq!(
+            TimelineNodeType::Primary.as_class(),
+            "el-timeline-item__node--primary"
+        );
     }
 
     #[test]
@@ -268,6 +276,9 @@ mod tests {
         let class = ClassBuilder::new("el-timeline-item__node")
             .add_class("el-timeline-item__node--large")
             .build();
-        assert_eq!(class, "el-timeline-item__node el-timeline-item__node--large");
+        assert_eq!(
+            class,
+            "el-timeline-item__node el-timeline-item__node--large"
+        );
     }
 }
