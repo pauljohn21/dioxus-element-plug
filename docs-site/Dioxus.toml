@@ -6,6 +6,7 @@ asset_dir = "assets"
 
 [web.app]
 title = "Dioxus Element Plug - Documentation"
+base_path = "/dioxus-element-plug"
 
 [web.watcher]
 reload_html = true
