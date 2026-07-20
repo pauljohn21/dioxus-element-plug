@@ -40,23 +40,24 @@ jobs:
           enablement: true
 
       - name: Copy build output
-        working-directory: ./docs-site
         run: |
-          # Dioxus build output is in target/dx/*/release/web/public
-          BUILD_DIR=$(find target/dx -name "public" -type d 2>/dev/null | head -1)
+          # Dioxus build output is in docs-site/target/dx/*/release/web/public
+          BUILD_DIR=$(find docs-site/target/dx -name "public" -type d 2>/dev/null | head -1)
           if [ -z "$BUILD_DIR" ]; then
             echo "Error: Could not find build output directory"
             exit 1
           fi
           echo "Found build output at: $BUILD_DIR"
-          mkdir -p dist
-          cp -r "$BUILD_DIR"/* dist/
-          ls -la dist/
+          ls -la "$BUILD_DIR"
+          mkdir -p docs-site/dist
+          cp -r "$BUILD_DIR"/* docs-site/dist/
+          echo "Copied to docs-site/dist:"
+          ls -la docs-site/dist/
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v4
         with:
-          path: './docs-site/dist'
+          path: 'docs-site/dist'
 
   deploy:
     environment:
